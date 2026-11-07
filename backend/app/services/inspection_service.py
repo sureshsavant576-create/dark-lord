@@ -3,6 +3,7 @@
 Combines deterministic code-based validations (CIELAB color distance, disallowed terminology regex)
 with lightweight AI model assessments (mood, tone, visual style) into an explainable governance report.
 """
+from __future__ import annotations
 import json
 import logging
 from datetime import datetime, timezone

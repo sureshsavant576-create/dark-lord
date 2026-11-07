@@ -6,12 +6,13 @@ Implements the three-stage brand intelligence lifecycle:
 3. Human Review & Profile Confirmation.
 Stores confirmed profiles persistently for fast, reusable developer inspections.
 """
+from __future__ import annotations
 import json
 import logging
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 import uuid
 
 from backend.app.ai.base import ProviderStatus

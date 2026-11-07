@@ -5,6 +5,7 @@ Supports:
 - Direct marketing copy / ad text paste (no file upload required)
 - Real-time biometric brand vector inspection and explainable AI feedback
 """
+from __future__ import annotations
 import logging
 from pathlib import Path
 import shutil
