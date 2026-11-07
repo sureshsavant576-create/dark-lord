@@ -2,57 +2,6 @@
 const API_BASE = '/api/v1';
 let brandsMap = {};
 
-// Real Brand Presets for 1-Click Fast Demonstration
-const BRAND_PRESETS = {
-  spotify: {
-    brand_name: "Spotify",
-    personality: "Expressive, Casual, Clever, Music-obsessed",
-    mood: "Vibrant, Energetic, Social, Upbeat",
-    tone: "Playful, Direct, Colloquial, Authentic",
-    audience: "Music and podcast listeners, Gen-Z and Millennials",
-    style: "High Contrast, Dark Canvas, Neon Accents, Duotone",
-    palette: "#1ED760, #121212, #FFFFFF",
-    avoid: "cheap tunes, bargain discount, corporate formal, monotone",
-    tagline: "Listening is everything"
-  },
-  apple: {
-    brand_name: "Apple",
-    personality: "Understated, Confident, Human, Precise",
-    mood: "Sophisticated, Calm, Premium, Focused",
-    tone: "Minimalist, Inspiring, Clear, Direct",
-    audience: "Creators, professionals, and technology enthusiasts",
-    style: "Extreme Minimalism, Negative Space, High-key Lighting",
-    palette: "#000000, #FFFFFF, #86868B",
-    avoid: "super cheap, bargain discount, miracle deal, clearance sale",
-    tagline: "Think different"
-  },
-  nike: {
-    brand_name: "Nike",
-    personality: "Athletic, Bold, Inspiring, Competitive",
-    mood: "Driven, Triumphant, Relentless, High-energy",
-    tone: "Motivational, Direct, Powerful",
-    audience: "Athletes, runners, and everyday sports enthusiasts",
-    style: "Dynamic Action, Stark High Contrast, Bold Typography",
-    palette: "#000000, #FFFFFF, #E32636",
-    avoid: "lazy, giving up, cheap sneakers, passive, formal jargon",
-    tagline: "Just Do It"
-  }
-};
-
-window.loadBrandPreset = function(key) {
-  const data = BRAND_PRESETS[key];
-  if (!data) return;
-  document.getElementById('ob-brand-name').value = data.brand_name;
-  document.getElementById('ob-personality').value = data.personality;
-  document.getElementById('ob-mood').value = data.mood;
-  document.getElementById('ob-tone').value = data.tone;
-  document.getElementById('ob-audience').value = data.audience;
-  document.getElementById('ob-style').value = data.style;
-  document.getElementById('ob-palette').value = data.palette;
-  document.getElementById('ob-avoid').value = data.avoid;
-  document.getElementById('ob-tagline').value = data.tagline;
-};
-
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   initDropZone();
@@ -425,48 +374,6 @@ function initInspection() {
       textContainer.classList.add('hidden');
     });
   }
-
-  // 1-Click Real Company Sample Chips
-  const sampleChips = document.querySelectorAll('.btn-sample-chip');
-  sampleChips.forEach(chip => {
-    chip.addEventListener('click', async () => {
-      const sampleKey = chip.getAttribute('data-sample');
-      if (!sampleKey) return;
-
-      emptyState.classList.add('hidden');
-      resultsView.classList.add('hidden');
-      loadingState.classList.remove('hidden');
-      btn.disabled = true;
-
-      try {
-        const res = await fetch(`${API_BASE}/inspect/sample/${sampleKey}`, {
-          method: 'POST'
-        });
-
-        if (!res.ok) {
-          const errDetail = await res.text();
-          throw new Error(errDetail);
-        }
-
-        const report = await res.json();
-
-        // Automatically sync brand selector
-        const brandSelect = document.getElementById('inspect-brand-select');
-        if (brandSelect && report.brand_id) {
-          brandSelect.value = report.brand_id;
-          brandSelect.dispatchEvent(new Event('change'));
-        }
-
-        renderInspectionReport(report);
-      } catch (err) {
-        alert(`Sample Inspection Error: ${err.message}`);
-        emptyState.classList.remove('hidden');
-      } finally {
-        loadingState.classList.add('hidden');
-        btn.disabled = false;
-      }
-    });
-  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();

@@ -52,24 +52,6 @@
             <h2>Check Your Marketing Work Against Company Vibes</h2>
             <p>Select your company and test your poster, graphic, or ad copy to make sure it matches the brand.</p>
           </div>
-
-          <!-- 1-Click Real Company Quick Test Bar -->
-          <div class="quick-demo-section">
-            <div class="quick-demo-header">
-              <span class="lightning-badge">⚡ Instant Real Company Demo Tests</span>
-              <span class="quick-demo-sub">Click any pre-packaged test below to inspect immediately:</span>
-            </div>
-            <div class="quick-demo-chips" id="quick-demo-chips">
-              <button type="button" class="btn-sample-chip chip-pass" data-sample="apple_on_brand_copy">🍎 Apple: On-Brand Copy</button>
-              <button type="button" class="btn-sample-chip chip-fail" data-sample="apple_off_brand_copy">🍎 Apple: Prohibited Claims</button>
-              <button type="button" class="btn-sample-chip chip-fail" data-sample="apple_off_brand_visual">🍎 Apple: Off-Brand Visual</button>
-              <button type="button" class="btn-sample-chip chip-pass" data-sample="spotify_on_brand_copy">🎧 Spotify: On-Brand Copy</button>
-              <button type="button" class="btn-sample-chip chip-fail" data-sample="spotify_off_brand_copy">🎧 Spotify: Piracy/Cracked Copy</button>
-              <button type="button" class="btn-sample-chip chip-fail" data-sample="spotify_off_brand_visual">🎧 Spotify: Off-Brand Visual</button>
-              <button type="button" class="btn-sample-chip chip-pass" data-sample="nike_on_brand_copy">👟 Nike: 'Just Do It' Copy</button>
-              <button type="button" class="btn-sample-chip chip-fail" data-sample="nike_off_brand_copy">👟 Nike: Defeatist Copy</button>
-            </div>
-          </div>
           
           <form id="inspection-form" class="app-form">
             <div class="form-group">
@@ -284,25 +266,15 @@
             </div>
           </div>
 
-          <!-- Quick Account Switcher -->
-          <div class="presets-container">
-            <span class="preset-label">⚡ Quick Company Sign-In (Click to Switch Account):</span>
-            <div class="preset-btn-group">
-              <button type="button" class="btn-preset" onclick="loadBrandPreset('apple')">🍎 Sign in as Apple</button>
-              <button type="button" class="btn-preset" onclick="loadBrandPreset('spotify')">🎧 Sign in as Spotify</button>
-              <button type="button" class="btn-preset" onclick="loadBrandPreset('nike')">⚡ Sign in as Nike</button>
-            </div>
-          </div>
-
           <form id="onboarding-form" class="app-form">
             <div class="form-row">
               <div class="form-group">
                 <label for="ob-brand-name">Company / Brand Name:</label>
-                <input type="text" id="ob-brand-name" placeholder="e.g. Apple, Spotify, or Your Startup" required>
+                <input type="text" id="ob-brand-name" placeholder="Enter company or brand name" required>
               </div>
               <div class="form-group">
                 <label for="ob-manager-email">Account Lead Email:</label>
-                <input type="email" id="ob-manager-email" placeholder="e.g. brand@company.com" value="brand.lead@company.com">
+                <input type="email" id="ob-manager-email" placeholder="e.g. brand@company.com" required>
               </div>
             </div>
 
