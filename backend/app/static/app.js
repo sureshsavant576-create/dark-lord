@@ -30,43 +30,55 @@ function setInputMode(mode) {
 }
 window.setInputMode = setInputMode;
 
-// Non-intrusive Toast Notification
+// Modern Toast Notification System (Corporate Grade)
 function toast(message, type = 'info') {
   let toastEl = document.getElementById('app-toast');
   if (!toastEl) {
     toastEl = document.createElement('div');
     toastEl.id = 'app-toast';
-    toastEl.style.cssText = `
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: rgba(14, 20, 36, 0.95);
-      border: 1px solid rgba(99, 102, 241, 0.4);
-      color: #ffffff;
-      padding: 0.75rem 1.25rem;
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      font-size: 0.88rem;
-      font-weight: 600;
-      z-index: 9999;
-      transition: all 0.3s ease;
-      opacity: 0;
-      transform: translateY(10px);
-      pointer-events: none;
-    `;
     document.body.appendChild(toastEl);
   }
 
+  const borderColors = {
+    success: '#059669',
+    error: '#DC2626',
+    warning: '#D97706',
+    info: '#2563EB'
+  };
+
+  const bgColors = {
+    success: 'rgba(5, 150, 105, 0.95)',
+    error: 'rgba(220, 38, 38, 0.95)',
+    warning: 'rgba(217, 119, 6, 0.95)',
+    info: 'rgba(15, 23, 42, 0.95)'
+  };
+
   toastEl.textContent = message;
-  toastEl.style.borderColor = type === 'success' ? 'rgba(16, 185, 129, 0.5)' : 'rgba(99, 102, 241, 0.4)';
-  toastEl.style.opacity = '1';
-  toastEl.style.transform = 'translateY(0)';
+  toastEl.style.cssText = `
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: ${bgColors[type] || bgColors.info};
+    border-left: 4px solid ${borderColors[type] || borderColors.info};
+    color: #FFFFFF;
+    padding: 0.85rem 1.35rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 9999;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 1;
+    transform: translateY(0);
+    max-width: 420px;
+    line-height: 1.45;
+  `;
 
   clearTimeout(toastEl._timer);
   toastEl._timer = setTimeout(() => {
     toastEl.style.opacity = '0';
     toastEl.style.transform = 'translateY(10px)';
-  }, 2500);
+  }, 3200);
 }
 
 // Copy to Clipboard Utility
@@ -444,7 +456,7 @@ async function loadBrands() {
           <div class="palette-row" style="margin-top: 0.5rem;">${swatches}</div>
           <div class="brand-card-actions">
             <button type="button" class="btn-edit-brand" onclick="startEditingBrand('${b.brand_id}')">
-              ✏️ Edit Company Vibes & Palette
+              Configure Brand Guidelines
             </button>
           </div>
         `;
@@ -919,7 +931,7 @@ function renderExtractedColorStudio(data) {
           <div class="extracted-card-info">
             <div class="extracted-hex-row">
               <span class="extracted-hex">${item.hex_code}</span>
-              <button type="button" class="btn-copy-hex" title="Copy HEX" onclick="copyToClipboard('${item.hex_code}', 'Copied ${item.hex_code}!')">📋</button>
+              <button type="button" class="btn-copy-hex" title="Copy HEX" onclick="copyToClipboard('${item.hex_code}', 'Copied ${item.hex_code}!')">Copy</button>
             </div>
             <span class="extracted-family">${item.color_family || 'Neutral'}</span>
             <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim);">RGB(${item.rgb.join(', ')})</span>
@@ -927,17 +939,17 @@ function renderExtractedColorStudio(data) {
         </div>
 
         <div class="extracted-card-meta">
-          <span class="extracted-pct-pill">${item.percentage}% of design</span>
+          <span class="extracted-pct-pill">${item.percentage}% Coverage</span>
           <span class="extracted-role-tag">${item.role}</span>
         </div>
 
         <div style="font-size: 0.72rem; color: var(--text-muted); display: flex; justify-content: space-between;">
           <span>Contrast vs White: <strong>${item.contrast_white}:1</strong></span>
-          <span>${item.is_dark ? '🌙 Dark' : '☀️ Light'}</span>
+          <span>${item.is_dark ? 'Dark Tone' : 'Light Tone'}</span>
         </div>
 
         <button type="button" class="btn-toggle-palette-color ${inPalette ? 'is-active' : ''}" data-hex="${item.hex_code}">
-          ${inPalette ? '✓ In Brand Palette' : '➕ Add to Palette'}
+          ${inPalette ? '✓ In Brand Palette' : '+ Add to Palette'}
         </button>
       `;
 
@@ -999,7 +1011,7 @@ function startEditingBrand(brandId) {
   }
 
   const btn = document.getElementById('btn-create-draft');
-  if (btn) btn.innerHTML = '<span>💾 Update & Lock Company Vibes & Palette</span>';
+  if (btn) btn.innerHTML = '<span>Update Brand Profile</span>';
 
   const btnCancel = document.getElementById('btn-cancel-edit');
   if (btnCancel) {
@@ -1010,7 +1022,7 @@ function startEditingBrand(brandId) {
   const feedback = document.getElementById('ob-scan-feedback');
   if (feedback) {
     feedback.className = 'ob-scan-feedback success';
-    feedback.innerHTML = `✏️ Editing <strong>${b.brand_name}</strong>. Manage your brand palette, colors, and guidelines below.`;
+    feedback.innerHTML = `Editing <strong>${b.brand_name}</strong>. Configure brand palette and guidelines below.`;
     feedback.classList.remove('hidden');
   }
 
@@ -1033,7 +1045,7 @@ function resetOnboardingForm() {
   if (studioContainer) studioContainer.classList.add('hidden');
 
   const btn = document.getElementById('btn-create-draft');
-  if (btn) btn.innerHTML = '<span>💾 Save & Lock Company Vibes</span>';
+  if (btn) btn.innerHTML = '<span>Save Brand Profile</span>';
 
   const btnCancel = document.getElementById('btn-cancel-edit');
   if (btnCancel) btnCancel.classList.add('hidden');
@@ -1169,9 +1181,9 @@ function initOnboarding() {
     const paletteHexArray = currentPalette.map(c => c.hex);
 
     if (paletteHexArray.length === 0) {
-      alert('Please add at least one approved brand color in the Palette Manager above.');
+      toast('Please add at least one approved brand color in the Palette Manager.', 'warning');
       btn.disabled = false;
-      btn.innerHTML = editingId ? '<span>💾 Update & Lock Company Vibes</span>' : '<span>💾 Save & Lock Company Vibes</span>';
+      btn.innerHTML = editingId ? '<span>Update Brand Profile</span>' : '<span>Save Brand Profile</span>';
       return;
     }
 
@@ -1202,7 +1214,7 @@ function initOnboarding() {
         const confirmed = await confRes.json();
 
         await loadBrands();
-        alert(`🎉 Company vibes and palette for '${confirmed.brand_name}' updated and locked!`);
+        toast(`Brand profile for '${confirmed.brand_name}' updated successfully.`, 'success');
         resetOnboardingForm();
 
         // Switch to Developer tab
@@ -1269,7 +1281,7 @@ function initOnboarding() {
       const confirmed = await confRes.json();
 
       await loadBrands();
-      alert(`🎉 Company vibes and palette for '${confirmed.brand_name}' saved and locked! Your developers can now check their work.`);
+      toast(`Brand profile for '${confirmed.brand_name}' created successfully.`, 'success');
       resetOnboardingForm();
 
       // Switch to Developer tab
@@ -1283,11 +1295,11 @@ function initOnboarding() {
         brandSelect.dispatchEvent(new Event('change'));
       }
     } catch (err) {
-      alert(`Error saving company vibes: ${err.message}`);
+      toast(`Error saving brand profile: ${err.message}`, 'error');
     } finally {
       btn.disabled = false;
       const editingIdNow = document.getElementById('ob-editing-brand-id')?.value;
-      btn.innerHTML = editingIdNow ? '<span>💾 Update & Lock Company Vibes</span>' : '<span>💾 Save & Lock Company Vibes</span>';
+      btn.innerHTML = editingIdNow ? '<span>Update Brand Profile</span>' : '<span>Save Brand Profile</span>';
     }
   });
 }
@@ -1320,7 +1332,7 @@ function initInspection() {
     const copyTextarea = document.getElementById('inspect-copy-text');
 
     if (!brandId) {
-      alert('Please select a target company brand profile first.');
+      toast('Please select a target brand standard profile first.', 'warning');
       return;
     }
 
@@ -1329,13 +1341,13 @@ function initInspection() {
     if (activeInputMode === 'text') {
       const textVal = copyTextarea ? copyTextarea.value.trim() : '';
       if (!textVal) {
-        alert('Please enter some marketing copy or advertising text to inspect.');
+        toast('Please enter advertising copy or text to inspect.', 'warning');
         return;
       }
       formData.append('copy_text', textVal);
     } else {
       if (!fileInput.files || fileInput.files.length === 0) {
-        alert('Please select or drop a poster or graphic image to inspect.');
+        toast('Please select or drop a poster or graphic asset to inspect.', 'warning');
         return;
       }
       formData.append('file', fileInput.files[0]);
@@ -1349,7 +1361,7 @@ function initInspection() {
 
     if (inlineStatus) {
       inlineStatus.className = 'inspect-inline-status status-running';
-      if (inlineText) inlineText.textContent = 'Extracting Brand DNA vectors & analyzing brand vibes...';
+      if (inlineText) inlineText.textContent = 'Analyzing feature vectors and verifying brand compliance...';
       inlineStatus.classList.remove('hidden');
     }
 
@@ -1371,7 +1383,7 @@ function initInspection() {
       if (inlineStatus) {
         inlineStatus.className = 'inspect-inline-status status-success';
         const matchPct = report.overall_score !== null && report.overall_score !== undefined ? report.overall_score : report.deterministic_score;
-        if (inlineText) inlineText.innerHTML = `✅ Vibe check complete! <strong>${matchPct}% Match (${report.verdict})</strong>. Report updated below ⬇️`;
+        if (inlineText) inlineText.innerHTML = `Audit complete: <strong>${matchPct}% Match (${report.verdict})</strong>. Report updated below.`;
       }
 
       // Smoothly scroll to report panel
@@ -1543,7 +1555,7 @@ function renderInspectionReport(report) {
         </div>
         <p class="finding-body">${f.explanation}</p>
         ${f.evidence_snippet ? `<div class="finding-evidence">Evidence: ${f.evidence_snippet}</div>` : ''}
-        ${f.suggested_correction ? `<div class="finding-correction">💡 Suggested Correction: ${f.suggested_correction}</div>` : ''}
+        ${f.suggested_correction ? `<div class="finding-correction"><strong>Remediation:</strong> ${f.suggested_correction}</div>` : ''}
       `;
       findingsContainer.appendChild(card);
     });
@@ -1584,10 +1596,10 @@ async function loadRecentReport() {
         let iconEmoji = '✓';
         if (rep.verdict === 'CHANGES_REQUESTED') {
           iconClass = 'tracked-icon-warn';
-          iconEmoji = '⚠️';
+          iconEmoji = '!';
         } else if (rep.verdict === 'REJECTED') {
           iconClass = 'tracked-icon-fail';
-          iconEmoji = '✕';
+          iconEmoji = '×';
         }
 
         const dateStr = rep.created_at ? new Date(rep.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent';
