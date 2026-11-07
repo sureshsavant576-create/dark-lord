@@ -1,5 +1,57 @@
 // BrandShield AI - Frontend Application Logic
 const API_BASE = '/api/v1';
+let brandsMap = {};
+
+// Real Brand Presets for 1-Click Fast Demonstration
+const BRAND_PRESETS = {
+  spotify: {
+    brand_name: "Spotify",
+    personality: "Expressive, Casual, Clever, Music-obsessed",
+    mood: "Vibrant, Energetic, Social, Upbeat",
+    tone: "Playful, Direct, Colloquial, Authentic",
+    audience: "Music and podcast listeners, Gen-Z and Millennials",
+    style: "High Contrast, Dark Canvas, Neon Accents, Duotone",
+    palette: "#1ED760, #121212, #FFFFFF",
+    avoid: "cheap tunes, bargain discount, corporate formal, monotone",
+    tagline: "Listening is everything"
+  },
+  apple: {
+    brand_name: "Apple",
+    personality: "Understated, Confident, Human, Precise",
+    mood: "Sophisticated, Calm, Premium, Focused",
+    tone: "Minimalist, Inspiring, Clear, Direct",
+    audience: "Creators, professionals, and technology enthusiasts",
+    style: "Extreme Minimalism, Negative Space, High-key Lighting",
+    palette: "#000000, #FFFFFF, #86868B",
+    avoid: "super cheap, bargain discount, miracle deal, clearance sale",
+    tagline: "Think different"
+  },
+  nike: {
+    brand_name: "Nike",
+    personality: "Athletic, Bold, Inspiring, Competitive",
+    mood: "Driven, Triumphant, Relentless, High-energy",
+    tone: "Motivational, Direct, Powerful",
+    audience: "Athletes, runners, and everyday sports enthusiasts",
+    style: "Dynamic Action, Stark High Contrast, Bold Typography",
+    palette: "#000000, #FFFFFF, #E32636",
+    avoid: "lazy, giving up, cheap sneakers, passive, formal jargon",
+    tagline: "Just Do It"
+  }
+};
+
+window.loadBrandPreset = function(key) {
+  const data = BRAND_PRESETS[key];
+  if (!data) return;
+  document.getElementById('ob-brand-name').value = data.brand_name;
+  document.getElementById('ob-personality').value = data.personality;
+  document.getElementById('ob-mood').value = data.mood;
+  document.getElementById('ob-tone').value = data.tone;
+  document.getElementById('ob-audience').value = data.audience;
+  document.getElementById('ob-style').value = data.style;
+  document.getElementById('ob-palette').value = data.palette;
+  document.getElementById('ob-avoid').value = data.avoid;
+  document.getElementById('ob-tagline').value = data.tagline;
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
@@ -74,6 +126,14 @@ function initDropZone() {
     previewSize.textContent = `(${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
     previewInfo.classList.remove('hidden');
   }
+
+  const btnClear = document.getElementById('btn-clear-file');
+  if (btnClear) {
+    btnClear.addEventListener('click', () => {
+      fileInput.value = '';
+      previewInfo.classList.add('hidden');
+    });
+  }
 }
 
 // Load AI Providers Status
@@ -124,6 +184,7 @@ async function loadBrands() {
   try {
     const res = await fetch(`${API_BASE}/brands`);
     const brands = await res.json();
+    brandsMap = {};
 
     const select = document.getElementById('inspect-brand-select');
     select.innerHTML = '<option value="">-- Select Confirmed Brand Profile --</option>';
@@ -138,6 +199,8 @@ async function loadBrands() {
     }
 
     brands.forEach(b => {
+      brandsMap[b.brand_id] = b;
+
       // Add to select only if confirmed or draft
       const opt = document.createElement('option');
       opt.value = b.brand_id;
@@ -166,6 +229,32 @@ async function loadBrands() {
       `;
       confirmedList.appendChild(card);
     });
+
+    // Brand Selection Preview Handler
+    select.onchange = () => {
+      const selectedId = select.value;
+      const preview = document.getElementById('selected-brand-preview');
+      const b = brandsMap[selectedId];
+
+      if (!b) {
+        preview.classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('prev-brand-name').textContent = b.brand_name;
+      document.getElementById('prev-brand-tone').textContent = `Tone: ${b.communication_tone.join(', ')}`;
+
+      const chipsContainer = document.getElementById('prev-palette-chips');
+      chipsContainer.innerHTML = (b.approved_palette || []).map(hex => `
+        <span class="color-swatch-chip">
+          <span class="swatch-color-box" style="background: ${hex};"></span>
+          ${hex}
+        </span>
+      `).join('');
+
+      document.getElementById('prev-avoid-text').textContent = (b.disallowed_elements || []).join(', ') || 'None';
+      preview.classList.remove('hidden');
+    };
   } catch (err) {
     console.error('Failed to load brands:', err);
   }
@@ -281,30 +370,109 @@ function initInspection() {
   const loadingState = document.getElementById('inspection-loading-state');
   const resultsView = document.getElementById('inspection-results-view');
 
+  // Dual Input Mode Switcher
+  const tabModeText = document.getElementById('tab-mode-text');
+  const tabModeFile = document.getElementById('tab-mode-file');
+  const textContainer = document.getElementById('mode-text-container');
+  const fileContainer = document.getElementById('mode-file-container');
+  let activeInputMode = 'text';
+
+  if (tabModeText && tabModeFile) {
+    tabModeText.addEventListener('click', () => {
+      activeInputMode = 'text';
+      tabModeText.classList.add('active');
+      tabModeFile.classList.remove('active');
+      textContainer.classList.remove('hidden');
+      fileContainer.classList.add('hidden');
+    });
+
+    tabModeFile.addEventListener('click', () => {
+      activeInputMode = 'file';
+      tabModeFile.classList.add('active');
+      tabModeText.classList.remove('active');
+      fileContainer.classList.remove('hidden');
+      textContainer.classList.add('hidden');
+    });
+  }
+
+  // 1-Click Real Company Sample Chips
+  const sampleChips = document.querySelectorAll('.btn-sample-chip');
+  sampleChips.forEach(chip => {
+    chip.addEventListener('click', async () => {
+      const sampleKey = chip.getAttribute('data-sample');
+      if (!sampleKey) return;
+
+      emptyState.classList.add('hidden');
+      resultsView.classList.add('hidden');
+      loadingState.classList.remove('hidden');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/inspect/sample/${sampleKey}`, {
+          method: 'POST'
+        });
+
+        if (!res.ok) {
+          const errDetail = await res.text();
+          throw new Error(errDetail);
+        }
+
+        const report = await res.json();
+
+        // Automatically sync brand selector
+        const brandSelect = document.getElementById('inspect-brand-select');
+        if (brandSelect && report.brand_id) {
+          brandSelect.value = report.brand_id;
+          brandSelect.dispatchEvent(new Event('change'));
+        }
+
+        renderInspectionReport(report);
+      } catch (err) {
+        alert(`Sample Inspection Error: ${err.message}`);
+        emptyState.classList.remove('hidden');
+      } finally {
+        loadingState.classList.add('hidden');
+        btn.disabled = false;
+      }
+    });
+  });
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const brandId = document.getElementById('inspect-brand-select').value;
     const fileInput = document.getElementById('inspect-file');
+    const copyTextarea = document.getElementById('inspect-copy-text');
     const aiProvider = document.getElementById('ai-provider-select').value;
 
     if (!brandId) {
       alert('Please select a target company brand profile.');
       return;
     }
-    if (!fileInput.files || fileInput.files.length === 0) {
-      alert('Please select a creative asset to inspect.');
-      return;
+
+    const formData = new FormData();
+
+    if (activeInputMode === 'text') {
+      const textVal = copyTextarea ? copyTextarea.value.trim() : '';
+      if (!textVal) {
+        alert('Please enter some marketing copy or advertising text to inspect.');
+        return;
+      }
+      formData.append('copy_text', textVal);
+    } else {
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select or drop a creative asset file to inspect.');
+        return;
+      }
+      formData.append('file', fileInput.files[0]);
     }
+
+    if (aiProvider) formData.append('preferred_ai_provider', aiProvider);
 
     emptyState.classList.add('hidden');
     resultsView.classList.add('hidden');
     loadingState.classList.remove('hidden');
     btn.disabled = true;
-
-    const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
-    if (aiProvider) formData.append('preferred_ai_provider', aiProvider);
 
     try {
       const res = await fetch(`${API_BASE}/inspect/${brandId}`, {
@@ -312,7 +480,11 @@ function initInspection() {
         body: formData
       });
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const errDetail = await res.text();
+        throw new Error(errDetail);
+      }
+
       const report = await res.json();
       renderInspectionReport(report);
     } catch (err) {
@@ -364,7 +536,21 @@ function renderInspectionReport(report) {
   });
 
   const approvedRow = document.getElementById('approved-palette-row');
-  approvedRow.innerHTML = '<span class="id-badge">See Brand Profile</span>';
+  approvedRow.innerHTML = '';
+  const brandObj = brandsMap[report.brand_id];
+  const approvedColors = brandObj && brandObj.approved_palette ? brandObj.approved_palette : [];
+  if (approvedColors.length > 0) {
+    approvedColors.forEach(hex => {
+      approvedRow.innerHTML += `
+        <span class="color-swatch-chip">
+          <span class="swatch-color-box" style="background: ${hex};"></span>
+          ${hex}
+        </span>
+      `;
+    });
+  } else {
+    approvedRow.innerHTML = '<span class="id-badge">No palette registered</span>';
+  }
 
   // Findings
   const findingsContainer = document.getElementById('findings-table-container');

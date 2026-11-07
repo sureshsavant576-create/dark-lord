@@ -58,6 +58,24 @@
             <h2>Submit Creative Asset for Brand Inspection</h2>
             <p>Upload posters, advertising copy, or audio jingles to verify compliance with company guidelines.</p>
           </div>
+
+          <!-- 1-Click Real Company Quick Test Bar -->
+          <div class="quick-demo-section">
+            <div class="quick-demo-header">
+              <span class="lightning-badge">⚡ Instant Real Company Demo Tests</span>
+              <span class="quick-demo-sub">Click any pre-packaged test below to inspect immediately:</span>
+            </div>
+            <div class="quick-demo-chips" id="quick-demo-chips">
+              <button type="button" class="btn-sample-chip chip-pass" data-sample="apple_on_brand_copy">🍎 Apple: On-Brand Copy</button>
+              <button type="button" class="btn-sample-chip chip-fail" data-sample="apple_off_brand_copy">🍎 Apple: Prohibited Claims</button>
+              <button type="button" class="btn-sample-chip chip-fail" data-sample="apple_off_brand_visual">🍎 Apple: Off-Brand Visual</button>
+              <button type="button" class="btn-sample-chip chip-pass" data-sample="spotify_on_brand_copy">🎧 Spotify: On-Brand Copy</button>
+              <button type="button" class="btn-sample-chip chip-fail" data-sample="spotify_off_brand_copy">🎧 Spotify: Piracy/Cracked Copy</button>
+              <button type="button" class="btn-sample-chip chip-fail" data-sample="spotify_off_brand_visual">🎧 Spotify: Off-Brand Visual</button>
+              <button type="button" class="btn-sample-chip chip-pass" data-sample="nike_on_brand_copy">👟 Nike: 'Just Do It' Copy</button>
+              <button type="button" class="btn-sample-chip chip-fail" data-sample="nike_off_brand_copy">👟 Nike: Defeatist Copy</button>
+            </div>
+          </div>
           
           <form id="inspection-form" class="app-form">
             <div class="form-group">
@@ -65,29 +83,55 @@
               <select id="inspect-brand-select" required>
                 <option value="">-- Select Confirmed Brand Profile --</option>
               </select>
+              <div id="selected-brand-preview" class="selected-brand-preview hidden">
+                <div class="preview-header">
+                  <span id="prev-brand-name" class="prev-title"></span>
+                  <span id="prev-brand-tone" class="id-badge"></span>
+                </div>
+                <div class="prev-details">
+                  <p><strong>Approved Colors:</strong> <span id="prev-palette-chips" class="palette-mini-row"></span></p>
+                  <p><strong>Strict Avoidances:</strong> <span id="prev-avoid-text" class="prev-avoid"></span></p>
+                </div>
+              </div>
               <span class="field-hint">Only companies with confirmed brand profiles are ready for inspection.</span>
             </div>
 
+            <!-- Dual Input Mode Selector -->
             <div class="form-group">
-              <label>Creative Asset File:</label>
-              <div id="drop-zone" class="drop-zone">
-                <input type="file" id="inspect-file" class="file-input" required accept=".png,.jpg,.jpeg,.webp,.pdf,.txt,.md,.mp3,.wav">
-                <div class="drop-zone-content">
-                  <span class="upload-icon">📁</span>
-                  <p class="drop-text">Drag & drop asset here or <span class="highlight">browse</span></p>
-                  <span class="drop-subtext">Posters (PNG/JPG), Copy (PDF/TXT), Jingles (MP3/WAV) up to 30MB</span>
-                </div>
+              <label>Creative Submission Format:</label>
+              <div class="input-mode-tabs">
+                <button type="button" class="mode-tab-btn active" id="tab-mode-text">✍️ Marketing Copy / Ad Text</button>
+                <button type="button" class="mode-tab-btn" id="tab-mode-file">📁 Upload File (Poster/Doc/Audio)</button>
               </div>
-              <div id="file-preview-info" class="file-preview-info hidden">
-                <span id="preview-filename"></span>
-                <span id="preview-filesize"></span>
+
+              <!-- Mode 1: Direct Copy Text Input -->
+              <div id="mode-text-container">
+                <textarea id="inspect-copy-text" rows="4" placeholder="Type or paste advertising copy, slogan, or promotional body text (e.g. 'Designed with titanium. Remarkably light. The next generation of iPhone is here.')."></textarea>
+                <span class="field-hint">Directly tests copy tone, sentiment, and strictly prohibited brand claims.</span>
+              </div>
+
+              <!-- Mode 2: Creative Asset File Upload -->
+              <div id="mode-file-container" class="hidden">
+                <div id="drop-zone" class="drop-zone">
+                  <input type="file" id="inspect-file" class="file-input" accept=".png,.jpg,.jpeg,.webp,.pdf,.txt,.md,.mp3,.wav">
+                  <div class="drop-zone-content">
+                    <span class="upload-icon">📁</span>
+                    <p class="drop-text">Drag & drop asset here or <span class="highlight">browse</span></p>
+                    <span class="drop-subtext">Posters (PNG/JPG), Copy (PDF/TXT), Jingles (MP3/WAV) up to 30MB</span>
+                  </div>
+                </div>
+                <div id="file-preview-info" class="file-preview-info hidden">
+                  <span id="preview-filename"></span>
+                  <span id="preview-filesize"></span>
+                  <button type="button" id="btn-clear-file" class="btn-text-sm">Remove</button>
+                </div>
               </div>
             </div>
 
             <div class="form-group">
               <label for="ai-provider-select">AI Multimodal Provider:</label>
               <select id="ai-provider-select">
-                <option value="gemini">Google Gemini (gemini-2.5-flash) – Native Vision & Tone Engine</option>
+                <option value="gemini">Google Gemini (gemini-3.5-flash-lite) – Fast Multimodal & Tone Engine</option>
               </select>
               <span class="field-hint">Powered exclusively by Google Gemini multimodal intelligence.</span>
             </div>
@@ -198,8 +242,20 @@
         <!-- Questionnaire & Upload -->
         <div class="card">
           <div class="card-header">
-            <h2>Stage 1: Company Brand Questionnaire</h2>
-            <p>Collect structured brand identity and reference guidelines before inspection begins.</p>
+            <div>
+              <h2>Stage 1: Company Brand Questionnaire</h2>
+              <p>Collect structured brand identity and reference guidelines before inspection begins.</p>
+            </div>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="presets-container">
+            <span class="preset-label">⚡ Quick Presets (Click to Auto-Fill):</span>
+            <div class="preset-btn-group">
+              <button type="button" class="btn-preset" onclick="loadBrandPreset('spotify')">🎧 Spotify</button>
+              <button type="button" class="btn-preset" onclick="loadBrandPreset('apple')">🍎 Apple</button>
+              <button type="button" class="btn-preset" onclick="loadBrandPreset('nike')">⚡ Nike</button>
+            </div>
           </div>
 
           <form id="onboarding-form" class="app-form">

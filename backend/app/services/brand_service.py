@@ -24,6 +24,7 @@ from backend.app.models.brand import (
     ProfileStatus,
     ReferenceAssetInfo,
 )
+from backend.app.preprocessing.color_extractor import clean_hex_code
 from backend.app.preprocessing.pipeline import preprocessing_pipeline
 
 logger = logging.getLogger(__name__)
@@ -90,7 +91,7 @@ class BrandService:
         brand_id = slugify_brand_name(questionnaire.brand_name)
         reference_assets: List[ReferenceAssetInfo] = []
         reference_texts: List[str] = []
-        extracted_palette_candidates: List[str] = [c.upper() for c in questionnaire.palette if c.startswith("#")]
+        extracted_palette_candidates: List[str] = [clean_hex_code(c) for c in questionnaire.palette if clean_hex_code(c)]
 
         # Step 1: Preprocess each uploaded reference asset
         if uploaded_reference_paths:
@@ -105,8 +106,9 @@ class BrandService:
                 # Ingest colors from approved reference images
                 if preprocessed.color_palette:
                     for hex_code in preprocessed.color_palette.hex_list:
-                        if hex_code not in extracted_palette_candidates:
-                            extracted_palette_candidates.append(hex_code)
+                        cleaned = clean_hex_code(hex_code)
+                        if cleaned and cleaned not in extracted_palette_candidates:
+                            extracted_palette_candidates.append(cleaned)
 
                 # Ingest text from guidelines
                 if preprocessed.document_data and preprocessed.document_data.full_text:
@@ -188,7 +190,7 @@ class BrandService:
         existing.communication_tone = [t.strip() for t in request.communication_tone if t.strip()]
         existing.visual_style = [v.strip() for v in request.visual_style if v.strip()]
         existing.target_audience = request.target_audience.strip()
-        existing.approved_palette = [c.upper().strip() for c in request.approved_palette if c.strip().startswith("#")]
+        existing.approved_palette = [clean_hex_code(c) for c in request.approved_palette if clean_hex_code(c)]
         existing.disallowed_elements = [d.strip() for d in request.disallowed_elements if d.strip()]
         if request.key_values:
             existing.key_values = request.key_values

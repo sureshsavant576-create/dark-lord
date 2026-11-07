@@ -26,10 +26,10 @@ class Settings(BaseSettings):
     # AI Provider API Keys (Exclusively Google Gemini)
     GEMINI_API_KEY: Optional[str] = Field(default=None, description="Google Gemini API Key")
 
-    # Model Defaults
-    DEFAULT_VISION_MODEL: str = Field(default="gemini-2.5-flash", description="Default multimodal vision model")
-    DEFAULT_TEXT_MODEL: str = Field(default="gemini-2.5-flash", description="Default text reasoning model")
-    DEFAULT_EMBEDDING_MODEL: str = Field(default="text-embedding-004", description="Default embedding model")
+    # Model Defaults (Verified active Google Gemini 3.5 models)
+    DEFAULT_VISION_MODEL: str = Field(default="gemini-3.5-flash-lite", description="Default multimodal vision model")
+    DEFAULT_TEXT_MODEL: str = Field(default="gemini-3.5-flash-lite", description="Default text reasoning model")
+    DEFAULT_EMBEDDING_MODEL: str = Field(default="gemini-embedding-001", description="Default embedding model")
 
     # Inspection Thresholds (Objective & Subjective)
     MAX_COLOR_DELTA_E: float = Field(default=15.0, description="Max acceptable CIELAB Delta E color deviation")

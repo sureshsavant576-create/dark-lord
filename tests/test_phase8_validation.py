@@ -191,16 +191,22 @@ async def test_case_7_missing_brand_error(brand_and_inspection, tmp_path: Path):
 
 # TEST CASE 8: AI API unconfigured graceful fallback (Rules 10 & 11)
 @pytest.mark.asyncio
-async def test_case_8_unconfigured_api_graceful_fallback(brand_and_inspection, tmp_path: Path):
+async def test_case_8_unconfigured_api_graceful_fallback(brand_and_inspection, tmp_path: Path, monkeypatch):
     """Verify that when AI keys are unconfigured:
 
     - Deterministic checks run with 100% precision.
     - AI score is marked None (NOT a fabricated number).
     - Status is clearly marked as unconfigured.
     """
+    from backend.app.ai.gemini_provider import GeminiProvider
+    from backend.app.ai.gateway import ai_gateway
+
     _, insp_svc = brand_and_inspection
     img_path = tmp_path / "offline_check.png"
     Image.new("RGB", (600, 600), color=(0, 51, 102)).save(img_path)
+
+    # Force provider to be unconfigured for this test
+    monkeypatch.setattr(ai_gateway.providers["gemini"], "api_key", "")
 
     report = await insp_svc.inspect_submission("vanguard-tech", img_path)
 

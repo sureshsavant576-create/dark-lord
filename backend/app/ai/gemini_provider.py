@@ -5,7 +5,8 @@ Integrates the official Google GenAI SDK for lightweight, fast multimodal inspec
 """
 import json
 import logging
-from typing import Any, Dict, List, Optional
+import re
+from typing import Any, Dict, List, Optional, Tuple
 from google import genai
 from google.genai import types
 
@@ -22,10 +23,13 @@ logger = logging.getLogger(__name__)
 
 
 class GeminiProvider(AIProviderBase):
-    """Real AI provider utilizing the Google Gemini API (gemini-2.5-flash / gemini-1.5-flash)."""
+    """Real AI provider utilizing Google Gemini (gemini-3.5-flash / gemini-3.5-flash-lite) with resilient fallback."""
+
+    FALLBACK_MODELS = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash"]
 
     def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None):
-        self.api_key = api_key or settings.GEMINI_API_KEY
+        raw_key = api_key if api_key is not None else settings.GEMINI_API_KEY
+        self.api_key = raw_key.strip() if raw_key else ""
         self.model_name = model_name or settings.DEFAULT_VISION_MODEL
         self._client: Optional[genai.Client] = None
 
@@ -39,8 +43,33 @@ class GeminiProvider(AIProviderBase):
         if not self.is_configured():
             raise ValueError("GEMINI_API_KEY is not configured.")
         if self._client is None:
-            self._client = genai.Client(api_key=self.api_key)
+            self._client = genai.Client(api_key=self.api_key.strip())
         return self._client
+
+    def _generate_with_fallback(self, contents: Any) -> Tuple[str, str]:
+        """Try primary model; if temporary 503/404 occurs, automatically try candidate models."""
+        client = self._get_client()
+        models_to_try = [self.model_name] + [m for m in self.FALLBACK_MODELS if m != self.model_name]
+        last_error = None
+
+        for model in models_to_try:
+            try:
+                response = client.models.generate_content(
+                    model=model,
+                    contents=contents,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        temperature=0.2,
+                    )
+                )
+                if response and response.text:
+                    return response.text, model
+            except Exception as exc:
+                last_error = exc
+                logger.warning("Gemini model '%s' call failed: %s. Trying fallback...", model, exc)
+                continue
+
+        raise last_error or RuntimeError("All Gemini model attempts failed.")
 
     async def analyze_creative_content(
         self,
@@ -104,20 +133,19 @@ Return ONLY a valid JSON object matching the following structure:
 """
             contents.append(prompt_text)
 
-            # Call Gemini
-            response = client.models.generate_content(
-                model=self.model_name,
-                contents=contents,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    temperature=0.2,
-                )
-            )
+            # Call Gemini with resilient automatic fallback
+            raw_text, used_model = self._generate_with_fallback(contents)
 
-            response_data = json.loads(response.text)
+            # Parse JSON safely
+            try:
+                response_data = json.loads(raw_text)
+            except Exception:
+                json_match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+                response_data = json.loads(json_match.group(0)) if json_match else {}
+
             return MultimodalEvaluation(
                 provider=self.provider_name(),
-                model_used=self.model_name,
+                model_used=used_model,
                 status=ProviderStatus.OPERATIONAL,
                 is_ai_generated=True,
                 mood_detected=str(response_data.get("mood_detected", "Unknown")),
@@ -188,19 +216,17 @@ Return ONLY a valid JSON object matching this schema:
   "raw_explanation": "A concise explanation of how this profile was synthesized from the questionnaire and reference material."
 }}
 """
-            response = client.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    temperature=0.2
-                )
-            )
+            raw_text, used_model = self._generate_with_fallback(prompt)
 
-            data = json.loads(response.text)
+            try:
+                data = json.loads(raw_text)
+            except Exception:
+                json_match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+                data = json.loads(json_match.group(0)) if json_match else {}
+
             return BrandSynthesisEvaluation(
                 provider=self.provider_name(),
-                model_used=self.model_name,
+                model_used=used_model,
                 status=ProviderStatus.OPERATIONAL,
                 is_ai_generated=True,
                 brand_personality=list(data.get("brand_personality", [])),

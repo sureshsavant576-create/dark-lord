@@ -4,8 +4,9 @@ Extracts dominant colors from creative images using Pillow and ColorThief,
 and computes deterministic CIELAB Delta E distances to evaluate brand palette adherence.
 """
 import math
+import re
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 from colorthief import ColorThief
 from PIL import Image
 from pydantic import BaseModel, Field
@@ -24,19 +25,38 @@ class ColorPaletteResult(BaseModel):
     hex_list: List[str] = Field(default_factory=list)
 
 
+def clean_hex_code(hex_code: str) -> Optional[str]:
+    """Clean and validate any HEX code string into standard #RRGGBB."""
+    if not hex_code or not isinstance(hex_code, str):
+        return None
+    raw = re.sub(r"[^0-9a-fA-F]", "", hex_code.strip())
+    if len(raw) == 3:
+        raw = "".join(c * 2 for c in raw)
+    elif len(raw) >= 6:
+        raw = raw[:6]
+    else:
+        return None
+    return f"#{raw.upper()}"
+
+
 def rgb_to_hex(r: int, g: int, b: int) -> str:
     """Convert RGB values to 6-character uppercase HEX."""
-    return f"#{r:02X}{g:02X}{b:02X}"
+    r_clamped = max(0, min(255, int(r)))
+    g_clamped = max(0, min(255, int(g)))
+    b_clamped = max(0, min(255, int(b)))
+    return f"#{r_clamped:02X}{g_clamped:02X}{b_clamped:02X}"
 
 
 def hex_to_rgb(hex_code: str) -> Tuple[int, int, int]:
-    """Convert HEX string (#RRGGBB or RRGGBB) to (r, g, b) tuple."""
-    clean = hex_code.lstrip("#")
-    if len(clean) == 3:
-        clean = "".join(c * 2 for c in clean)
-    if len(clean) != 6:
-        raise ValueError(f"Invalid hex color code: '{hex_code}'")
-    return int(clean[0:2], 16), int(clean[2:4], 16), int(clean[4:6], 16)
+    """Convert HEX string (#RRGGBB or RRGGBB) to (r, g, b) tuple. Never crashes."""
+    cleaned = clean_hex_code(hex_code)
+    if not cleaned:
+        return (128, 128, 128)
+    s = cleaned.lstrip("#")
+    try:
+        return int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16)
+    except Exception:
+        return (128, 128, 128)
 
 
 def rgb_to_xyz(r: int, g: int, b: int) -> Tuple[float, float, float]:
@@ -106,14 +126,16 @@ def calculate_delta_e(hex1: str, hex2: str) -> float:
 
 def find_closest_brand_color(detected_hex: str, brand_palette: List[str]) -> Tuple[str, float]:
     """Find the closest approved brand color to a detected color, returning (closest_hex, delta_e)."""
-    if not brand_palette:
+    valid_palette = [clean_hex_code(c) for c in brand_palette if clean_hex_code(c)]
+    if not valid_palette:
         return detected_hex, 0.0
 
-    best_match = brand_palette[0]
-    min_delta = calculate_delta_e(detected_hex, best_match)
+    det_clean = clean_hex_code(detected_hex) or detected_hex
+    best_match = valid_palette[0]
+    min_delta = calculate_delta_e(det_clean, best_match)
 
-    for brand_color in brand_palette[1:]:
-        delta = calculate_delta_e(detected_hex, brand_color)
+    for brand_color in valid_palette[1:]:
+        delta = calculate_delta_e(det_clean, brand_color)
         if delta < min_delta:
             min_delta = delta
             best_match = brand_color
