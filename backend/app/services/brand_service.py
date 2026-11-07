@@ -291,9 +291,23 @@ class BrandService:
             except Exception as e:
                 logger.warning("Quick reference feature scan: %s", e)
 
+        from backend.app.preprocessing.color_extractor import extract_detailed_palette
+        try:
+            detailed = extract_detailed_palette(file_path)
+            detailed_palette_data = [p.model_dump() for p in detailed.palette]
+            color_distribution = detailed.color_distribution
+            harmony_type = detailed.harmony_type
+        except Exception:
+            detailed_palette_data = []
+            color_distribution = []
+            harmony_type = "Dynamic"
+
         return {
             "extracted_palette": extracted_palette,
             "dominant_color": dominant_color,
+            "detailed_palette": detailed_palette_data,
+            "color_distribution": color_distribution,
+            "harmony_type": harmony_type,
             "suggested_personality": suggested_personality,
             "suggested_mood": suggested_mood,
             "suggested_tone": suggested_tone,

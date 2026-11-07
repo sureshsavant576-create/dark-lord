@@ -25,6 +25,47 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Content Inspection & Governance"])
 
 
+@router.post("/inspect/prefilter-colors/{brand_id}")
+async def prefilter_poster_colors(
+    brand_id: str,
+    file: UploadFile = File(...)
+):
+    """Pre-AI Color Adherence Filter:
+    Instantly extracts creative colors and computes deterministic CIELAB Delta E distances
+    against the company's approved brand palette before calling AI models.
+    """
+    settings.init_directories()
+    brand = brand_service.get_brand_profile(brand_id)
+    if not brand:
+        raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found.")
+
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Image file required for color pre-filtering.")
+
+    dest_name = f"prefilter_{uuid.uuid4().hex[:6]}_{file.filename}"
+    dest_path = settings.UPLOADS_DIR / dest_name
+    with open(dest_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    try:
+        from backend.app.preprocessing.color_extractor import extract_detailed_palette, prefilter_color_compliance
+        detailed = extract_detailed_palette(dest_path)
+        compliance = prefilter_color_compliance(detailed.hex_list, brand.approved_palette or [])
+        return {
+            "brand_id": brand_id,
+            "brand_name": brand.brand_name,
+            "approved_palette": brand.approved_palette or [],
+            "detected_palette": [p.model_dump() for p in detailed.palette],
+            "dominant_color": detailed.dominant_color.model_dump(),
+            "color_distribution": detailed.color_distribution,
+            "harmony_type": detailed.harmony_type,
+            "compliance": compliance,
+            "image_url": f"/storage/uploads/{dest_name}"
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to pre-filter colors: {str(exc)}")
+
+
 @router.post("/inspect/{brand_id}", response_model=InspectionReport)
 async def inspect_developer_content(
     brand_id: str,

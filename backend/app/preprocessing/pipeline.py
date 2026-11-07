@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
+from backend.app.preprocessing.audio_processor import AudioMetadataResult, process_audio_metadata
 from backend.app.preprocessing.color_extractor import ColorPaletteResult, extract_color_palette
 from backend.app.preprocessing.document_extractor import (
     DocumentExtractionResult,
@@ -33,6 +34,7 @@ class PreprocessedContent(BaseModel):
 
     # Extracted Modality Results
     image_metadata: Optional[ImageMetadataResult] = None
+    audio_metadata: Optional[AudioMetadataResult] = None
     color_palette: Optional[ColorPaletteResult] = None
     document_data: Optional[DocumentExtractionResult] = None
 
@@ -71,6 +73,7 @@ class PreprocessingPipeline:
 
         category = val.media_category
         img_meta = None
+        audio_meta = None
         color_result = None
         doc_result = None
         vis_fp = None
@@ -98,6 +101,10 @@ class PreprocessingPipeline:
             # Extract biometric lexical vector
             txt_fp = extract_text_fingerprint(text_summary, avoid_terms)
 
+        elif category == "audio":
+            audio_meta = process_audio_metadata(file_path)
+            text_summary = f"Audio creative duration: {audio_meta.duration_seconds:.1f}s, sample rate: {audio_meta.sample_rate_hz}Hz, channels: {audio_meta.channels}"
+
         return PreprocessedContent(
             file_path=file_path,
             filename=val.normalized_filename,
@@ -105,6 +112,7 @@ class PreprocessingPipeline:
             is_supported=True,
             media_category=category,
             image_metadata=img_meta,
+            audio_metadata=audio_meta,
             color_palette=color_result,
             document_data=doc_result,
             visual_fingerprint=vis_fp,

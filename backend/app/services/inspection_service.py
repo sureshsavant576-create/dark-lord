@@ -259,8 +259,11 @@ class InspectionService:
             suggested_correction="Harmonize layout whitespace and palette distribution to match company brand DNA." if bio_result.composite_biometric_score < 70.0 else None
         ))
 
-        # Blend deterministic score with biometric vector confidence
-        det_score = max(0.0, min(100.0, round((det_score * 0.5) + (bio_result.composite_biometric_score * 0.5), 1)))
+        # Preserve full deterministic rule score when no violations exist, otherwise blend with vector similarity
+        if not violations and det_score >= 85.0:
+            det_score = det_score
+        else:
+            det_score = max(0.0, min(100.0, round((det_score * 0.8) + (bio_result.composite_biometric_score * 0.2), 1)))
 
         # 4. AI Semantic & Multimodal Inspection
         brand_target_profile = {
@@ -400,7 +403,8 @@ class InspectionService:
                 "detected_palette": preprocessed.extracted_colors_hex,
                 "aspect_ratio": preprocessed.image_metadata.aspect_ratio if preprocessed.image_metadata else None,
                 "whitespace_ratio": preprocessed.visual_fingerprint.whitespace_ratio if preprocessed.visual_fingerprint else None,
-                "complexity_index": preprocessed.visual_fingerprint.complexity_index if preprocessed.visual_fingerprint else None
+                "complexity_index": preprocessed.visual_fingerprint.complexity_index if preprocessed.visual_fingerprint else None,
+                "duration_seconds": preprocessed.audio_metadata.duration_seconds if preprocessed.audio_metadata else None
             }
         )
 

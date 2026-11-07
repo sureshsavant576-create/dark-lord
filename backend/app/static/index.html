@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BrandShield – Brand Vibe & Compliance Verification</title>
-  <link rel="stylesheet" href="/static/style.css?v=5.0">
+  <link rel="stylesheet" href="/static/style.css?v=6.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -103,6 +103,21 @@
                   <span id="preview-filename"></span>
                   <span id="preview-filesize"></span>
                   <button type="button" id="btn-clear-file" class="btn-text-sm">Remove</button>
+                </div>
+
+                <!-- Developer Pre-AI Color Filter Panel -->
+                <div id="dev-color-filter-panel" class="dev-color-filter-panel hidden">
+                  <div class="prefilter-header">
+                    <div class="prefilter-title-group">
+                      <span class="prefilter-badge">⚡ Pre-AI Color Filter</span>
+                      <h4>Deterministic Palette Adherence</h4>
+                    </div>
+                    <span id="dev-prefilter-score" class="prefilter-score-badge">--% Match</span>
+                  </div>
+                  <p class="prefilter-subtext">Filters visual colors using CIELAB ΔE distance against company standards before cloud AI analysis:</p>
+                  
+                  <div id="dev-spectrum-bar" class="color-spectrum-bar"></div>
+                  <div id="dev-color-filter-results" class="dev-filter-chips-grid"></div>
                 </div>
               </div>
             </div>
@@ -320,6 +335,66 @@
                 </div>
               </div>
               <div id="ob-scan-feedback" class="ob-scan-feedback hidden"></div>
+
+              <!-- Interactive Visual Colour Studio & Eyedropper Stage -->
+              <div id="color-studio-container" class="color-studio-container hidden">
+                <div class="studio-header">
+                  <div class="studio-title-group">
+                    <span class="studio-badge">🎨 Creative Colour Studio</span>
+                    <h3>Interactive Eyedropper & Color Extractor</h3>
+                  </div>
+                  <div class="studio-actions">
+                    <button type="button" id="btn-native-eyedropper" class="btn-studio-action hidden" title="Sample pixel anywhere on screen">
+                      <span>🎯 Screen Eyedropper</span>
+                    </button>
+                    <button type="button" id="btn-add-all-extracted" class="btn-studio-action">
+                      <span>✨ Add All Extracted to Palette</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Eyedropper Canvas Stage -->
+                <div class="studio-canvas-stage">
+                  <div class="canvas-viewport" id="canvas-viewport">
+                    <canvas id="studio-canvas"></canvas>
+                    <div id="eyedropper-loupe" class="eyedropper-loupe hidden">
+                      <div class="loupe-reticle"></div>
+                      <div class="loupe-color-preview" id="loupe-color-preview"></div>
+                    </div>
+                  </div>
+                  
+                  <!-- Real-time Inspector Readout -->
+                  <div class="inspector-readout-bar">
+                    <div class="inspect-live-swatch" id="inspect-live-swatch" style="background: #ffffff;"></div>
+                    <div class="inspect-readout-text">
+                      <span class="inspect-label">HOVER PIXEL:</span>
+                      <strong id="inspect-live-hex">#FFFFFF</strong>
+                      <span class="inspect-rgb" id="inspect-live-rgb">RGB(255, 255, 255)</span>
+                    </div>
+                    <div class="inspect-sample-action">
+                      <span id="inspect-sample-hint">Click creative to sample pixel</span>
+                      <button type="button" id="btn-add-sampled-color" class="btn-sm btn-primary hidden">
+                        <span>➕ Add Picked to Palette</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Extracted Spectrum Bar -->
+                <div class="spectrum-section">
+                  <div class="spectrum-header">
+                    <span class="spectrum-label">Color Distribution Spectrum:</span>
+                    <span id="spectrum-harmony-badge" class="id-badge">Dynamic Harmony</span>
+                  </div>
+                  <div id="spectrum-distribution-bar" class="color-spectrum-bar"></div>
+                </div>
+
+                <!-- Extracted Color Cards Grid -->
+                <div class="extracted-cards-section">
+                  <h4>Extracted Visual Centroids (<span id="extracted-count">0</span> colors identified)</h4>
+                  <div id="extracted-swatches-grid" class="extracted-swatches-grid"></div>
+                </div>
+              </div>
             </div>
 
             <div class="form-row">
@@ -349,11 +424,45 @@
               <input type="text" id="ob-style" placeholder="e.g. Extreme Minimalism, Negative Space, High-contrast" required>
             </div>
 
-            <div class="form-group">
-              <label for="ob-palette">Approved Brand Colors (Comma-separated HEX):</label>
-              <input type="text" id="ob-palette" placeholder="#000000, #FFFFFF, #86868B" required>
-              <div id="ob-palette-chips" class="palette-mini-row" style="margin-top: 0.5rem;"></div>
-              <span class="field-hint">Auto-extracted from your reference visual, or click swatches / type HEX codes. You can edit any color anytime.</span>
+            <!-- Professional Brand Palette Manager -->
+            <div class="form-group brand-palette-manager-group">
+              <div class="palette-manager-header">
+                <div>
+                  <label>🎨 Approved Brand Palette Manager:</label>
+                  <span class="field-hint">Manage official company brand colors, assign roles, pick custom colors, and export palettes.</span>
+                </div>
+                <div class="palette-quick-actions">
+                  <button type="button" id="btn-copy-palette-hex" class="btn-text-sm" title="Copy comma-separated HEX string">📋 Copy HEX</button>
+                  <button type="button" id="btn-export-css-vars" class="btn-text-sm" title="Export CSS Variables snippet">💻 CSS Vars</button>
+                  <button type="button" id="btn-clear-palette" class="btn-text-sm text-danger" title="Clear all colors">🗑️ Clear</button>
+                </div>
+              </div>
+
+              <!-- Active Brand Swatches Strip -->
+              <div id="palette-manager-grid" class="palette-manager-grid">
+                <div class="palette-empty-prompt">No colors added yet. Upload creative above or pick custom colors below.</div>
+              </div>
+
+              <!-- Add Custom Color Bar -->
+              <div class="custom-color-picker-bar">
+                <div class="picker-swatch-wrap" title="Click to open color picker">
+                  <input type="color" id="custom-color-picker" value="#3B82F6" class="native-color-input">
+                  <span class="color-picker-icon-badge">🎨</span>
+                </div>
+                <input type="text" id="custom-hex-input" placeholder="#HEX (e.g. #0055FF)" maxlength="7" class="hex-text-input">
+                <select id="custom-role-select" class="role-select">
+                  <option value="Primary Brand Color">Primary Brand Color</option>
+                  <option value="Secondary Accent">Secondary Accent</option>
+                  <option value="Highlight / CTA">Highlight / CTA</option>
+                  <option value="Background / Base">Background / Base</option>
+                </select>
+                <button type="button" id="btn-add-custom-color" class="btn btn-secondary btn-sm">
+                  <span>➕ Add Color</span>
+                </button>
+              </div>
+
+              <!-- Hidden backing store for form compatibility -->
+              <input type="hidden" id="ob-palette" name="palette" required>
             </div>
 
             <div class="form-group">
@@ -402,6 +511,6 @@
     <p>BrandShield &copy; 2026 Team Dark Lord. Fast & lightweight company vibe verification.</p>
   </footer>
 
-  <script src="/static/app.js?v=5.0"></script>
+  <script src="/static/app.js?v=6.0"></script>
 </body>
 </html>

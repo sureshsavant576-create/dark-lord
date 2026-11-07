@@ -25,6 +25,13 @@ SUPPORTED_DOCUMENT_TYPES: Dict[str, Set[str]] = {
     "text/markdown": {".md"}
 }
 
+SUPPORTED_AUDIO_TYPES: Dict[str, Set[str]] = {
+    "audio/wav": {".wav"},
+    "audio/x-wav": {".wav"},
+    "audio/mpeg": {".mp3"},
+    "audio/ogg": {".ogg"}
+}
+
 MAX_FILE_SIZE_BYTES = 30 * 1024 * 1024  # 30 MB
 
 
@@ -95,6 +102,14 @@ def validate_file(file_path: Path, declared_mime_type: Optional[str] = None) -> 
         for mime, exts in SUPPORTED_DOCUMENT_TYPES.items():
             if suffix in exts:
                 media_category = "document"
+                canonical_mime = mime
+                break
+
+    # Check audio (audio jingles, acoustic creative)
+    if media_category == "unsupported":
+        for mime, exts in SUPPORTED_AUDIO_TYPES.items():
+            if suffix in exts:
+                media_category = "audio"
                 canonical_mime = mime
                 break
 

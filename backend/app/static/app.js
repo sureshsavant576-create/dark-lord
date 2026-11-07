@@ -1,7 +1,12 @@
-// BrandShield – Frontend Application Logic
+// BrandShield – Frontend Application Logic & Creative Colour Studio
 const API_BASE = '/api/v1';
 let brandsMap = {};
 let activeInputMode = 'text';
+
+// Active Brand Palette State (Stores array of { hex: string, role: string })
+let currentPalette = [];
+let lastExtractedColors = [];
+let lastSampledColor = '#FFFFFF';
 
 // Dual Input Mode Switcher (Global handler & inline fallback)
 function setInputMode(mode) {
@@ -25,11 +30,72 @@ function setInputMode(mode) {
 }
 window.setInputMode = setInputMode;
 
+// Non-intrusive Toast Notification
+function toast(message, type = 'info') {
+  let toastEl = document.getElementById('app-toast');
+  if (!toastEl) {
+    toastEl = document.createElement('div');
+    toastEl.id = 'app-toast';
+    toastEl.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(14, 20, 36, 0.95);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #ffffff;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      font-size: 0.88rem;
+      font-weight: 600;
+      z-index: 9999;
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+    `;
+    document.body.appendChild(toastEl);
+  }
+
+  toastEl.textContent = message;
+  toastEl.style.borderColor = type === 'success' ? 'rgba(16, 185, 129, 0.5)' : 'rgba(99, 102, 241, 0.4)';
+  toastEl.style.opacity = '1';
+  toastEl.style.transform = 'translateY(0)';
+
+  clearTimeout(toastEl._timer);
+  toastEl._timer = setTimeout(() => {
+    toastEl.style.opacity = '0';
+    toastEl.style.transform = 'translateY(10px)';
+  }, 2500);
+}
+
+// Copy to Clipboard Utility
+async function copyToClipboard(text, successMsg = 'Copied to clipboard!') {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    toast(successMsg, 'success');
+  } catch (err) {
+    console.warn('Copy failed:', err);
+    toast(`Failed to copy: ${text}`);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   initDropZone();
   initOnboarding();
   initReferenceScanning();
+  initPaletteManagerControls();
+  initColorStudio();
   initInspection();
   loadProvidersStatus();
   loadBrands();
@@ -54,7 +120,7 @@ function initTabs() {
   });
 }
 
-// Developer File Drop Zone Handling
+// Developer File Drop Zone & Pre-AI Color Verification Handling
 function initDropZone() {
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('inspect-file');
@@ -62,6 +128,7 @@ function initDropZone() {
   const previewName = document.getElementById('preview-filename');
   const previewSize = document.getElementById('preview-filesize');
   const btnClear = document.getElementById('btn-clear-file');
+  const filterPanel = document.getElementById('dev-color-filter-panel');
 
   if (!dropZone || !fileInput) return;
 
@@ -97,13 +164,125 @@ function initDropZone() {
     previewName.textContent = file.name;
     previewSize.textContent = `(${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
     previewInfo.classList.remove('hidden');
+
+    // Trigger Pre-AI Color Adherence Filter if image
+    if (file.type.startsWith('image/')) {
+      triggerDeveloperColorPreFilter(file);
+    } else if (filterPanel) {
+      filterPanel.classList.add('hidden');
+    }
   }
 
   if (btnClear) {
     btnClear.addEventListener('click', () => {
       fileInput.value = '';
       if (previewInfo) previewInfo.classList.add('hidden');
+      if (filterPanel) filterPanel.classList.add('hidden');
     });
+  }
+}
+
+// Pre-AI Color Verification Filter for Developer Tab
+async function triggerDeveloperColorPreFilter(file) {
+  const brandSelect = document.getElementById('inspect-brand-select');
+  const filterPanel = document.getElementById('dev-color-filter-panel');
+  const scoreBadge = document.getElementById('dev-prefilter-score');
+  const spectrumBar = document.getElementById('dev-spectrum-bar');
+  const resultsGrid = document.getElementById('dev-color-filter-results');
+
+  if (!filterPanel || !brandSelect) return;
+
+  const brandId = brandSelect.value;
+  if (!brandId) {
+    // Brand not selected yet, prompt developer
+    filterPanel.classList.remove('hidden');
+    if (scoreBadge) {
+      scoreBadge.className = 'prefilter-score-badge status-warn';
+      scoreBadge.textContent = 'Select Company Above';
+    }
+    if (resultsGrid) {
+      resultsGrid.innerHTML = '<p class="field-hint" style="grid-column: 1/-1;">Select a target company from the dropdown above to run the deterministic pre-AI color check.</p>';
+    }
+    if (spectrumBar) spectrumBar.innerHTML = '';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await fetch(`${API_BASE}/inspect/prefilter-colors/${brandId}`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+
+    filterPanel.classList.remove('hidden');
+
+    // Score Badge
+    const comp = data.compliance || {};
+    const score = comp.compliance_score !== undefined ? comp.compliance_score : 100.0;
+    if (scoreBadge) {
+      scoreBadge.textContent = `${score}% Palette Match`;
+      if (score >= 80) {
+        scoreBadge.className = 'prefilter-score-badge status-pass';
+      } else if (score >= 50) {
+        scoreBadge.className = 'prefilter-score-badge status-warn';
+      } else {
+        scoreBadge.className = 'prefilter-score-badge status-fail';
+      }
+    }
+
+    // Spectrum Bar
+    if (spectrumBar && data.color_distribution) {
+      spectrumBar.innerHTML = '';
+      data.color_distribution.forEach(item => {
+        const seg = document.createElement('div');
+        seg.className = 'spectrum-segment';
+        seg.style.width = `${item.percentage}%`;
+        seg.style.backgroundColor = item.hex;
+        seg.title = `${item.hex} (${item.percentage}%) - ${item.role}`;
+        spectrumBar.appendChild(seg);
+      });
+    }
+
+    // Results Comparison Chips
+    if (resultsGrid && comp.details) {
+      resultsGrid.innerHTML = '';
+      comp.details.forEach(d => {
+        const chip = document.createElement('div');
+        chip.className = 'dev-filter-chip';
+
+        let deltaClass = 'delta-exact';
+        let statusText = 'Exact Match';
+        if (d.delta_e > 20.0) {
+          deltaClass = 'delta-outlier';
+          statusText = `Off-Brand (ΔE ${d.delta_e})`;
+        } else if (d.delta_e > 12.0) {
+          deltaClass = 'delta-borderline';
+          statusText = `Deviation (ΔE ${d.delta_e})`;
+        } else if (d.delta_e > 3.0) {
+          deltaClass = 'delta-acceptable';
+          statusText = `Tone Match (ΔE ${d.delta_e})`;
+        }
+
+        chip.innerHTML = `
+          <div class="dev-filter-chip-left">
+            <span class="dev-filter-swatch" style="background: ${d.detected_hex};"></span>
+            <div>
+              <span class="dev-filter-hex">${d.detected_hex}</span>
+              <div style="font-size: 0.7rem; color: var(--text-dim);">Nearest: ${d.closest_approved_hex}</div>
+            </div>
+          </div>
+          <span class="dev-delta-badge ${deltaClass}">${statusText}</span>
+        `;
+        resultsGrid.appendChild(chip);
+      });
+    }
+  } catch (err) {
+    console.warn('Pre-filter notice:', err);
   }
 }
 
@@ -169,7 +348,7 @@ async function loadBrands() {
         card.className = 'brand-card-item';
 
         const swatches = (b.approved_palette || []).map(hex => `
-          <span class="color-swatch-chip">
+          <span class="color-swatch-chip" title="Copy ${hex}" onclick="copyToClipboard('${hex}', 'Copied ${hex}!')">
             <span class="swatch-color-box" style="background: ${hex};"></span>
             ${hex}
           </span>
@@ -185,7 +364,7 @@ async function loadBrands() {
           <div class="palette-row" style="margin-top: 0.5rem;">${swatches}</div>
           <div class="brand-card-actions">
             <button type="button" class="btn-edit-brand" onclick="startEditingBrand('${b.brand_id}')">
-              ✏️ Edit Company Vibes
+              ✏️ Edit Company Vibes & Palette
             </button>
           </div>
         `;
@@ -199,6 +378,12 @@ async function loadBrands() {
         const selectedId = select.value;
         const preview = document.getElementById('selected-brand-preview');
         const b = brandsMap[selectedId];
+
+        // Trigger prefilter if file already uploaded
+        const fileInput = document.getElementById('inspect-file');
+        if (fileInput && fileInput.files && fileInput.files.length > 0 && fileInput.files[0].type.startsWith('image/')) {
+          triggerDeveloperColorPreFilter(fileInput.files[0]);
+        }
 
         if (!preview) return;
 
@@ -216,7 +401,7 @@ async function loadBrands() {
         const chipsContainer = document.getElementById('prev-palette-chips');
         if (chipsContainer) {
           chipsContainer.innerHTML = (b.approved_palette || []).map(hex => `
-            <span class="color-swatch-chip">
+            <span class="color-swatch-chip" title="Copy ${hex}" onclick="copyToClipboard('${hex}', 'Copied ${hex}!')">
               <span class="swatch-color-box" style="background: ${hex};"></span>
               ${hex}
             </span>
@@ -234,35 +419,401 @@ async function loadBrands() {
   }
 }
 
-// Render Interactive Swatch Chips for Company Palette Input
-function renderPaletteChips(hexList) {
-  const container = document.getElementById('ob-palette-chips');
-  const paletteInput = document.getElementById('ob-palette');
-  if (!container || !paletteInput) return;
+// ==========================================================================
+// Professional Brand Palette Manager Dashboard
+// ==========================================================================
 
-  container.innerHTML = '';
-  if (!hexList || hexList.length === 0) return;
+function renderPaletteManager() {
+  const grid = document.getElementById('palette-manager-grid');
+  const hiddenInput = document.getElementById('ob-palette');
+  if (!grid) return;
 
-  hexList.forEach(hex => {
-    const chip = document.createElement('span');
-    chip.className = 'color-swatch-chip interactive-chip';
-    chip.innerHTML = `
-      <span class="swatch-color-box" style="background: ${hex};"></span>
-      ${hex}
+  grid.innerHTML = '';
+
+  if (!currentPalette || currentPalette.length === 0) {
+    grid.innerHTML = '<div class="palette-empty-prompt">No colors added yet. Upload creative above or pick custom colors below.</div>';
+    if (hiddenInput) hiddenInput.value = '';
+    return;
+  }
+
+  // Update hidden input backing store
+  const hexList = currentPalette.map(c => c.hex);
+  if (hiddenInput) hiddenInput.value = hexList.join(', ');
+
+  currentPalette.forEach((item, index) => {
+    const card = document.createElement('div');
+    card.className = 'palette-swatch-card';
+    card.innerHTML = `
+      <span class="palette-swatch-circle" style="background: ${item.hex};" title="Click to copy ${item.hex}"></span>
+      <span class="palette-swatch-hex" title="Click to copy ${item.hex}">${item.hex}</span>
+      <span class="palette-swatch-role">${item.role || 'Brand Color'}</span>
+      <button type="button" class="btn-remove-swatch" title="Remove ${item.hex} from palette">&times;</button>
     `;
-    chip.title = 'Click to toggle this color in the approved palette';
-    chip.onclick = () => {
-      let current = paletteInput.value.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
-      const upperHex = hex.toUpperCase();
-      if (current.includes(upperHex)) {
-        current = current.filter(c => c !== upperHex);
-      } else {
-        current.push(upperHex);
-      }
-      paletteInput.value = current.join(', ');
+
+    // Click hex or swatch to copy
+    card.querySelector('.palette-swatch-hex').onclick = () => copyToClipboard(item.hex, `Copied ${item.hex}!`);
+    card.querySelector('.palette-swatch-circle').onclick = () => copyToClipboard(item.hex, `Copied ${item.hex}!`);
+
+    // Remove button
+    card.querySelector('.btn-remove-swatch').onclick = (e) => {
+      e.stopPropagation();
+      removeFromPalette(item.hex);
     };
-    container.appendChild(chip);
+
+    grid.appendChild(card);
   });
+
+  // Also sync extracted cards active status
+  syncExtractedCardButtons();
+}
+
+function addToPalette(hex, role = 'Primary Brand Color') {
+  if (!hex) return;
+  const upperHex = hex.trim().toUpperCase();
+  if (!/^#[0-9A-F]{6}$/i.test(upperHex)) {
+    toast(`Invalid HEX format: ${hex}`);
+    return;
+  }
+
+  const exists = currentPalette.some(c => c.hex.toUpperCase() === upperHex);
+  if (!exists) {
+    currentPalette.push({ hex: upperHex, role: role });
+    renderPaletteManager();
+    toast(`Added ${upperHex} to Brand Palette`, 'success');
+  } else {
+    toast(`${upperHex} is already in the palette`);
+  }
+}
+
+function removeFromPalette(hex) {
+  const upperHex = hex.trim().toUpperCase();
+  currentPalette = currentPalette.filter(c => c.hex.toUpperCase() !== upperHex);
+  renderPaletteManager();
+  toast(`Removed ${upperHex} from palette`);
+}
+
+function syncExtractedCardButtons() {
+  const buttons = document.querySelectorAll('.btn-toggle-palette-color');
+  buttons.forEach(btn => {
+    const hex = btn.getAttribute('data-hex');
+    if (!hex) return;
+    const inPalette = currentPalette.some(c => c.hex.toUpperCase() === hex.toUpperCase());
+    if (inPalette) {
+      btn.className = 'btn-toggle-palette-color is-active';
+      btn.innerHTML = '✓ In Brand Palette';
+    } else {
+      btn.className = 'btn-toggle-palette-color';
+      btn.innerHTML = '➕ Add to Palette';
+    }
+  });
+}
+
+function initPaletteManagerControls() {
+  const btnAddCustom = document.getElementById('btn-add-custom-color');
+  const customHexInput = document.getElementById('custom-hex-input');
+  const customColorPicker = document.getElementById('custom-color-picker');
+  const customRoleSelect = document.getElementById('custom-role-select');
+  const btnCopyHex = document.getElementById('btn-copy-palette-hex');
+  const btnExportCss = document.getElementById('btn-export-css-vars');
+  const btnClearPalette = document.getElementById('btn-clear-palette');
+  const btnAddAllExtracted = document.getElementById('btn-add-all-extracted');
+
+  // Sync color picker with hex input
+  if (customColorPicker && customHexInput) {
+    customColorPicker.addEventListener('input', () => {
+      customHexInput.value = customColorPicker.value.toUpperCase();
+    });
+  }
+
+  // Add custom color button
+  if (btnAddCustom && customHexInput) {
+    const handleAdd = () => {
+      let val = customHexInput.value.trim();
+      if (!val.startsWith('#')) val = '#' + val;
+      const role = customRoleSelect ? customRoleSelect.value : 'Custom Brand Color';
+      if (/^#[0-9A-F]{6}$/i.test(val)) {
+        addToPalette(val, role);
+        customHexInput.value = '';
+      } else {
+        toast('Please enter a valid 6-digit HEX code (e.g. #0055FF)');
+      }
+    };
+
+    btnAddCustom.addEventListener('click', handleAdd);
+    customHexInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleAdd();
+      }
+    });
+  }
+
+  // Copy All HEX
+  if (btnCopyHex) {
+    btnCopyHex.addEventListener('click', () => {
+      if (currentPalette.length === 0) {
+        toast('Palette is empty.');
+        return;
+      }
+      const hexString = currentPalette.map(c => c.hex).join(', ');
+      copyToClipboard(hexString, 'Copied all brand HEX colors!');
+    });
+  }
+
+  // Export CSS Variables
+  if (btnExportCss) {
+    btnExportCss.addEventListener('click', () => {
+      if (currentPalette.length === 0) {
+        toast('Palette is empty.');
+        return;
+      }
+      let css = ':root {\n';
+      currentPalette.forEach((c, idx) => {
+        const cleanName = c.role.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || `color-${idx+1}`;
+        css += `  --brand-${cleanName}: ${c.hex};\n`;
+      });
+      css += '}';
+      copyToClipboard(css, 'Copied CSS variables snippet!');
+    });
+  }
+
+  // Clear Palette
+  if (btnClearPalette) {
+    btnClearPalette.addEventListener('click', () => {
+      if (confirm('Clear all colors from the brand palette?')) {
+        currentPalette = [];
+        renderPaletteManager();
+        toast('Palette cleared');
+      }
+    });
+  }
+
+  // Add all extracted colors
+  if (btnAddAllExtracted) {
+    btnAddAllExtracted.addEventListener('click', () => {
+      if (!lastExtractedColors || lastExtractedColors.length === 0) {
+        toast('No extracted colors available. Upload an image above.');
+        return;
+      }
+      lastExtractedColors.forEach(item => {
+        const hex = item.hex_code || item.hex;
+        const role = item.role || 'Extracted Brand Color';
+        if (hex && !currentPalette.some(c => c.hex.toUpperCase() === hex.toUpperCase())) {
+          currentPalette.push({ hex: hex.toUpperCase(), role: role });
+        }
+      });
+      renderPaletteManager();
+      toast(`Added ${lastExtractedColors.length} extracted colors to palette!`, 'success');
+    });
+  }
+}
+
+// ==========================================================================
+// Interactive Visual Colour Studio & Canvas Eyedropper Stage
+// ==========================================================================
+
+let studioCanvasImg = null;
+
+function initColorStudio() {
+  const canvas = document.getElementById('studio-canvas');
+  const viewport = document.getElementById('canvas-viewport');
+  const loupe = document.getElementById('eyedropper-loupe');
+  const loupePreview = document.getElementById('loupe-color-preview');
+  const liveSwatch = document.getElementById('inspect-live-swatch');
+  const liveHex = document.getElementById('inspect-live-hex');
+  const liveRgb = document.getElementById('inspect-live-rgb');
+  const btnAddSampled = document.getElementById('btn-add-sampled-color');
+  const btnNativeEyedropper = document.getElementById('btn-native-eyedropper');
+
+  // Check Native EyeDropper API support
+  if (window.EyeDropper && btnNativeEyedropper) {
+    btnNativeEyedropper.classList.remove('hidden');
+    btnNativeEyedropper.addEventListener('click', async () => {
+      try {
+        const eyeDropper = new window.EyeDropper();
+        const res = await eyeDropper.open();
+        if (res && res.sRGBHex) {
+          addToPalette(res.sRGBHex, 'Eyedropper Screen Sample');
+        }
+      } catch (e) {
+        console.debug('EyeDropper cancelled or dismissed');
+      }
+    });
+  }
+
+  if (!canvas || !viewport) return;
+
+  const samplePixel = (e) => {
+    if (!studioCanvasImg) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const x = Math.floor((e.clientX - rect.left) * scaleX);
+    const y = Math.floor((e.clientY - rect.top) * scaleY);
+
+    if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) return null;
+
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const pixel = ctx.getImageData(x, y, 1, 1).data;
+    const hex = `#${((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2]).toString(16).slice(1).toUpperCase()}`;
+    return {
+      hex,
+      r: pixel[0],
+      g: pixel[1],
+      b: pixel[2],
+      clientX: e.clientX,
+      clientY: e.clientY,
+      viewportRect: viewport.getBoundingClientRect()
+    };
+  };
+
+  viewport.addEventListener('mousemove', (e) => {
+    const s = samplePixel(e);
+    if (!s) {
+      if (loupe) loupe.classList.add('hidden');
+      return;
+    }
+
+    // Update live inspector readout
+    if (liveSwatch) liveSwatch.style.backgroundColor = s.hex;
+    if (liveHex) liveHex.textContent = s.hex;
+    if (liveRgb) liveRgb.textContent = `RGB(${s.r}, ${s.g}, ${s.b})`;
+
+    // Position magnifying loupe
+    if (loupe && loupePreview) {
+      loupe.classList.remove('hidden');
+      const relX = s.clientX - s.viewportRect.left;
+      const relY = s.clientY - s.viewportRect.top;
+      loupe.style.left = `${relX}px`;
+      loupe.style.top = `${relY}px`;
+      loupePreview.style.backgroundColor = s.hex;
+    }
+  });
+
+  viewport.addEventListener('mouseleave', () => {
+    if (loupe) loupe.classList.add('hidden');
+  });
+
+  viewport.addEventListener('click', (e) => {
+    const s = samplePixel(e);
+    if (!s) return;
+
+    lastSampledColor = s.hex;
+    if (btnAddSampled) {
+      btnAddSampled.classList.remove('hidden');
+      btnAddSampled.innerHTML = `<span>➕ Add ${s.hex} to Palette</span>`;
+    }
+    toast(`Sampled ${s.hex} from creative! Click button to add.`);
+  });
+
+  if (btnAddSampled) {
+    btnAddSampled.addEventListener('click', () => {
+      if (lastSampledColor) {
+        addToPalette(lastSampledColor, 'Eyedropper Picked');
+      }
+    });
+  }
+}
+
+// Load Image onto Studio Canvas
+function loadCreativeOnCanvas(imageSrc) {
+  const container = document.getElementById('color-studio-container');
+  const canvas = document.getElementById('studio-canvas');
+  if (!container || !canvas) return;
+
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    studioCanvasImg = img;
+    canvas.width = img.naturalWidth || 800;
+    canvas.height = img.naturalHeight || 600;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    container.classList.remove('hidden');
+  };
+  img.src = imageSrc;
+}
+
+// Render Extracted Palette Studio Components
+function renderExtractedColorStudio(data) {
+  lastExtractedColors = data.palette || [];
+
+  const countBadge = document.getElementById('extracted-count');
+  if (countBadge) countBadge.textContent = lastExtractedColors.length;
+
+  const harmonyBadge = document.getElementById('spectrum-harmony-badge');
+  if (harmonyBadge) harmonyBadge.textContent = data.harmony_type || 'Dynamic Harmony';
+
+  // Render Spectrum Bar
+  const spectrumBar = document.getElementById('spectrum-distribution-bar');
+  if (spectrumBar && data.color_distribution) {
+    spectrumBar.innerHTML = '';
+    data.color_distribution.forEach(item => {
+      const seg = document.createElement('div');
+      seg.className = 'spectrum-segment';
+      seg.style.width = `${Math.max(4, item.percentage)}%`;
+      seg.style.backgroundColor = item.hex;
+      seg.title = `${item.hex} (${item.percentage}%) - ${item.role}. Click to copy!`;
+      seg.onclick = () => copyToClipboard(item.hex, `Copied ${item.hex}!`);
+      spectrumBar.appendChild(seg);
+    });
+  }
+
+  // Render Extracted Swatches Grid
+  const grid = document.getElementById('extracted-swatches-grid');
+  if (grid) {
+    grid.innerHTML = '';
+    lastExtractedColors.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'extracted-card';
+
+      const inPalette = currentPalette.some(c => c.hex.toUpperCase() === item.hex_code.toUpperCase());
+
+      card.innerHTML = `
+        <div class="extracted-card-top">
+          <div class="extracted-swatch-box" style="background: ${item.hex_code};" title="Click to copy ${item.hex_code}" onclick="copyToClipboard('${item.hex_code}', 'Copied ${item.hex_code}!')"></div>
+          <div class="extracted-card-info">
+            <div class="extracted-hex-row">
+              <span class="extracted-hex">${item.hex_code}</span>
+              <button type="button" class="btn-copy-hex" title="Copy HEX" onclick="copyToClipboard('${item.hex_code}', 'Copied ${item.hex_code}!')">📋</button>
+            </div>
+            <span class="extracted-family">${item.color_family || 'Neutral'}</span>
+            <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim);">RGB(${item.rgb.join(', ')})</span>
+          </div>
+        </div>
+
+        <div class="extracted-card-meta">
+          <span class="extracted-pct-pill">${item.percentage}% of design</span>
+          <span class="extracted-role-tag">${item.role}</span>
+        </div>
+
+        <div style="font-size: 0.72rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+          <span>Contrast vs White: <strong>${item.contrast_white}:1</strong></span>
+          <span>${item.is_dark ? '🌙 Dark' : '☀️ Light'}</span>
+        </div>
+
+        <button type="button" class="btn-toggle-palette-color ${inPalette ? 'is-active' : ''}" data-hex="${item.hex_code}">
+          ${inPalette ? '✓ In Brand Palette' : '➕ Add to Palette'}
+        </button>
+      `;
+
+      // Toggle button event
+      const toggleBtn = card.querySelector('.btn-toggle-palette-color');
+      toggleBtn.onclick = () => {
+        const hex = item.hex_code;
+        const exists = currentPalette.some(c => c.hex.toUpperCase() === hex.toUpperCase());
+        if (exists) {
+          removeFromPalette(hex);
+        } else {
+          addToPalette(hex, item.role);
+        }
+      };
+
+      grid.appendChild(card);
+    });
+  }
 }
 
 // Start Editing an Existing Company Profile
@@ -289,14 +840,25 @@ function startEditingBrand(brandId) {
   setVal('ob-tone', (b.communication_tone || []).join(', '));
   setVal('ob-audience', b.target_audience || '');
   setVal('ob-style', (b.visual_style || []).join(', '));
-  setVal('ob-palette', (b.approved_palette || []).join(', '));
   setVal('ob-avoid', (b.disallowed_elements || []).join(', '));
   setVal('ob-tagline', b.mission_statement || '');
 
-  renderPaletteChips(b.approved_palette || []);
+  // Populate Palette Manager
+  currentPalette = (b.approved_palette || []).map(hex => ({
+    hex: hex.toUpperCase(),
+    role: 'Approved Brand Color'
+  }));
+  renderPaletteManager();
+
+  // Load reference image if exists
+  if (b.reference_assets && b.reference_assets.length > 0) {
+    const ref = b.reference_assets[0];
+    const imgUrl = ref.stored_path ? '/' + ref.stored_path.replace(/\\/g, '/') : null;
+    if (imgUrl) loadCreativeOnCanvas(imgUrl);
+  }
 
   const btn = document.getElementById('btn-create-draft');
-  if (btn) btn.innerHTML = '<span>💾 Update & Lock Company Vibes</span>';
+  if (btn) btn.innerHTML = '<span>💾 Update & Lock Company Vibes & Palette</span>';
 
   const btnCancel = document.getElementById('btn-cancel-edit');
   if (btnCancel) {
@@ -307,7 +869,7 @@ function startEditingBrand(brandId) {
   const feedback = document.getElementById('ob-scan-feedback');
   if (feedback) {
     feedback.className = 'ob-scan-feedback success';
-    feedback.innerHTML = `✏️ Editing <strong>${b.brand_name}</strong>. Modify any colors, avoidances, or vibe attributes below and click 'Update & Lock Company Vibes'.`;
+    feedback.innerHTML = `✏️ Editing <strong>${b.brand_name}</strong>. Manage your brand palette, colors, and guidelines below.`;
     feedback.classList.remove('hidden');
   }
 
@@ -323,20 +885,23 @@ function resetOnboardingForm() {
   const form = document.getElementById('onboarding-form');
   if (form) form.reset();
 
+  currentPalette = [];
+  renderPaletteManager();
+
+  const studioContainer = document.getElementById('color-studio-container');
+  if (studioContainer) studioContainer.classList.add('hidden');
+
   const btn = document.getElementById('btn-create-draft');
   if (btn) btn.innerHTML = '<span>💾 Save & Lock Company Vibes</span>';
 
   const btnCancel = document.getElementById('btn-cancel-edit');
   if (btnCancel) btnCancel.classList.add('hidden');
 
-  const chips = document.getElementById('ob-palette-chips');
-  if (chips) chips.innerHTML = '';
-
   const feedback = document.getElementById('ob-scan-feedback');
   if (feedback) feedback.classList.add('hidden');
 }
 
-// Multi-Filter Reference Image Scanner
+// Multi-Filter Reference Image Scanner & Colour Extractor
 function initReferenceScanning() {
   const fileInput = document.getElementById('ob-reference-files');
   const dropZone = document.getElementById('ob-drop-zone');
@@ -348,7 +913,7 @@ function initReferenceScanning() {
 
     if (feedback) {
       feedback.className = 'ob-scan-feedback scanning';
-      feedback.innerHTML = '<div class="inline-spinner"></div> Filtering reference image with Color Centroid, Layout Whitespace & Aesthetic Filters...';
+      feedback.innerHTML = '<div class="inline-spinner"></div> Extracting palette centroids, analyzing layout & extracting brand vibes...';
       feedback.classList.remove('hidden');
     }
 
@@ -364,44 +929,56 @@ function initReferenceScanning() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
 
-      // Auto-populate fields based on identified content
-      if (data.extracted_palette && data.extracted_palette.length > 0) {
-        document.getElementById('ob-palette').value = data.extracted_palette.join(', ');
-        renderPaletteChips(data.extracted_palette);
+      // 1. Load image onto Eyedropper Canvas
+      const previewUrl = data.image_url || URL.createObjectURL(file);
+      loadCreativeOnCanvas(previewUrl);
+
+      // 2. Render Extracted Colour Studio
+      renderExtractedColorStudio(data);
+
+      // 3. Auto-populate Brand Palette Manager
+      if (data.palette && data.palette.length > 0) {
+        currentPalette = data.palette.map(p => ({
+          hex: p.hex_code || p.hex,
+          role: p.role || 'Brand Color'
+        }));
+        renderPaletteManager();
+      } else if (data.extracted_palette && data.extracted_palette.length > 0) {
+        currentPalette = data.extracted_palette.map(hex => ({
+          hex: hex.toUpperCase(),
+          role: 'Extracted Color'
+        }));
+        renderPaletteManager();
       }
 
+      // Auto-populate questionnaire fields
       if (data.suggested_personality && !document.getElementById('ob-personality').value) {
         document.getElementById('ob-personality').value = data.suggested_personality;
       }
-
       if (data.suggested_mood && !document.getElementById('ob-mood').value) {
         document.getElementById('ob-mood').value = data.suggested_mood;
       }
-
       if (data.suggested_tone && !document.getElementById('ob-tone').value) {
         document.getElementById('ob-tone').value = data.suggested_tone;
       }
-
       if (data.suggested_visual_style && !document.getElementById('ob-style').value) {
         document.getElementById('ob-style').value = data.suggested_visual_style;
       }
-
       if (data.suggested_avoidances && !document.getElementById('ob-avoid').value) {
         document.getElementById('ob-avoid').value = data.suggested_avoidances;
       }
-
       if (data.extracted_motto && !document.getElementById('ob-tagline').value) {
         document.getElementById('ob-tagline').value = data.extracted_motto;
       }
 
       if (feedback) {
         feedback.className = 'ob-scan-feedback success';
-        feedback.innerHTML = `✨ <strong>Filters applied!</strong> Extracted ${(data.extracted_palette || []).length} brand colors, whitespace ratio (${data.whitespace_ratio}), and aesthetic descriptors. You can freely edit any field below:`;
+        feedback.innerHTML = `✨ <strong>Creative Analyzed!</strong> Color Studio and Eyedropper ready below. Extracted ${(data.extracted_palette || []).length} colors, whitespace (${data.whitespace_ratio}) and aesthetic mood.`;
       }
     } catch (err) {
       if (feedback) {
         feedback.className = 'ob-scan-feedback error';
-        feedback.textContent = `Scan notice: ${err.message}. You can still enter your brand values manually below.`;
+        feedback.textContent = `Scan notice: ${err.message}. You can still pick custom colors below.`;
       }
     }
   };
@@ -448,6 +1025,14 @@ function initOnboarding() {
     btn.innerHTML = '<span>Saving & Locking Company Vibes...</span>';
 
     const editingId = document.getElementById('ob-editing-brand-id')?.value;
+    const paletteHexArray = currentPalette.map(c => c.hex);
+
+    if (paletteHexArray.length === 0) {
+      alert('Please add at least one approved brand color in the Palette Manager above.');
+      btn.disabled = false;
+      btn.innerHTML = editingId ? '<span>💾 Update & Lock Company Vibes</span>' : '<span>💾 Save & Lock Company Vibes</span>';
+      return;
+    }
 
     try {
       if (editingId) {
@@ -460,7 +1045,7 @@ function initOnboarding() {
           communication_tone: document.getElementById('ob-tone').value.split(',').map(s => s.trim()).filter(Boolean),
           visual_style: document.getElementById('ob-style').value.split(',').map(s => s.trim()).filter(Boolean),
           target_audience: document.getElementById('ob-audience').value.trim(),
-          approved_palette: document.getElementById('ob-palette').value.split(',').map(s => s.trim()).filter(Boolean),
+          approved_palette: paletteHexArray,
           disallowed_elements: document.getElementById('ob-avoid').value.split(',').map(s => s.trim()).filter(Boolean),
           mission_statement: document.getElementById('ob-tagline').value.trim(),
           confirmed_by: managerEmail
@@ -476,7 +1061,7 @@ function initOnboarding() {
         const confirmed = await confRes.json();
 
         await loadBrands();
-        alert(`🎉 Company vibes for '${confirmed.brand_name}' updated and locked!`);
+        alert(`🎉 Company vibes and palette for '${confirmed.brand_name}' updated and locked!`);
         resetOnboardingForm();
 
         // Switch to Developer tab
@@ -499,7 +1084,7 @@ function initOnboarding() {
       formData.append('communication_tone', document.getElementById('ob-tone').value);
       formData.append('target_audience', document.getElementById('ob-audience').value);
       formData.append('visual_style', document.getElementById('ob-style').value);
-      formData.append('palette', document.getElementById('ob-palette').value);
+      formData.append('palette', paletteHexArray.join(', '));
       formData.append('disallowed_elements', document.getElementById('ob-avoid').value);
       formData.append('tagline_or_mission', document.getElementById('ob-tagline').value);
 
@@ -527,7 +1112,7 @@ function initOnboarding() {
         communication_tone: draft.communication_tone,
         visual_style: draft.visual_style,
         target_audience: draft.target_audience,
-        approved_palette: draft.approved_palette,
+        approved_palette: paletteHexArray,
         disallowed_elements: draft.disallowed_elements,
         mission_statement: document.getElementById('ob-tagline').value.trim(),
         confirmed_by: managerEmail
@@ -543,7 +1128,7 @@ function initOnboarding() {
       const confirmed = await confRes.json();
 
       await loadBrands();
-      alert(`🎉 Company vibes for '${confirmed.brand_name}' saved and locked! Your developers can now check their work.`);
+      alert(`🎉 Company vibes and palette for '${confirmed.brand_name}' saved and locked! Your developers can now check their work.`);
       resetOnboardingForm();
 
       // Switch to Developer tab
@@ -759,7 +1344,7 @@ function renderInspectionReport(report) {
   setBioMetric('bio-complexity-score', 'bio-complexity-bar', bio.complexity_dna_score);
   setBioMetric('bio-copy-score', 'bio-copy-bar', bio.copy_dna_score);
 
-  // Palettes
+  // Palettes Comparison
   const detectedRow = document.getElementById('detected-palette-row');
   if (detectedRow) {
     detectedRow.innerHTML = '';
@@ -770,7 +1355,7 @@ function renderInspectionReport(report) {
     }
     detectedColors.forEach(hex => {
       detectedRow.innerHTML += `
-        <span class="color-swatch-chip">
+        <span class="color-swatch-chip" title="Copy ${hex}" onclick="copyToClipboard('${hex}', 'Copied ${hex}!')">
           <span class="swatch-color-box" style="background: ${hex};"></span>
           ${hex}
         </span>
@@ -786,7 +1371,7 @@ function renderInspectionReport(report) {
     if (approvedColors.length > 0) {
       approvedColors.forEach(hex => {
         approvedRow.innerHTML += `
-          <span class="color-swatch-chip">
+          <span class="color-swatch-chip" title="Copy ${hex}" onclick="copyToClipboard('${hex}', 'Copied ${hex}!')">
             <span class="swatch-color-box" style="background: ${hex};"></span>
             ${hex}
           </span>
