@@ -195,6 +195,15 @@ class BrandService:
         if request.key_values:
             existing.key_values = request.key_values
 
+        # Synthesize Biometric Brand DNA Targets
+        is_minimal = any("minimal" in s.lower() for s in (existing.visual_style + existing.personality))
+        existing.brand_dna = {
+            "target_whitespace_ratio": 0.65 if is_minimal else 0.40,
+            "target_complexity_index": 0.20 if is_minimal else 0.45,
+            "target_luminance_mean": 0.85 if is_minimal else 0.40,
+            "target_palette_hex": existing.approved_palette
+        }
+
         existing.status = ProfileStatus.CONFIRMED
         existing.is_human_confirmed = True
         existing.confirmed_by = request.confirmed_by

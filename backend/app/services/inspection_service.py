@@ -25,6 +25,10 @@ from backend.app.models.inspection import (
 )
 from backend.app.preprocessing.color_extractor import calculate_delta_e, find_closest_brand_color
 from backend.app.preprocessing.document_extractor import check_forbidden_terms
+from backend.app.preprocessing.fingerprint_engine import (
+    BrandDNAFingerprint,
+    compute_biometric_vector_match,
+)
 from backend.app.preprocessing.pipeline import PreprocessedContent, preprocessing_pipeline
 from backend.app.services.brand_service import brand_service
 
@@ -89,7 +93,11 @@ class InspectionService:
             raise ValueError(f"Brand with ID '{brand_id}' not found. Company must complete onboarding first.")
 
         # 2. Run Preprocessing & Feature Extraction
-        preprocessed = preprocessing_pipeline.preprocess(file_path, declared_mime_type)
+        preprocessed = preprocessing_pipeline.preprocess(
+            file_path=file_path,
+            declared_mime_type=declared_mime_type,
+            prohibited_terms=brand.disallowed_elements
+        )
         inspection_id = f"insp-{uuid.uuid4().hex[:8]}"
 
         findings: List[InspectionFinding] = []
@@ -107,9 +115,9 @@ class InspectionService:
                 source=FindingSource.DETERMINISTIC_CHECK,
                 severity=FindingSeverity.CRITICAL,
                 detected_value=file_path.suffix,
-                expected_value="PNG, JPEG, WEBP, PDF, TXT, MD, MP3, WAV",
+                expected_value="PNG, JPEG, WEBP, PDF, TXT, MD",
                 explanation=f"File validation failed: {', '.join(preprocessed.errors)}",
-                suggested_correction="Convert asset into a supported format before submission."
+                suggested_correction="Convert asset into a supported visual creative or document format before submission."
             )
             return self.save_report(InspectionReport(
                 inspection_id=inspection_id,
@@ -125,7 +133,29 @@ class InspectionService:
                 human_review_required=True
             ))
 
-        # 3. Deterministic Evaluations
+        # 3. Biometric Brand Vector Filtering & Mathematical Distance Matching
+        # Resolves target brand DNA coordinates
+        brand_dna_data = brand.brand_dna or {}
+        is_minimalist = any("minimal" in s.lower() for s in (brand.visual_style + brand.personality))
+        target_ws = brand_dna_data.get("target_whitespace_ratio", 0.65 if is_minimalist else 0.40)
+        target_cx = brand_dna_data.get("target_complexity_index", 0.20 if is_minimalist else 0.45)
+        target_lum = brand_dna_data.get("target_luminance_mean", 0.85 if is_minimalist else 0.40)
+
+        brand_dna = BrandDNAFingerprint(
+            brand_id=brand.brand_id,
+            target_palette_hex=brand.approved_palette,
+            target_whitespace_ratio=target_ws,
+            target_complexity_index=target_cx,
+            target_luminance_mean=target_lum,
+            prohibited_terms=brand.disallowed_elements
+        )
+
+        bio_result = compute_biometric_vector_match(
+            brand_dna=brand_dna,
+            visual_fp=preprocessed.visual_fingerprint,
+            text_fp=preprocessed.text_fingerprint
+        )
+
         det_score = 100.0
 
         # A. Color Palette Adherence (CIELAB Delta E)
@@ -188,13 +218,13 @@ class InspectionService:
                     source=FindingSource.DETERMINISTIC_CHECK,
                     severity=FindingSeverity.CRITICAL,
                     detected_value=f"'{fm.forbidden_term}' ({fm.occurrences} occurrences)",
-                    expected_value=f"Term disallowed by brand guidelines",
+                    expected_value="Term disallowed by brand guidelines",
                     explanation=f"Brand guidelines strictly prohibit the use of '{fm.forbidden_term}'.",
                     suggested_correction=f"Remove '{fm.forbidden_term}' from creative copy.",
                     evidence_snippet=snippet
                 ))
 
-        # C. Technical Specifications (Sharpness & Aspect Ratio)
+        # C. Technical Specifications (Sharpness & Quality)
         if preprocessed.image_metadata:
             meta = preprocessed.image_metadata
             if meta.is_blurry:
@@ -213,25 +243,24 @@ class InspectionService:
             else:
                 matching_chars.append(f"Image sharpness ({meta.sharpness_score:.1f}) meets quality threshold.")
 
-        # D. Audio Specifications
-        if preprocessed.audio_data:
-            audio = preprocessed.audio_data
-            if not audio.is_valid_audio:
-                det_score -= 30.0
-                findings.append(InspectionFinding(
-                    id=f"f-{uuid.uuid4().hex[:6]}",
-                    title="Audio Decoding Error",
-                    category=FindingCategory.TECHNICAL,
-                    source=FindingSource.DETERMINISTIC_CHECK,
-                    severity=FindingSeverity.CRITICAL,
-                    detected_value="Corrupt audio stream",
-                    expected_value="Valid MP3 / WAV audio format",
-                    explanation=audio.error_message or "Could not parse audio frames."
-                ))
-            else:
-                matching_chars.append(f"Audio duration {audio.duration_seconds}s matches expected jingle / ad profile.")
+        # D. Biometric Brand Vector Finding
+        bio_severity = FindingSeverity.PASS if bio_result.composite_biometric_score >= 70.0 else (
+            FindingSeverity.WARNING if bio_result.composite_biometric_score >= 45.0 else FindingSeverity.CRITICAL
+        )
+        findings.append(InspectionFinding(
+            id=f"f-{uuid.uuid4().hex[:6]}",
+            title="Biometric Brand Vector DNA Match",
+            category=FindingCategory.BIOMETRIC_VECTOR,
+            source=FindingSource.DETERMINISTIC_CHECK,
+            severity=bio_severity,
+            detected_value=f"Biometric Match: {bio_result.composite_biometric_score:.1f}% (Color: {bio_result.color_dna_score:.0f}%, Whitespace: {bio_result.whitespace_dna_score:.0f}%, Clutter: {bio_result.complexity_dna_score:.0f}%)",
+            expected_value="Brand DNA Match ≥ 70.0%",
+            explanation=f"Mathematical feature vector compared against brand DNA template. Divergences: {', '.join(bio_result.divergent_factors) if bio_result.divergent_factors else 'None detected.'}",
+            suggested_correction="Harmonize layout whitespace and palette distribution to match company brand DNA." if bio_result.composite_biometric_score < 70.0 else None
+        ))
 
-        det_score = max(0.0, min(100.0, round(det_score, 1)))
+        # Blend deterministic score with biometric vector confidence
+        det_score = max(0.0, min(100.0, round((det_score * 0.5) + (bio_result.composite_biometric_score * 0.5), 1)))
 
         # 4. AI Semantic & Multimodal Inspection
         brand_target_profile = {
@@ -345,6 +374,14 @@ class InspectionService:
             overall_score=overall_score,
             deterministic_score=det_score,
             ai_score=ai_score,
+            biometric_match={
+                "composite_score": bio_result.composite_biometric_score,
+                "color_dna_score": bio_result.color_dna_score,
+                "whitespace_dna_score": bio_result.whitespace_dna_score,
+                "complexity_dna_score": bio_result.complexity_dna_score,
+                "copy_dna_score": bio_result.copy_dna_score,
+                "divergent_factors": bio_result.divergent_factors
+            },
             findings=findings,
             matching_characteristics=matching_chars,
             mismatches=mismatches,
@@ -358,7 +395,8 @@ class InspectionService:
                 "dominant_color": preprocessed.dominant_color_hex,
                 "detected_palette": preprocessed.extracted_colors_hex,
                 "aspect_ratio": preprocessed.image_metadata.aspect_ratio if preprocessed.image_metadata else None,
-                "duration_seconds": preprocessed.audio_data.duration_seconds if preprocessed.audio_data else None
+                "whitespace_ratio": preprocessed.visual_fingerprint.whitespace_ratio if preprocessed.visual_fingerprint else None,
+                "complexity_index": preprocessed.visual_fingerprint.complexity_index if preprocessed.visual_fingerprint else None
             }
         )
 

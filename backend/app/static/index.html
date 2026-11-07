@@ -113,11 +113,11 @@
               <!-- Mode 2: Creative Asset File Upload -->
               <div id="mode-file-container" class="hidden">
                 <div id="drop-zone" class="drop-zone">
-                  <input type="file" id="inspect-file" class="file-input" accept=".png,.jpg,.jpeg,.webp,.pdf,.txt,.md,.mp3,.wav">
+                  <input type="file" id="inspect-file" class="file-input" accept=".png,.jpg,.jpeg,.webp,.pdf,.txt,.md">
                   <div class="drop-zone-content">
                     <span class="upload-icon">📁</span>
-                    <p class="drop-text">Drag & drop asset here or <span class="highlight">browse</span></p>
-                    <span class="drop-subtext">Posters (PNG/JPG), Copy (PDF/TXT), Jingles (MP3/WAV) up to 30MB</span>
+                    <p class="drop-text">Drag & drop poster or graphic here or <span class="highlight">browse</span></p>
+                    <span class="drop-subtext">Posters & Banners (PNG/JPG/WEBP), Copy (PDF/TXT) up to 30MB</span>
                   </div>
                 </div>
                 <div id="file-preview-info" class="file-preview-info hidden">
@@ -187,6 +187,49 @@
                 <span class="score-title">AI Subjective Alignment</span>
                 <span id="score-ai" class="score-number">--</span>
                 <span class="score-sub">Mood, Tone, Vibe</span>
+              </div>
+            </div>
+
+            <!-- Biometric Brand DNA Vector Match Card -->
+            <div class="section-block biometric-dna-card">
+              <div class="biometric-dna-header">
+                <h3>🧬 Biometric Brand DNA Vector Match</h3>
+                <span id="biometric-composite-badge" class="biometric-badge">--% Match</span>
+              </div>
+              <p class="biometric-desc">Mathematical feature vector similarity against the company's approved reference templates (computed locally in &lt;10ms without heavy cloud AI overhead):</p>
+              
+              <div class="biometric-metrics-grid">
+                <div class="biometric-metric-box">
+                  <div class="metric-top">
+                    <span class="metric-name">🎨 Color DNA</span>
+                    <span id="bio-color-score" class="metric-val">--%</span>
+                  </div>
+                  <div class="progress-bar-bg"><div id="bio-color-bar" class="progress-bar-fill" style="width: 0%"></div></div>
+                </div>
+
+                <div class="biometric-metric-box">
+                  <div class="metric-top">
+                    <span class="metric-name">📐 Whitespace & Layout</span>
+                    <span id="bio-whitespace-score" class="metric-val">--%</span>
+                  </div>
+                  <div class="progress-bar-bg"><div id="bio-whitespace-bar" class="progress-bar-fill" style="width: 0%"></div></div>
+                </div>
+
+                <div class="biometric-metric-box">
+                  <div class="metric-top">
+                    <span class="metric-name">📊 Visual Clutter & Complexity</span>
+                    <span id="bio-complexity-score" class="metric-val">--%</span>
+                  </div>
+                  <div class="progress-bar-bg"><div id="bio-complexity-bar" class="progress-bar-fill" style="width: 0%"></div></div>
+                </div>
+
+                <div class="biometric-metric-box">
+                  <div class="metric-top">
+                    <span class="metric-name">✍️ Copy & Vocabulary DNA</span>
+                    <span id="bio-copy-score" class="metric-val">--%</span>
+                  </div>
+                  <div class="progress-bar-bg"><div id="bio-copy-bar" class="progress-bar-fill" style="width: 0%"></div></div>
+                </div>
               </div>
             </div>
 

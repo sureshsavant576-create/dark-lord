@@ -97,10 +97,22 @@ def xyz_to_lab(x: float, y: float, z: float) -> Tuple[float, float, float]:
     return round(l_star, 2), round(a_star, 2), round(b_star, 2)
 
 
-def rgb_to_lab(r: int, g: int, b: int) -> Tuple[float, float, float]:
-    """Direct conversion from sRGB to CIELAB coordinates."""
-    x, y, z = rgb_to_xyz(r, g, b)
+def rgb_to_lab(r: Any, g: Optional[int] = None, b: Optional[int] = None) -> Tuple[float, float, float]:
+    """Direct conversion from sRGB to CIELAB coordinates. Accepts (r, g, b) or ((r, g, b))."""
+    if isinstance(r, (tuple, list)) and len(r) >= 3:
+        r_val, g_val, b_val = int(r[0]), int(r[1]), int(r[2])
+    else:
+        r_val, g_val, b_val = int(r), int(g or 0), int(b or 0)
+    x, y, z = rgb_to_xyz(r_val, g_val, b_val)
     return xyz_to_lab(x, y, z)
+
+
+def delta_e_from_lab(lab1: Tuple[float, float, float], lab2: Tuple[float, float, float]) -> float:
+    """Compute CIE76 Euclidean distance between two CIELAB coordinates."""
+    delta_l = lab1[0] - lab2[0]
+    delta_a = lab1[1] - lab2[1]
+    delta_b = lab1[2] - lab2[2]
+    return round(math.sqrt(delta_l**2 + delta_a**2 + delta_b**2), 2)
 
 
 def calculate_delta_e(hex1: str, hex2: str) -> float:
@@ -113,15 +125,9 @@ def calculate_delta_e(hex1: str, hex2: str) -> float:
     """
     rgb1 = hex_to_rgb(hex1)
     rgb2 = hex_to_rgb(hex2)
-    l1, a1, b1 = rgb_to_lab(*rgb1)
-    l2, a2, b2 = rgb_to_lab(*rgb2)
-
-    delta_l = l1 - l2
-    delta_a = a1 - a2
-    delta_b = b1 - b2
-
-    distance = math.sqrt(delta_l**2 + delta_a**2 + delta_b**2)
-    return round(distance, 2)
+    lab1 = rgb_to_lab(*rgb1)
+    lab2 = rgb_to_lab(*rgb2)
+    return delta_e_from_lab(lab1, lab2)
 
 
 def find_closest_brand_color(detected_hex: str, brand_palette: List[str]) -> Tuple[str, float]:

@@ -1,19 +1,24 @@
-"""BrandShield AI - Unified Preprocessing and Filtering Pipeline.
+"""BrandShield AI - Unified Preprocessing and Biometric Feature Filtering Pipeline.
 
 Combines validation, format normalization, duplicate detection, image analysis,
-color extraction, document parsing, and audio inspection into a single pipeline.
-Preserves access to original files while preparing data for deterministic & AI checks.
+color extraction, document parsing, and biometric feature vectorization into a single pipeline.
+Extracts mathematical feature vectors for low-tier AI & server performance optimization.
 """
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
-from backend.app.preprocessing.audio_processor import AudioMetadataResult, process_audio_metadata
 from backend.app.preprocessing.color_extractor import ColorPaletteResult, extract_color_palette
 from backend.app.preprocessing.document_extractor import (
     DocumentExtractionResult,
     extract_text_from_pdf,
     extract_text_from_plain_file,
+)
+from backend.app.preprocessing.fingerprint_engine import (
+    TextVectorFingerprint,
+    VisualVectorFingerprint,
+    extract_text_fingerprint,
+    extract_visual_fingerprint,
 )
 from backend.app.preprocessing.image_processor import ImageMetadataResult, process_image_metadata
 from backend.app.preprocessing.validator import ValidationResult, validate_file
@@ -26,11 +31,14 @@ class PreprocessedContent(BaseModel):
     is_supported: bool
     media_category: str
 
-    # Extracted Modality Results (populated based on media category)
+    # Extracted Modality Results
     image_metadata: Optional[ImageMetadataResult] = None
     color_palette: Optional[ColorPaletteResult] = None
     document_data: Optional[DocumentExtractionResult] = None
-    audio_data: Optional[AudioMetadataResult] = None
+
+    # Biometric Mathematical Feature Fingerprints (Zero LLM Load)
+    visual_fingerprint: Optional[VisualVectorFingerprint] = None
+    text_fingerprint: Optional[TextVectorFingerprint] = None
 
     # Consolidated Fields for Downstream AI & Deterministic Inspections
     extracted_text_summary: str = ""
@@ -40,10 +48,15 @@ class PreprocessedContent(BaseModel):
 
 
 class PreprocessingPipeline:
-    """Unified pipeline for preparing submitted creative content for brand governance inspection."""
+    """Unified pipeline for extracting technical features and biometric brand vectors from creative assets."""
 
-    def preprocess(self, file_path: Path, declared_mime_type: Optional[str] = None) -> PreprocessedContent:
-        """Run complete preprocessing on the target file."""
+    def preprocess(
+        self,
+        file_path: Path,
+        declared_mime_type: Optional[str] = None,
+        prohibited_terms: Optional[List[str]] = None
+    ) -> PreprocessedContent:
+        """Run complete preprocessing and feature vectorization on the target creative file."""
         val = validate_file(file_path, declared_mime_type)
 
         if not val.is_valid:
@@ -60,10 +73,12 @@ class PreprocessingPipeline:
         img_meta = None
         color_result = None
         doc_result = None
-        audio_result = None
+        vis_fp = None
+        txt_fp = None
         text_summary = ""
         colors_hex: List[str] = []
         dominant_hex = None
+        avoid_terms = prohibited_terms or []
 
         if category == "image":
             img_meta = process_image_metadata(file_path)
@@ -71,6 +86,8 @@ class PreprocessingPipeline:
             colors_hex = color_result.hex_list
             dominant_hex = color_result.dominant_color.hex_code
             text_summary = f"Image {img_meta.width}x{img_meta.height} ({img_meta.aspect_ratio}), Dominant Color: {dominant_hex}"
+            # Extract biometric visual vector (whitespace, edge clutter, luminance, color centroids)
+            vis_fp = extract_visual_fingerprint(file_path)
 
         elif category == "document":
             if file_path.suffix.lower() == ".pdf":
@@ -78,10 +95,8 @@ class PreprocessingPipeline:
             else:
                 doc_result = extract_text_from_plain_file(file_path)
             text_summary = doc_result.full_text
-
-        elif category == "audio":
-            audio_result = process_audio_metadata(file_path)
-            text_summary = f"Audio Track: Duration {audio_result.duration_seconds}s, Sample Rate: {audio_result.sample_rate_hz}Hz, Codec: {audio_result.codec}"
+            # Extract biometric lexical vector
+            txt_fp = extract_text_fingerprint(text_summary, avoid_terms)
 
         return PreprocessedContent(
             file_path=file_path,
@@ -92,7 +107,8 @@ class PreprocessingPipeline:
             image_metadata=img_meta,
             color_palette=color_result,
             document_data=doc_result,
-            audio_data=audio_result,
+            visual_fingerprint=vis_fp,
+            text_fingerprint=txt_fp,
             extracted_text_summary=text_summary,
             extracted_colors_hex=colors_hex,
             dominant_color_hex=dominant_hex,

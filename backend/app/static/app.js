@@ -519,6 +519,27 @@ function renderInspectionReport(report) {
   document.getElementById('score-deterministic').textContent = `${report.deterministic_score}%`;
   document.getElementById('score-ai').textContent = report.ai_score !== null ? `${report.ai_score}%` : 'Unconfigured';
 
+  // Biometric Brand DNA Match Breakdown
+  const bio = report.biometric_match || {};
+  const compScore = bio.composite_score !== undefined ? bio.composite_score : report.deterministic_score;
+  const compBadge = document.getElementById('biometric-composite-badge');
+  if (compBadge) {
+    compBadge.textContent = `${compScore}% Biometric Match`;
+    compBadge.style.color = compScore >= 70 ? '#10b981' : (compScore >= 45 ? '#f59e0b' : '#ef4444');
+  }
+
+  const setBioMetric = (valId, barId, score) => {
+    const valElem = document.getElementById(valId);
+    const barElem = document.getElementById(barId);
+    if (valElem) valElem.textContent = score !== undefined ? `${score}%` : 'N/A';
+    if (barElem) barElem.style.width = score !== undefined ? `${Math.max(5, Math.min(100, score))}%` : '0%';
+  };
+
+  setBioMetric('bio-color-score', 'bio-color-bar', bio.color_dna_score);
+  setBioMetric('bio-whitespace-score', 'bio-whitespace-bar', bio.whitespace_dna_score);
+  setBioMetric('bio-complexity-score', 'bio-complexity-bar', bio.complexity_dna_score);
+  setBioMetric('bio-copy-score', 'bio-copy-bar', bio.copy_dna_score);
+
   // Palettes
   const detectedRow = document.getElementById('detected-palette-row');
   detectedRow.innerHTML = '';

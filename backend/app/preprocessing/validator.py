@@ -2,15 +2,16 @@
 
 Validates file extensions, MIME signatures, file sizes, and generates SHA-256 hashes
 for duplicate detection without discarding original assets.
+Focused strictly on Visual Marketing Assets (Posters, Banners, Graphics) and Copy.
 """
 import hashlib
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set
 from pydantic import BaseModel, Field
 
-# Allowed MIME types and extensions
+# Allowed MIME types and extensions for visual creatives and marketing copy
 SUPPORTED_IMAGE_TYPES: Dict[str, Set[str]] = {
     "image/png": {".png"},
     "image/jpeg": {".jpg", ".jpeg"},
@@ -24,21 +25,13 @@ SUPPORTED_DOCUMENT_TYPES: Dict[str, Set[str]] = {
     "text/markdown": {".md"}
 }
 
-SUPPORTED_AUDIO_TYPES: Dict[str, Set[str]] = {
-    "audio/mpeg": {".mp3"},
-    "audio/wav": {".wav", ".wave"},
-    "audio/x-wav": {".wav"},
-    "audio/ogg": {".ogg"},
-    "audio/mp4": {".m4a"}
-}
-
 MAX_FILE_SIZE_BYTES = 30 * 1024 * 1024  # 30 MB
 
 
 class ValidationResult(BaseModel):
     is_valid: bool
     mime_type: str
-    media_category: str  # "image", "document", "audio", "unsupported"
+    media_category: str  # "image", "document", "unsupported"
     file_size_bytes: int
     sha256_hash: str
     normalized_filename: str
@@ -90,14 +83,14 @@ def validate_file(file_path: Path, declared_mime_type: Optional[str] = None) -> 
     media_category = "unsupported"
     canonical_mime = declared_mime_type or "application/octet-stream"
 
-    # Check images
+    # Check images (posters, banners, graphics)
     for mime, exts in SUPPORTED_IMAGE_TYPES.items():
         if suffix in exts:
             media_category = "image"
             canonical_mime = mime
             break
 
-    # Check documents
+    # Check documents (marketing copy, slogans, guidelines)
     if media_category == "unsupported":
         for mime, exts in SUPPORTED_DOCUMENT_TYPES.items():
             if suffix in exts:
@@ -105,16 +98,8 @@ def validate_file(file_path: Path, declared_mime_type: Optional[str] = None) -> 
                 canonical_mime = mime
                 break
 
-    # Check audio
     if media_category == "unsupported":
-        for mime, exts in SUPPORTED_AUDIO_TYPES.items():
-            if suffix in exts:
-                media_category = "audio"
-                canonical_mime = mime
-                break
-
-    if media_category == "unsupported":
-        errors.append(f"Unsupported file format '{suffix}'. Supported: PNG, JPEG, WEBP, PDF, TXT, MD, MP3, WAV, OGG.")
+        errors.append(f"Unsupported creative format '{suffix}'. Supported formats: PNG, JPG, JPEG, WEBP, PDF, TXT, MD.")
 
     return ValidationResult(
         is_valid=len(errors) == 0,

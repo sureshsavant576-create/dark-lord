@@ -53,6 +53,7 @@ class BrandProfile(BaseModel):
     target_audience: str = ""
     approved_palette: List[str] = Field(default_factory=list, description="Validated uppercase HEX colors")
     disallowed_elements: List[str] = Field(default_factory=list, description="Strict avoidances & forbidden terms")
+    brand_dna: Optional[Dict[str, Any]] = Field(default=None, description="Biometric brand DNA vector targets (whitespace, complexity, colors)")
     key_values: List[str] = Field(default_factory=list)
     mission_statement: str = ""
 

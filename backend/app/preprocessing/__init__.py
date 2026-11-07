@@ -14,6 +14,15 @@ from backend.app.preprocessing.document_extractor import (
     extract_text_from_pdf,
     extract_text_from_plain_file,
 )
+from backend.app.preprocessing.fingerprint_engine import (
+    BiometricVectorMatchResult,
+    BrandDNAFingerprint,
+    TextVectorFingerprint,
+    VisualVectorFingerprint,
+    compute_biometric_vector_match,
+    extract_text_fingerprint,
+    extract_visual_fingerprint,
+)
 from backend.app.preprocessing.image_processor import ImageMetadataResult, process_image_metadata
 from backend.app.preprocessing.pipeline import PreprocessedContent, PreprocessingPipeline, preprocessing_pipeline
 from backend.app.preprocessing.validator import ValidationResult, calculate_sha256, sanitize_filename, validate_file

@@ -24,6 +24,7 @@ class FindingCategory(str, Enum):
     MOOD = "MOOD"
     PERSONALITY = "PERSONALITY"
     VISUAL_STYLE = "VISUAL_STYLE"
+    BIOMETRIC_VECTOR = "BIOMETRIC_VECTOR"
     TECHNICAL = "TECHNICAL"
 
 
@@ -68,6 +69,7 @@ class InspectionReport(BaseModel):
     ai_score: Optional[float] = Field(default=None, description="Score assessed by multimodal AI model or None")
     
     # Detailed Findings & Evidence
+    biometric_match: Optional[Dict[str, Any]] = Field(default=None, description="Biometric mathematical vector match scores")
     findings: List[InspectionFinding] = Field(default_factory=list)
     matching_characteristics: List[str] = Field(default_factory=list)
     mismatches: List[str] = Field(default_factory=list)
