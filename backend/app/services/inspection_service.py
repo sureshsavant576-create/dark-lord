@@ -304,7 +304,7 @@ class InspectionService:
                 severity=FindingSeverity.PASS if any(m.lower() in ai_eval.mood_detected.lower() for m in brand.mood) else FindingSeverity.WARNING,
                 detected_value=ai_eval.mood_detected,
                 expected_value=", ".join(brand.mood),
-                explanation=f"AI model evaluated the emotional mood of the creative as '{ai_eval.mood_detected}'.",
+                explanation=f"Evaluated emotional mood of the creative as '{ai_eval.mood_detected}'.",
                 confidence_score=ai_eval.confidence_score
             ))
 
@@ -321,18 +321,18 @@ class InspectionService:
                 confidence_score=ai_eval.confidence_score
             ))
 
-            # Record AI-detected mismatches
+            # Record aesthetic mismatches
             for m in ai_eval.mismatches_identified:
-                mismatches.append(f"[AI Observation] {m}")
+                mismatches.append(f"[Observation] {m}")
                 findings.append(InspectionFinding(
                     id=f"f-{uuid.uuid4().hex[:6]}",
-                    title="AI Observed Brand Discrepancy",
+                    title="Observed Brand Departure",
                     category=FindingCategory.VISUAL_STYLE,
                     source=FindingSource.AI_MODEL_INFERENCE,
                     severity=FindingSeverity.WARNING,
                     detected_value=m,
                     expected_value=f"Align with {', '.join(brand.visual_style)}",
-                    explanation=f"The AI model identified an aesthetic or messaging departure: {m}",
+                    explanation=f"Identified an aesthetic or messaging departure: {m}",
                     suggested_correction="Adjust visual layout or messaging to match approved brand style.",
                     confidence_score=ai_eval.confidence_score
                 ))
@@ -343,7 +343,7 @@ class InspectionService:
             overall_score = det_score
             findings.append(InspectionFinding(
                 id=f"f-{uuid.uuid4().hex[:6]}",
-                title="AI Reasoning Status: Unconfigured",
+                title="Semantic Reasoning: Unconfigured",
                 category=FindingCategory.TECHNICAL,
                 source=FindingSource.DETERMINISTIC_CHECK,
                 severity=FindingSeverity.INFO,

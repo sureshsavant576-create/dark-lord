@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BrandShield AI – Intelligent Brand Inspection & Company Vibe Verification</title>
-  <link rel="stylesheet" href="/static/style.css?v=2.1">
+  <link rel="stylesheet" href="/static/style.css?v=2.2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -18,11 +18,6 @@
         <div>
           <h1>BrandShield <span class="ai-badge">AI</span></h1>
           <p class="tagline">Verify developer marketing creative & posters against company vibes and brand standards.</p>
-        </div>
-      </div>
-      <div class="header-actions">
-        <div id="ai-status-pill" class="status-pill status-ready">
-          <span class="status-dot"></span> 🟢 AI Engine: Gemini 3.5 Lite Active
         </div>
       </div>
     </div>
@@ -106,13 +101,6 @@
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="ai-provider-select">AI Engine:</label>
-              <select id="ai-provider-select">
-                <option value="gemini">Google Gemini (gemini-3.5-flash-lite) – Fast Vibe Engine</option>
-              </select>
-            </div>
-
             <button type="submit" id="btn-run-inspect" class="btn btn-primary btn-block">
               <span>🚀 Check Vibe Match</span>
             </button>
@@ -120,7 +108,7 @@
             <!-- Inline Submission Alert Banner -->
             <div id="inspect-inline-status" class="inspect-inline-status hidden">
               <div id="inline-status-spinner" class="inline-spinner"></div>
-              <span id="inline-status-text">Scanning feature vectors & querying Google Gemini...</span>
+              <span id="inline-status-text">Scanning Brand DNA vectors & analyzing brand vibes...</span>
             </div>
           </form>
         </div>
@@ -130,7 +118,7 @@
           <div class="card-header">
             <div>
               <h2>Vibe Match & Verification Report</h2>
-              <p>Real-time Brand DNA vector match + Google Gemini multimodal analysis.</p>
+              <p>Real-time Brand DNA vector match & multimodal aesthetic reasoning.</p>
             </div>
             <span id="report-id-badge" class="id-badge">Awaiting submission</span>
           </div>
@@ -174,25 +162,25 @@
                 <span class="score-sub">Palette & Forbidden Words</span>
               </div>
               <div class="score-card">
-                <span class="score-title">AI Vibe Alignment</span>
+                <span class="score-title">Aesthetic Vibe Alignment</span>
                 <span id="score-ai" class="score-number">--</span>
                 <span class="score-sub">Mood, Tone & Aesthetic</span>
               </div>
             </div>
 
-            <!-- ⭐ PROMINENT GOOGLE GEMINI AI HERO CARD ⭐ -->
+            <!-- Vibe Intelligence Analysis Hero Card -->
             <div id="gemini-ai-hero-card" class="gemini-ai-hero-card">
               <div class="ai-hero-header">
                 <div class="ai-hero-title">
-                  <span class="ai-chip-gemini">✨ GOOGLE GEMINI AI</span>
-                  <span class="ai-hero-subtitle">Multimodal Vibe & Tone Reasoning (gemini-3.5-flash-lite)</span>
+                  <span class="ai-chip-gemini">✨ Vibe Intelligence</span>
+                  <span class="ai-hero-subtitle">Multimodal Aesthetic & Tone Reasoning</span>
                 </div>
                 <span id="ai-hero-score-badge" class="ai-score-pill">100% Vibe Alignment</span>
               </div>
               <div class="ai-hero-body">
                 <div class="ai-quote-container">
-                  <div class="ai-quote-icon">🤖</div>
-                  <p id="ai-hero-explanation" class="ai-hero-explanation">Creative piece analyzed directly by Gemini AI.</p>
+                  <div class="ai-quote-icon">🎯</div>
+                  <p id="ai-hero-explanation" class="ai-hero-explanation">Creative piece analyzed against company brand guidelines.</p>
                 </div>
                 <div class="ai-attributes-grid">
                   <div class="ai-attr-pill">
@@ -389,9 +377,9 @@
   </main>
 
   <footer class="app-footer">
-    <p>BrandShield AI &copy; 2026 Team Dark Lord (CodeNexus India Hackathon – Inkloom AI Challenge). Fast & lightweight company vibe verification powered by Google Gemini.</p>
+    <p>BrandShield AI &copy; 2026 Team Dark Lord (CodeNexus India Hackathon – Inkloom AI Challenge). Fast & lightweight company vibe verification.</p>
   </footer>
 
-  <script src="/static/app.js?v=2.1"></script>
+  <script src="/static/app.js?v=2.2"></script>
 </body>
 </html>

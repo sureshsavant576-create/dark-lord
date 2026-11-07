@@ -86,18 +86,21 @@ function initDropZone() {
 async function loadProvidersStatus() {
   const pill = document.getElementById('ai-status-pill');
   const grid = document.getElementById('provider-cards-grid');
+  if (!pill && !grid) return;
 
   try {
     const res = await fetch(`${API_BASE}/providers`);
     const data = await res.json();
 
-    const activePrimary = data.active_primary_provider;
-    if (activePrimary) {
-      pill.className = 'status-pill status-ready';
-      pill.innerHTML = `<span class="status-dot"></span> 🟢 AI Engine: Gemini 3.5 Lite Active`;
-    } else {
-      pill.className = 'status-pill status-unconfigured';
-      pill.innerHTML = `<span class="status-dot"></span> Local Brand DNA Engine Active`;
+    if (pill) {
+      const activePrimary = data.active_primary_provider;
+      if (activePrimary) {
+        pill.className = 'status-pill status-ready';
+        pill.innerHTML = `<span class="status-dot"></span> System Ready`;
+      } else {
+        pill.className = 'status-pill status-unconfigured';
+        pill.innerHTML = `<span class="status-dot"></span> System Active`;
+      }
     }
 
     if (grid) {
@@ -385,7 +388,6 @@ function initInspection() {
     const brandId = document.getElementById('inspect-brand-select').value;
     const fileInput = document.getElementById('inspect-file');
     const copyTextarea = document.getElementById('inspect-copy-text');
-    const aiProvider = document.getElementById('ai-provider-select').value;
 
     if (!brandId) {
       alert('Please select a target company brand profile first.');
@@ -409,8 +411,6 @@ function initInspection() {
       formData.append('file', fileInput.files[0]);
     }
 
-    if (aiProvider) formData.append('preferred_ai_provider', aiProvider);
-
     // Update UI to running state
     if (emptyState) emptyState.classList.add('hidden');
     if (resultsView) resultsView.classList.add('hidden');
@@ -419,7 +419,7 @@ function initInspection() {
 
     if (inlineStatus) {
       inlineStatus.className = 'inspect-inline-status status-running';
-      inlineText.textContent = 'Extracting Brand DNA vectors & querying Google Gemini 3.5 Lite...';
+      inlineText.textContent = 'Extracting Brand DNA vectors & analyzing brand vibes...';
       inlineStatus.classList.remove('hidden');
     }
 
@@ -482,9 +482,9 @@ function renderInspectionReport(report) {
     if (vTitle) vTitle.textContent = (report.verdict || 'APPROVED').replace(/_/g, ' ');
 
     const summary = report.verdict === 'APPROVED'
-      ? 'Creative content meets company brand guidelines across objective color/layout rules and AI aesthetic vibe alignment.'
+      ? 'Creative content meets company brand guidelines across objective color/layout rules and aesthetic vibe alignment.'
       : (report.verdict === 'CHANGES_REQUESTED'
-        ? 'Aesthetic or color departures detected. Review Gemini observations and biometric divergences below.'
+        ? 'Aesthetic or color departures detected. Review observations and biometric divergences below.'
         : 'Significant brand guideline departures detected. Re-alignment required.');
     const vSummary = document.getElementById('verdict-summary');
     if (vSummary) vSummary.textContent = summary;
@@ -498,7 +498,7 @@ function renderInspectionReport(report) {
   const scAi = document.getElementById('score-ai');
   if (scAi) scAi.textContent = report.ai_score !== null && report.ai_score !== undefined ? `${report.ai_score}%` : '100%';
 
-  // ⭐ Google Gemini AI Hero Card
+  // Vibe Intelligence Hero Card
   const aiScoreBadge = document.getElementById('ai-hero-score-badge');
   if (aiScoreBadge) {
     const s = report.ai_score !== null && report.ai_score !== undefined ? report.ai_score : 100;
@@ -600,12 +600,14 @@ function renderInspectionReport(report) {
     (report.findings || []).forEach(f => {
       const card = document.createElement('div');
       card.className = `finding-card finding-severity-${f.severity}`;
+      const sourceLabel = f.source === 'AI_MODEL_INFERENCE' ? 'Aesthetic Analysis' : 'Brand DNA Engine';
+      const displayTitle = (f.title || '').replace(/^AI Observed Brand Discrepancy/, 'Observed Brand Departure');
       card.innerHTML = `
         <div class="finding-header">
-          <span class="finding-title">${f.title}</span>
+          <span class="finding-title">${displayTitle}</span>
           <div>
             <span class="tag-badge tag-${f.severity}">${f.severity}</span>
-            <span class="id-badge">${f.source}</span>
+            <span class="id-badge">${sourceLabel}</span>
           </div>
         </div>
         <p class="finding-body">${f.explanation}</p>
