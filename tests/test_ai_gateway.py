@@ -17,20 +17,15 @@ from backend.app.ai.openai_provider import OpenAIProvider
 
 
 def test_gateway_initialization():
-    """Verify all providers are registered in the gateway."""
+    """Verify Gemini provider is registered in the gateway."""
     gateway = AIGateway()
     assert "gemini" in gateway.providers
-    assert "openai" in gateway.providers
-    assert "huggingface" in gateway.providers
 
 
 def test_unconfigured_provider_detection():
     """Verify that unconfigured providers accurately report False for is_configured."""
     dummy_gemini = GeminiProvider(api_key="")
     assert dummy_gemini.is_configured() is False
-
-    dummy_openai = OpenAIProvider(api_key="")
-    assert dummy_openai.is_configured() is False
 
 
 @pytest.mark.asyncio
@@ -41,9 +36,8 @@ async def test_unconfigured_gateway_inspection_rules_compliance():
     and MUST mark is_ai_generated as False with ProviderStatus.UNCONFIGURED.
     """
     gateway = AIGateway()
-    # Force all providers unconfigured for deterministic testing of the fallback
+    # Force Gemini unconfigured for deterministic testing of the fallback
     gateway.providers["gemini"] = GeminiProvider(api_key="")
-    gateway.providers["openai"] = OpenAIProvider(api_key="")
 
     req = ContentAnalysisRequest(
         mime_type="image/png",
@@ -63,7 +57,7 @@ async def test_unconfigured_gateway_inspection_rules_compliance():
     assert result.alignment_score is None
     assert result.status == ProviderStatus.UNCONFIGURED
     assert result.is_ai_generated is False
-    assert "No AI provider is configured" in result.detailed_analysis
+    assert "Gemini API is unconfigured" in result.detailed_analysis or "unconfigured" in result.detailed_analysis.lower()
     assert result.confidence_score == 0.0
 
 
@@ -72,7 +66,6 @@ async def test_unconfigured_brand_synthesis():
     """Verify unconfigured brand synthesis returns error state without fabricating profile values."""
     gateway = AIGateway()
     gateway.providers["gemini"] = GeminiProvider(api_key="")
-    gateway.providers["openai"] = OpenAIProvider(api_key="")
 
     synthesis = await gateway.synthesize_brand_identity(
         questionnaire_data={"personality": "Vibrant"},

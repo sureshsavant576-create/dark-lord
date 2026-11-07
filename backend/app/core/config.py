@@ -23,10 +23,8 @@ class Settings(BaseSettings):
     GUIDELINES_DIR: Path = Field(default_factory=lambda: Path("data/storage/guidelines"))
     DB_DIR: Path = Field(default_factory=lambda: Path("data/db"))
 
-    # AI Provider API Keys
+    # AI Provider API Keys (Exclusively Google Gemini)
     GEMINI_API_KEY: Optional[str] = Field(default=None, description="Google Gemini API Key")
-    OPENAI_API_KEY: Optional[str] = Field(default=None, description="OpenAI API Key")
-    HUGGINGFACE_API_KEY: Optional[str] = Field(default=None, description="Hugging Face User Access Token")
 
     # Model Defaults
     DEFAULT_VISION_MODEL: str = Field(default="gemini-2.5-flash", description="Default multimodal vision model")
@@ -54,26 +52,9 @@ class Settings(BaseSettings):
         return bool(self.GEMINI_API_KEY and self.GEMINI_API_KEY.strip())
 
     @property
-    def has_openai(self) -> bool:
-        """Check if OpenAI API key is configured with a non-empty string."""
-        return bool(self.OPENAI_API_KEY and self.OPENAI_API_KEY.strip())
-
-    @property
-    def has_huggingface(self) -> bool:
-        """Check if Hugging Face API key is configured with a non-empty string."""
-        return bool(self.HUGGINGFACE_API_KEY and self.HUGGINGFACE_API_KEY.strip())
-
-    @property
     def available_providers(self) -> List[str]:
         """List provider names that currently have active API keys configured."""
-        providers = []
-        if self.has_gemini:
-            providers.append("gemini")
-        if self.has_openai:
-            providers.append("openai")
-        if self.has_huggingface:
-            providers.append("huggingface")
-        return providers
+        return ["gemini"] if self.has_gemini else []
 
     def get_provider_status_dict(self) -> dict:
         """Safe status summary for frontend health checks without revealing raw keys."""
@@ -81,17 +62,7 @@ class Settings(BaseSettings):
             "gemini": {
                 "configured": self.has_gemini,
                 "model": self.DEFAULT_VISION_MODEL,
-                "role": "Multimodal Vision, Audio & Tone Reasoning"
-            },
-            "openai": {
-                "configured": self.has_openai,
-                "model": "gpt-4o-mini",
-                "role": "Alternative Multimodal & Text Reasoning"
-            },
-            "huggingface": {
-                "configured": self.has_huggingface,
-                "model": "Inference API (NLP / Emotion)",
-                "role": "Specialized NLP & Sentiment Tasks"
+                "role": "Multimodal Vision, Audio & Tone Reasoning (Primary & Exclusive AI)"
             },
             "deterministic_local": {
                 "configured": True,

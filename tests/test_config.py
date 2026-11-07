@@ -16,8 +16,6 @@ def test_provider_status_dict_safety():
     """Verify that get_provider_status_dict does not leak raw API secret values."""
     status = settings.get_provider_status_dict()
     assert "gemini" in status
-    assert "openai" in status
-    assert "huggingface" in status
     assert "deterministic_local" in status
 
     # Verify that raw keys are NOT present in the returned dictionary

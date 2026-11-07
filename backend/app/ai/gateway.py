@@ -1,7 +1,7 @@
-"""BrandShield AI - AI Provider Gateway.
+"""BrandShield AI - AI Provider Gateway (Exclusively Powered by Google Gemini).
 
-Orchestrates multimodal and NLP providers with automatic fallback,
-health diagnostics, and strict adherence to non-mocked outputs.
+Orchestrates multimodal and NLP reasoning strictly via Google Gemini API (gemini-2.5-flash),
+adhering to real API inference with zero fabricated or mocked metrics.
 """
 import logging
 from typing import Any, Dict, List, Optional
@@ -14,42 +14,36 @@ from backend.app.ai.base import (
     ProviderStatus,
 )
 from backend.app.ai.gemini_provider import GeminiProvider
-from backend.app.ai.huggingface_provider import HuggingFaceProvider
-from backend.app.ai.openai_provider import OpenAIProvider
 from backend.app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 
 class AIGateway:
-    """Central AI orchestrator that routes requests to active and configured model APIs."""
+    """Central AI orchestrator powered exclusively by Google Gemini."""
 
     def __init__(self):
         self.providers: Dict[str, AIProviderBase] = {
-            "gemini": GeminiProvider(),
-            "openai": OpenAIProvider(),
-            "huggingface": HuggingFaceProvider()
+            "gemini": GeminiProvider()
         }
 
-    def get_provider(self, name: str) -> Optional[AIProviderBase]:
-        return self.providers.get(name.lower())
+    def get_provider(self, name: str = "gemini") -> Optional[AIProviderBase]:
+        return self.providers.get("gemini")
 
     def get_primary_provider(self) -> Optional[AIProviderBase]:
-        """Returns the primary configured provider (prefers Gemini, then OpenAI)."""
+        """Returns the primary Google Gemini provider if configured."""
         if self.providers["gemini"].is_configured():
             return self.providers["gemini"]
-        if self.providers["openai"].is_configured():
-            return self.providers["openai"]
         return None
 
     def get_status(self) -> Dict[str, Any]:
-        """Returns an operational overview of all integrated AI services."""
+        """Returns an operational overview of the integrated Gemini AI service."""
         return {
-            name: {
-                "configured": provider.is_configured(),
-                "provider": provider.provider_name()
+            "gemini": {
+                "configured": self.providers["gemini"].is_configured(),
+                "provider": "gemini",
+                "model": settings.DEFAULT_VISION_MODEL
             }
-            for name, provider in self.providers.items()
         }
 
     async def analyze_creative_content(
@@ -58,28 +52,25 @@ class AIGateway:
         target_profile: Dict[str, Any],
         preferred_provider: Optional[str] = None
     ) -> MultimodalEvaluation:
-        """Inspect creative material using the preferred or primary available provider."""
-        provider = None
-        if preferred_provider:
-            provider = self.get_provider(preferred_provider)
-        if provider is None or not provider.is_configured():
-            provider = self.get_primary_provider()
+        """Inspect creative material using Google Gemini multimodal AI."""
+        provider = self.get_primary_provider()
 
         if provider is None:
             # Rule 10: Do NOT generate fictional results when a model or API is unavailable
             return MultimodalEvaluation(
-                provider="none",
-                model_used="none",
+                provider="gemini",
+                model_used=settings.DEFAULT_VISION_MODEL,
                 status=ProviderStatus.UNCONFIGURED,
                 is_ai_generated=False,
                 detailed_analysis=(
-                    "No AI provider is configured. Deterministic checks (color delta, disallowed words, "
-                    "file formatting) completed successfully. To enable semantic vibe, personality, and "
-                    "multimodal inspection, provide a GEMINI_API_KEY or OPENAI_API_KEY in your .env file."
+                    "Google Gemini API is unconfigured. Deterministic checks (CIELAB color delta, "
+                    "disallowed terminology, resolution/audio specs) completed successfully. "
+                    "To enable multimodal visual understanding and tone analysis, provide "
+                    "GEMINI_API_KEY in your .env file."
                 ),
                 alignment_score=None,
                 confidence_score=0.0,
-                error_message="No AI API key configured."
+                error_message="Missing GEMINI_API_KEY in environment."
             )
 
         return await provider.analyze_creative_content(request, target_profile)
@@ -91,20 +82,16 @@ class AIGateway:
         reference_images_info: Optional[List[Dict[str, Any]]] = None,
         preferred_provider: Optional[str] = None
     ) -> BrandSynthesisEvaluation:
-        """Synthesize unstructured reference docs into a candidate structured brand profile."""
-        provider = None
-        if preferred_provider:
-            provider = self.get_provider(preferred_provider)
-        if provider is None or not provider.is_configured():
-            provider = self.get_primary_provider()
+        """Synthesize unstructured reference docs into a candidate structured brand profile using Gemini."""
+        provider = self.get_primary_provider()
 
         if provider is None:
             return BrandSynthesisEvaluation(
-                provider="none",
-                model_used="none",
+                provider="gemini",
+                model_used=settings.DEFAULT_VISION_MODEL,
                 status=ProviderStatus.UNCONFIGURED,
                 is_ai_generated=False,
-                error_message="Cannot synthesize brand profile via AI without an active API key (GEMINI_API_KEY or OPENAI_API_KEY)."
+                error_message="Cannot synthesize brand profile via Gemini without GEMINI_API_KEY in .env."
             )
 
         return await provider.synthesize_brand_identity(

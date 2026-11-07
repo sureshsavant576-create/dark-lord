@@ -26,8 +26,7 @@ def test_providers_diagnostic_endpoint():
     data = response.json()
     assert "providers" in data
     assert "gemini" in data["providers"]
-    assert "openai" in data["providers"]
-    assert "huggingface" in data["providers"]
+    assert "deterministic_local" in data["providers"]
     assert "deterministic_local" in data["providers"]
 
 

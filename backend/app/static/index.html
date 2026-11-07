@@ -85,13 +85,11 @@
             </div>
 
             <div class="form-group">
-              <label for="ai-provider-select">Preferred AI Multimodal Provider (Optional):</label>
+              <label for="ai-provider-select">AI Multimodal Provider:</label>
               <select id="ai-provider-select">
-                <option value="">Auto (Active Provider: Gemini / OpenAI)</option>
-                <option value="gemini">Google Gemini (gemini-2.5-flash)</option>
-                <option value="openai">OpenAI (gpt-4o-mini)</option>
-                <option value="huggingface">Hugging Face Inference</option>
+                <option value="gemini">Google Gemini (gemini-2.5-flash) – Native Vision & Tone Engine</option>
               </select>
+              <span class="field-hint">Powered exclusively by Google Gemini multimodal intelligence.</span>
             </div>
 
             <button type="submit" id="btn-run-inspect" class="btn btn-primary btn-block">
@@ -364,22 +362,16 @@
         <div id="provider-cards-grid" class="provider-grid"></div>
 
         <div class="config-instructions-box">
-          <h3>🔐 Secure API Key Setup Instructions</h3>
-          <p>To enable multimodal visual understanding, tone assessment, and deep semantic inspection:</p>
+          <h3>🔐 Secure Google Gemini Setup Instructions</h3>
+          <p>BrandShield AI is powered exclusively by <strong>Google Gemini (gemini-2.5-flash)</strong> for multimodal vision understanding, audio ad inspection, and tone analysis:</p>
           <ol>
             <li>Open the <code>.env</code> file in the project root.</li>
-            <li>Add your API keys:
-              <pre><code># Recommended Primary Multimodal Model (fast, low cost)
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# Alternative Multimodal Reasoning Model
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Specialized NLP / Sentiment
-HUGGINGFACE_API_KEY=your_hf_key_here</code></pre>
+            <li>Add your Gemini API key from <a href="https://aistudio.google.com/" target="_blank" style="color: var(--primary);">Google AI Studio</a>:
+              <pre><code># Exclusive Multimodal AI Engine
+GEMINI_API_KEY=your_gemini_api_key_here</code></pre>
             </li>
-            <li>Restart the backend or reload this page. The system will automatically detect the configured provider.</li>
-            <li><strong>Rule 10 & 11 Guarantee:</strong> If keys are absent, deterministic checks remain 100% active, and the AI features truthfully report their unconfigured state without fake percentages.</li>
+            <li>Restart the backend or reload this page. The system will immediately detect Gemini as active.</li>
+            <li><strong>Rule 10 & 11 Guarantee:</strong> If the key is omitted, deterministic checks remain 100% operational, and AI features clearly display their unconfigured state without fake percentages.</li>
           </ol>
         </div>
       </div>

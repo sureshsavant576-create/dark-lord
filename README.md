@@ -54,25 +54,19 @@ flowchart TD
 | **PDF Extraction** | PyMuPDF (`pymupdf`) | Lightning-fast text and metadata parsing from PDF brand guidelines. |
 | **Image & Color Engine** | Pillow, NumPy, ColorThief, ConvColors | Resolution metrics, Laplacian sharpness variance, and CIELAB $\Delta E$ calculations. |
 | **Audio Inspection** | Mutagen | Container, sample rate, bitrate, and duration verification for brand jingles. |
-| **Primary AI Multimodal**| Google Gemini API (`google-genai` SDK) | Native vision, audio, text understanding, and structured JSON outputs with low latency. |
-| **Alternative AI** | OpenAI API (`openai` SDK, `gpt-4o-mini`) | Lightweight multimodal and JSON reasoning. |
-| **Specialized NLP** | Hugging Face Inference API | Serverless sentiment, tone, and embedding inference. |
+| **Exclusive Multimodal AI**| Google Gemini API (`google-genai` SDK) | Native vision, audio, text understanding, and structured JSON outputs with low latency. |
 | **Frontend UI** | Modern Vanilla HTML5, CSS3, ES6+ | Zero-dependency, responsive SPA dashboard with drag-and-drop, color swatches, and review actions. |
 | **Testing** | Pytest, Pytest-Asyncio | Automated asynchronous test runner. |
 
 ---
 
-## 3. Integrated AI Models & Responsibilities
+## 3. Integrated AI Engine & Responsibilities
 
-1. **Google Gemini (`gemini-2.5-flash`)** *(Primary Multimodal)*:
+1. **Google Gemini (`gemini-2.5-flash`)** *(Exclusive AI Model)*:
    - High-speed visual composition and aesthetic style inspection.
    - Brand mood, tone, and personality alignment reasoning.
-   - Multimodal guideline synthesis.
-2. **OpenAI (`gpt-4o-mini`)** *(Alternative Multimodal)*:
-   - Base64 visual inspection and structured JSON schema evaluation.
-3. **Hugging Face (`distilbert-base-uncased-finetuned-sst-2-english`)** *(Specialized NLP)*:
-   - Fast sentiment and emotion polarity classification on marketing copy.
-4. **Local Deterministic Engines**:
+   - Multimodal brand guideline synthesis from uploaded reference docs and audio ads.
+2. **Local Deterministic Engines**:
    - `colorthief` + CIE76/CIE94 CIELAB $\Delta E$ math for objective color distance.
    - Word-boundary regex with context snippets for disallowed terminology.
    - Laplacian kernel variance for image blur detection.
@@ -90,17 +84,9 @@ API_V1_PREFIX=/api/v1
 DATA_DIR=data
 STORAGE_DIR=data/storage
 
-# Primary Multimodal & Reasoning AI (Recommended)
+# Exclusive Multimodal & Reasoning AI: Google Gemini
 # Obtain from https://aistudio.google.com/
 GEMINI_API_KEY=your_gemini_api_key_here
-
-# Alternative Multimodal Reasoning AI
-# Obtain from https://platform.openai.com/
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Specialized NLP / Sentiment
-# Obtain from https://huggingface.co/settings/tokens
-HUGGINGFACE_API_KEY=your_huggingface_token_here
 
 # Inspection Defaults
 DEFAULT_VISION_MODEL=gemini-2.5-flash
