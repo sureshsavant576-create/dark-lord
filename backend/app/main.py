@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from backend.app.api.brands import router as brands_router
 from backend.app.api.inspections import router as inspections_router
 from backend.app.api.system import router as system_router
+from backend.app.api.tasks import router as tasks_router
 from backend.app.core.config import settings
 
 # Initialize FastAPI App
@@ -32,6 +33,7 @@ app.add_middleware(
 app.include_router(system_router, prefix=settings.API_V1_PREFIX)
 app.include_router(brands_router, prefix=settings.API_V1_PREFIX)
 app.include_router(inspections_router, prefix=settings.API_V1_PREFIX)
+app.include_router(tasks_router, prefix=settings.API_V1_PREFIX)
 
 # Ensure static and storage directories exist
 STATIC_DIR = Path(__file__).parent / "static"
@@ -52,3 +54,13 @@ def serve_index():
     if index_file.exists():
         return FileResponse(index_file)
     return {"message": "BrandShield AI API is operational. Visit /docs for OpenAPI specifications."}
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+@app.get("/favicon.svg", include_in_schema=False)
+def serve_favicon():
+    fav = STATIC_DIR / "assets" / "favicon.svg"
+    if fav.exists():
+        return FileResponse(fav, media_type="image/svg+xml")
+    return {"message": "No favicon"}
+

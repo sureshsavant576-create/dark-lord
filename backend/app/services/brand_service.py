@@ -195,6 +195,9 @@ class BrandService:
         if request.key_values:
             existing.key_values = request.key_values
 
+        if request.mission_statement:
+            existing.mission_statement = request.mission_statement.strip()
+
         # Synthesize Biometric Brand DNA Targets
         is_minimal = any("minimal" in s.lower() for s in (existing.visual_style + existing.personality))
         existing.brand_dna = {
@@ -210,6 +213,96 @@ class BrandService:
         existing.confirmation_notes = request.confirmation_notes
 
         return self.save_brand_profile(existing)
+
+    async def scan_reference_features(self, file_path: Path) -> Dict[str, Any]:
+        """Runs multiple filters on an uploaded reference visual to auto-identify palette, layout, and vibes."""
+        from backend.app.preprocessing.pipeline import preprocessing_pipeline
+        from backend.app.ai.gateway import ai_gateway
+
+        preprocessed = preprocessing_pipeline.preprocess(file_path=file_path)
+
+        # Filter 1: Color Quantization & Centroid Filter
+        extracted_palette = preprocessed.extracted_colors_hex or []
+        dominant_color = preprocessed.dominant_color_hex or ""
+
+        # Filter 2: Whitespace & Layout Density Filter
+        ws = preprocessed.visual_fingerprint.whitespace_ratio if preprocessed.visual_fingerprint else 0.55
+        cx = preprocessed.visual_fingerprint.complexity_index if preprocessed.visual_fingerprint else 0.25
+        is_minimal = ws > 0.60 and cx < 0.35
+
+        suggested_style = "Extreme Minimalism, Negative Space, High-contrast" if is_minimal else "Modern, Dynamic Layout, High Visual Impact"
+        suggested_mood = "Minimalist, Calm, Focused" if is_minimal else "Bold, Dynamic, Engaging"
+        suggested_personality = "Sophisticated, Premium, Focused" if is_minimal else "Innovative, Energetic, Bold"
+        suggested_tone = "Clear, Direct, Inspiring"
+        suggested_avoidances = "super cheap, bargain discount, clearance sale, miracle deal"
+        extracted_motto = ""
+
+        # Filter 3: Multimodal Aesthetic & Text Filter (via Gemini)
+        provider = ai_gateway.get_primary_provider()
+        if provider and provider.is_configured():
+            try:
+                from google import genai
+                from google.genai import types
+                client = genai.Client(api_key=provider.api_key)
+
+                prompt = (
+                    "Analyze this brand creative visual/poster. Identify its brand attributes and return ONLY a JSON object with:\n"
+                    "- extracted_palette: array of 4-8 dominant uppercase HEX colors\n"
+                    "- tagline_or_motto: any slogan, headline, or mission statement visible in the creative (or empty string if none)\n"
+                    "- detected_mood: 2-3 emotional mood adjectives (e.g. Minimalist, Calm, Inspiring)\n"
+                    "- detected_personality: 2-3 brand personality traits (e.g. Sophisticated, Premium, Focused)\n"
+                    "- communication_tone: 2-3 communication tone descriptors (e.g. Clear, Direct, Professional)\n"
+                    "- visual_style: 2-3 visual aesthetic descriptors (e.g. Extreme Minimalism, Negative Space)\n"
+                    "- suggested_avoidances: 3-5 typical forbidden or cheap marketing claims that conflict with this brand identity\n"
+                    "Return ONLY valid JSON."
+                )
+
+                with open(file_path, "rb") as f:
+                    img_bytes = f.read()
+
+                mime = preprocessed.validation.mime_type or "image/png"
+                contents = [
+                    types.Part.from_bytes(data=img_bytes, mime_type=mime),
+                    prompt
+                ]
+
+                resp = client.models.generate_content(
+                    model=provider.model_name,
+                    contents=contents,
+                    config=types.GenerateContentConfig(response_mime_type="application/json")
+                )
+
+                if resp.text:
+                    parsed = json.loads(resp.text)
+                    if parsed.get("extracted_palette") and isinstance(parsed["extracted_palette"], list):
+                        extracted_palette = list(dict.fromkeys(extracted_palette + [c.upper() for c in parsed["extracted_palette"] if c.startswith("#")]))
+                    if parsed.get("detected_mood"):
+                        suggested_mood = ", ".join(parsed["detected_mood"]) if isinstance(parsed["detected_mood"], list) else str(parsed["detected_mood"])
+                    if parsed.get("detected_personality"):
+                        suggested_personality = ", ".join(parsed["detected_personality"]) if isinstance(parsed["detected_personality"], list) else str(parsed["detected_personality"])
+                    if parsed.get("communication_tone"):
+                        suggested_tone = ", ".join(parsed["communication_tone"]) if isinstance(parsed["communication_tone"], list) else str(parsed["communication_tone"])
+                    if parsed.get("visual_style"):
+                        suggested_style = ", ".join(parsed["visual_style"]) if isinstance(parsed["visual_style"], list) else str(parsed["visual_style"])
+                    if parsed.get("suggested_avoidances"):
+                        suggested_avoidances = ", ".join(parsed["suggested_avoidances"]) if isinstance(parsed["suggested_avoidances"], list) else str(parsed["suggested_avoidances"])
+                    if parsed.get("tagline_or_motto"):
+                        extracted_motto = str(parsed["tagline_or_motto"]).strip()
+            except Exception as e:
+                logger.warning("Quick reference feature scan: %s", e)
+
+        return {
+            "extracted_palette": extracted_palette,
+            "dominant_color": dominant_color,
+            "suggested_personality": suggested_personality,
+            "suggested_mood": suggested_mood,
+            "suggested_tone": suggested_tone,
+            "suggested_visual_style": suggested_style,
+            "suggested_avoidances": suggested_avoidances,
+            "extracted_motto": extracted_motto,
+            "whitespace_ratio": round(ws, 2),
+            "complexity_index": round(cx, 2)
+        }
 
 
 brand_service = BrandService()

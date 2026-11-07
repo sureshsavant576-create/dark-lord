@@ -8,7 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initOnboarding();
   initConfirmation();
   initInspection();
+  initReferenceScanning();
   initSignoff();
+  initWorkTracker();
+  initKalarajaLogo();
   loadProvidersStatus();
   loadBrands();
   loadRecentReport();
@@ -175,6 +178,11 @@ async function loadBrands() {
         <p class="finding-body"><strong>Personality:</strong> ${b.personality.join(', ')} | <strong>Mood:</strong> ${b.mood.join(', ')}</p>
         <p class="finding-body"><strong>Tone:</strong> ${b.communication_tone.join(', ')} | <strong>Audience:</strong> ${b.target_audience}</p>
         <div class="palette-row" style="margin-top: 0.5rem;">${swatches}</div>
+        <div class="brand-card-actions">
+          <button type="button" class="btn-edit-brand" onclick="startEditingBrand('${b.brand_id}')">
+            ✏️ Edit Company Vibes
+          </button>
+        </div>
       `;
       confirmedList.appendChild(card);
     });
@@ -209,6 +217,202 @@ async function loadBrands() {
   }
 }
 
+// Render Interactive Swatch Chips for Company Palette Input
+function renderPaletteChips(hexList) {
+  const container = document.getElementById('ob-palette-chips');
+  const paletteInput = document.getElementById('ob-palette');
+  if (!container || !paletteInput) return;
+
+  container.innerHTML = '';
+  if (!hexList || hexList.length === 0) return;
+
+  hexList.forEach(hex => {
+    const chip = document.createElement('span');
+    chip.className = 'color-swatch-chip interactive-chip';
+    chip.innerHTML = `
+      <span class="swatch-color-box" style="background: ${hex};"></span>
+      ${hex}
+    `;
+    chip.title = 'Click to toggle this color in the approved palette';
+    chip.onclick = () => {
+      let current = paletteInput.value.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+      const upperHex = hex.toUpperCase();
+      if (current.includes(upperHex)) {
+        current = current.filter(c => c !== upperHex);
+      } else {
+        current.push(upperHex);
+      }
+      paletteInput.value = current.join(', ');
+    };
+    container.appendChild(chip);
+  });
+}
+
+// Start Editing an Existing Company Profile
+function startEditingBrand(brandId) {
+  const b = brandsMap[brandId];
+  if (!b) return;
+
+  // Switch to Company Tab
+  const onboardTab = document.querySelector('.nav-tab[data-tab="tab-onboard"]');
+  if (onboardTab) onboardTab.click();
+
+  const editIdInput = document.getElementById('ob-editing-brand-id');
+  if (editIdInput) editIdInput.value = b.brand_id;
+
+  document.getElementById('ob-brand-name').value = b.brand_name;
+  document.getElementById('ob-manager-email').value = b.confirmed_by || 'Brand Lead';
+  document.getElementById('ob-personality').value = (b.personality || []).join(', ');
+  document.getElementById('ob-mood').value = (b.mood || []).join(', ');
+  document.getElementById('ob-tone').value = (b.communication_tone || []).join(', ');
+  document.getElementById('ob-audience').value = b.target_audience || '';
+  document.getElementById('ob-style').value = (b.visual_style || []).join(', ');
+  document.getElementById('ob-palette').value = (b.approved_palette || []).join(', ');
+  document.getElementById('ob-avoid').value = (b.disallowed_elements || []).join(', ');
+  document.getElementById('ob-tagline').value = b.mission_statement || '';
+
+  renderPaletteChips(b.approved_palette || []);
+
+  const btn = document.getElementById('btn-create-draft');
+  if (btn) btn.innerHTML = '<span>💾 Update & Lock Company Vibes</span>';
+
+  const btnCancel = document.getElementById('btn-cancel-edit');
+  if (btnCancel) {
+    btnCancel.classList.remove('hidden');
+    btnCancel.onclick = resetOnboardingForm;
+  }
+
+  const feedback = document.getElementById('ob-scan-feedback');
+  if (feedback) {
+    feedback.className = 'ob-scan-feedback success';
+    feedback.innerHTML = `✏️ Editing <strong>${b.brand_name}</strong>. Modify colors, avoidances, or vibe attributes below and click 'Update & Lock Company Vibes'.`;
+    feedback.classList.remove('hidden');
+  }
+
+  document.getElementById('onboarding-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Reset Onboarding Form
+function resetOnboardingForm() {
+  const editIdInput = document.getElementById('ob-editing-brand-id');
+  if (editIdInput) editIdInput.value = '';
+
+  const form = document.getElementById('onboarding-form');
+  if (form) form.reset();
+
+  const btn = document.getElementById('btn-create-draft');
+  if (btn) btn.innerHTML = '<span>💾 Save & Lock Company Vibes</span>';
+
+  const btnCancel = document.getElementById('btn-cancel-edit');
+  if (btnCancel) btnCancel.classList.add('hidden');
+
+  const chips = document.getElementById('ob-palette-chips');
+  if (chips) chips.innerHTML = '';
+
+  const feedback = document.getElementById('ob-scan-feedback');
+  if (feedback) feedback.classList.add('hidden');
+}
+
+// Multi-Filter Reference Image Scanner
+function initReferenceScanning() {
+  const fileInput = document.getElementById('ob-reference-files');
+  const dropZone = document.getElementById('ob-drop-zone');
+  const feedback = document.getElementById('ob-scan-feedback');
+  if (!fileInput) return;
+
+  const handleScan = async (file) => {
+    if (!file) return;
+
+    if (feedback) {
+      feedback.className = 'ob-scan-feedback scanning';
+      feedback.innerHTML = '<div class="inline-spinner"></div> Filtering reference image with Color Centroid, Layout Whitespace & Aesthetic Filters...';
+      feedback.classList.remove('hidden');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch(`${API_BASE}/brands/scan-reference`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+
+      // Auto-populate fields based on identified content
+      if (data.extracted_palette && data.extracted_palette.length > 0) {
+        document.getElementById('ob-palette').value = data.extracted_palette.join(', ');
+        renderPaletteChips(data.extracted_palette);
+      }
+
+      if (data.suggested_personality && !document.getElementById('ob-personality').value) {
+        document.getElementById('ob-personality').value = data.suggested_personality;
+      }
+
+      if (data.suggested_mood && !document.getElementById('ob-mood').value) {
+        document.getElementById('ob-mood').value = data.suggested_mood;
+      }
+
+      if (data.suggested_tone && !document.getElementById('ob-tone').value) {
+        document.getElementById('ob-tone').value = data.suggested_tone;
+      }
+
+      if (data.suggested_visual_style && !document.getElementById('ob-style').value) {
+        document.getElementById('ob-style').value = data.suggested_visual_style;
+      }
+
+      if (data.suggested_avoidances && !document.getElementById('ob-avoid').value) {
+        document.getElementById('ob-avoid').value = data.suggested_avoidances;
+      }
+
+      if (data.extracted_motto && !document.getElementById('ob-tagline').value) {
+        document.getElementById('ob-tagline').value = data.extracted_motto;
+      }
+
+      if (feedback) {
+        feedback.className = 'ob-scan-feedback success';
+        feedback.innerHTML = `✨ <strong>Filters applied!</strong> Extracted ${(data.extracted_palette || []).length} brand colors, whitespace ratio (${data.whitespace_ratio}), and aesthetic descriptors. You can freely edit any field below:`;
+      }
+    } catch (err) {
+      if (feedback) {
+        feedback.className = 'ob-scan-feedback error';
+        feedback.textContent = `Scan notice: ${err.message}. You can still enter your brand values manually below.`;
+      }
+    }
+  };
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files && fileInput.files.length > 0) {
+      handleScan(fileInput.files[0]);
+    }
+  });
+
+  if (dropZone) {
+    ['dragenter', 'dragover'].forEach(event => {
+      dropZone.addEventListener(event, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(event => {
+      dropZone.addEventListener(event, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+      });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        handleScan(e.dataTransfer.files[0]);
+      }
+    });
+  }
+}
+
 // Onboarding & Company Vibes Registration Submission
 function initOnboarding() {
   const form = document.getElementById('onboarding-form');
@@ -219,23 +423,67 @@ function initOnboarding() {
     btn.disabled = true;
     btn.innerHTML = '<span>Saving & Locking Company Vibes...</span>';
 
-    const formData = new FormData();
-    formData.append('brand_name', document.getElementById('ob-brand-name').value);
-    formData.append('personality', document.getElementById('ob-personality').value);
-    formData.append('mood', document.getElementById('ob-mood').value);
-    formData.append('communication_tone', document.getElementById('ob-tone').value);
-    formData.append('target_audience', document.getElementById('ob-audience').value);
-    formData.append('visual_style', document.getElementById('ob-style').value);
-    formData.append('palette', document.getElementById('ob-palette').value);
-    formData.append('disallowed_elements', document.getElementById('ob-avoid').value);
-    formData.append('tagline_or_mission', document.getElementById('ob-tagline').value);
-
-    const refFiles = document.getElementById('ob-reference-files').files;
-    for (let i = 0; i < refFiles.length; i++) {
-      formData.append('reference_files', refFiles[i]);
-    }
+    const editingId = document.getElementById('ob-editing-brand-id')?.value;
 
     try {
+      if (editingId) {
+        // Edit Mode: Update existing confirmed company profile
+        const managerEmail = document.getElementById('ob-manager-email')?.value || 'Brand Lead';
+        const confirmPayload = {
+          brand_id: editingId,
+          personality: document.getElementById('ob-personality').value.split(',').map(s => s.trim()).filter(Boolean),
+          mood: document.getElementById('ob-mood').value.split(',').map(s => s.trim()).filter(Boolean),
+          communication_tone: document.getElementById('ob-tone').value.split(',').map(s => s.trim()).filter(Boolean),
+          visual_style: document.getElementById('ob-style').value.split(',').map(s => s.trim()).filter(Boolean),
+          target_audience: document.getElementById('ob-audience').value.trim(),
+          approved_palette: document.getElementById('ob-palette').value.split(',').map(s => s.trim()).filter(Boolean),
+          disallowed_elements: document.getElementById('ob-avoid').value.split(',').map(s => s.trim()).filter(Boolean),
+          mission_statement: document.getElementById('ob-tagline').value.trim(),
+          confirmed_by: managerEmail
+        };
+
+        const confRes = await fetch(`${API_BASE}/brands/confirm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(confirmPayload)
+        });
+
+        if (!confRes.ok) throw new Error(await confRes.text());
+        const confirmed = await confRes.json();
+
+        await loadBrands();
+        alert(`🎉 Company vibes for '${confirmed.brand_name}' updated and locked!`);
+        resetOnboardingForm();
+
+        // Switch to Developer tab
+        const devTab = document.querySelector('.nav-tab[data-tab="tab-inspect"]');
+        if (devTab) devTab.click();
+
+        const brandSelect = document.getElementById('inspect-brand-select');
+        if (brandSelect) {
+          brandSelect.value = confirmed.brand_id;
+          brandSelect.dispatchEvent(new Event('change'));
+        }
+        return;
+      }
+
+      // New Brand Creation
+      const formData = new FormData();
+      formData.append('brand_name', document.getElementById('ob-brand-name').value);
+      formData.append('personality', document.getElementById('ob-personality').value);
+      formData.append('mood', document.getElementById('ob-mood').value);
+      formData.append('communication_tone', document.getElementById('ob-tone').value);
+      formData.append('target_audience', document.getElementById('ob-audience').value);
+      formData.append('visual_style', document.getElementById('ob-style').value);
+      formData.append('palette', document.getElementById('ob-palette').value);
+      formData.append('disallowed_elements', document.getElementById('ob-avoid').value);
+      formData.append('tagline_or_mission', document.getElementById('ob-tagline').value);
+
+      const refFiles = document.getElementById('ob-reference-files').files;
+      for (let i = 0; i < refFiles.length; i++) {
+        formData.append('reference_files', refFiles[i]);
+      }
+
       const res = await fetch(`${API_BASE}/brands/draft`, {
         method: 'POST',
         body: formData
@@ -255,6 +503,7 @@ function initOnboarding() {
         target_audience: draft.target_audience,
         approved_palette: draft.approved_palette,
         disallowed_elements: draft.disallowed_elements,
+        mission_statement: document.getElementById('ob-tagline').value.trim(),
         confirmed_by: managerEmail
       };
 
@@ -269,6 +518,7 @@ function initOnboarding() {
 
       await loadBrands();
       alert(`🎉 Company vibes for '${confirmed.brand_name}' saved and locked! Your developers can now check their work.`);
+      resetOnboardingForm();
 
       // Switch to Developer tab
       const devTab = document.querySelector('.nav-tab[data-tab="tab-inspect"]');
@@ -284,7 +534,8 @@ function initOnboarding() {
       alert(`Error saving company vibes: ${err.message}`);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '<span>💾 Save & Lock Company Vibes</span>';
+      const editingIdNow = document.getElementById('ob-editing-brand-id')?.value;
+      btn.innerHTML = editingIdNow ? '<span>💾 Update & Lock Company Vibes</span>' : '<span>💾 Save & Lock Company Vibes</span>';
     }
   });
 }
@@ -729,4 +980,517 @@ async function loadAuditReports() {
   } catch (err) {
     container.innerHTML = `<p class="empty-note">Error loading reports: ${err.message}</p>`;
   }
+}
+
+
+// ==========================================================================
+// WORK TRACKER – Kanban Board & Task Management
+// ==========================================================================
+
+let trackerBrandId = '';
+let allTasks = [];
+
+function initWorkTracker() {
+  const brandSelect = document.getElementById('tracker-brand-select');
+  const addBtn = document.getElementById('btn-add-task');
+  const closeModalBtn = document.getElementById('btn-close-modal');
+  const overlay = document.getElementById('task-modal-overlay');
+  const taskForm = document.getElementById('task-form');
+
+  // Populate tracker brand select when brands are loaded
+  const origLoadBrands = window._trackerBrandsLoaded;
+  const populateTrackerSelect = () => {
+    if (!brandSelect) return;
+    brandSelect.innerHTML = '<option value="">-- Select Company --</option>';
+    Object.values(brandsMap).forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.brand_id;
+      opt.textContent = `${b.brand_name} (${b.status})`;
+      brandSelect.appendChild(opt);
+    });
+  };
+
+  // Intercept brand loading to also populate tracker select
+  const origLoadBrandsFn = window.loadBrands;
+  window.loadBrands = async function() {
+    await origLoadBrandsFn.call(this);
+    populateTrackerSelect();
+  };
+
+  // Brand selection handler
+  brandSelect.addEventListener('change', () => {
+    trackerBrandId = brandSelect.value;
+    addBtn.disabled = !trackerBrandId;
+    if (trackerBrandId) {
+      loadTrackerTasks();
+    } else {
+      showTrackerEmptyState();
+    }
+  });
+
+  // Add task button
+  addBtn.addEventListener('click', () => {
+    openTaskModal();
+  });
+
+  // Close modal
+  closeModalBtn.addEventListener('click', closeTaskModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeTaskModal();
+  });
+
+  // Escape key closes modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeTaskModal();
+  });
+
+  // Task form submission
+  taskForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const editId = document.getElementById('task-edit-id').value;
+
+    const taskData = {
+      title: document.getElementById('task-title').value.trim(),
+      description: document.getElementById('task-description').value.trim(),
+      priority: document.getElementById('task-priority').value,
+      assignee: document.getElementById('task-assignee').value.trim(),
+      due_date: document.getElementById('task-due-date').value || null,
+    };
+
+    try {
+      if (editId) {
+        // Update existing task
+        const res = await fetch(`${API_BASE}/tasks/${editId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(taskData)
+        });
+        if (!res.ok) throw new Error(await res.text());
+      } else {
+        // Create new task
+        taskData.brand_id = trackerBrandId;
+        const res = await fetch(`${API_BASE}/tasks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(taskData)
+        });
+        if (!res.ok) throw new Error(await res.text());
+      }
+
+      closeTaskModal();
+      await loadTrackerTasks();
+    } catch (err) {
+      alert(`Error saving task: ${err.message}`);
+    }
+  });
+}
+
+function showTrackerEmptyState() {
+  const board = document.getElementById('kanban-board');
+  const empty = document.getElementById('tracker-empty-state');
+  const progress = document.getElementById('tracker-progress-section');
+  if (board) board.classList.add('hidden');
+  if (empty) empty.classList.remove('hidden');
+  if (progress) progress.classList.add('hidden');
+}
+
+async function loadTrackerTasks() {
+  if (!trackerBrandId) return;
+
+  try {
+    const [tasksRes, statsRes] = await Promise.all([
+      fetch(`${API_BASE}/tasks?brand_id=${trackerBrandId}`),
+      fetch(`${API_BASE}/tasks/stats/${trackerBrandId}`)
+    ]);
+
+    allTasks = await tasksRes.json();
+    const stats = await statsRes.json();
+
+    // Show board, hide empty state
+    const board = document.getElementById('kanban-board');
+    const empty = document.getElementById('tracker-empty-state');
+    const progress = document.getElementById('tracker-progress-section');
+    if (board) board.classList.remove('hidden');
+    if (empty) empty.classList.add('hidden');
+    if (progress) progress.classList.remove('hidden');
+
+    // Update progress bar
+    updateProgressBar(stats);
+
+    // Render Kanban columns
+    renderKanbanBoard(allTasks);
+  } catch (err) {
+    console.error('Failed to load tracker tasks:', err);
+  }
+}
+
+function updateProgressBar(stats) {
+  const pctElem = document.getElementById('tracker-progress-pct');
+  const barFill = document.getElementById('tracker-progress-bar-fill');
+  const statTodo = document.getElementById('stat-todo');
+  const statInProgress = document.getElementById('stat-in-progress');
+  const statReview = document.getElementById('stat-review');
+  const statDone = document.getElementById('stat-done');
+
+  if (pctElem) pctElem.textContent = `${stats.progress_pct}%`;
+  if (barFill) barFill.style.width = `${stats.progress_pct}%`;
+  if (statTodo) statTodo.textContent = stats.todo;
+  if (statInProgress) statInProgress.textContent = stats.in_progress;
+  if (statReview) statReview.textContent = stats.review;
+  if (statDone) statDone.textContent = stats.done;
+}
+
+function renderKanbanBoard(tasks) {
+  const columns = {
+    'TODO': document.getElementById('kanban-todo'),
+    'IN_PROGRESS': document.getElementById('kanban-in-progress'),
+    'REVIEW': document.getElementById('kanban-review'),
+    'DONE': document.getElementById('kanban-done'),
+  };
+
+  const counts = {
+    'TODO': 0,
+    'IN_PROGRESS': 0,
+    'REVIEW': 0,
+    'DONE': 0,
+  };
+
+  // Clear columns
+  Object.values(columns).forEach(col => { if (col) col.innerHTML = ''; });
+
+  // Sort tasks by priority and populate columns
+  const priorityOrder = { 'URGENT': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3 };
+  tasks.sort((a, b) => (priorityOrder[a.priority] || 9) - (priorityOrder[b.priority] || 9));
+
+  tasks.forEach(task => {
+    const col = columns[task.status];
+    if (!col) return;
+    counts[task.status]++;
+    col.appendChild(createTaskCard(task));
+  });
+
+  // Show empty column placeholders
+  Object.entries(columns).forEach(([status, col]) => {
+    if (col && counts[status] === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'kanban-empty';
+      empty.textContent = 'No tasks here';
+      col.appendChild(empty);
+    }
+  });
+
+  // Update column counts
+  document.getElementById('kanban-count-todo').textContent = counts['TODO'];
+  document.getElementById('kanban-count-progress').textContent = counts['IN_PROGRESS'];
+  document.getElementById('kanban-count-review').textContent = counts['REVIEW'];
+  document.getElementById('kanban-count-done').textContent = counts['DONE'];
+}
+
+function createTaskCard(task) {
+  const card = document.createElement('div');
+  card.className = `task-card priority-${task.priority}`;
+  card.setAttribute('data-task-id', task.task_id);
+
+  const priorityEmoji = { 'LOW': '🟢', 'MEDIUM': '🟡', 'HIGH': '🟠', 'URGENT': '🔴' };
+
+  // Check if overdue
+  let dueDateHtml = '';
+  let isOverdue = false;
+  if (task.due_date) {
+    const due = new Date(task.due_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    isOverdue = due < today && task.status !== 'DONE';
+    dueDateHtml = `<span class="task-card-due ${isOverdue ? 'overdue' : ''}">${isOverdue ? '⚠️' : '📅'} ${due.toLocaleDateString()}</span>`;
+  }
+
+  // Next status for "move forward" button
+  const nextStatusMap = {
+    'TODO': { status: 'IN_PROGRESS', label: '▶ Start' },
+    'IN_PROGRESS': { status: 'REVIEW', label: '👀 Send to Review' },
+    'REVIEW': { status: 'DONE', label: '✅ Mark Done' },
+  };
+
+  const nextStatus = nextStatusMap[task.status];
+
+  card.innerHTML = `
+    <div class="task-card-title">${escHtml(task.title)}</div>
+    ${task.description ? `<div class="task-card-desc">${escHtml(task.description)}</div>` : ''}
+    <div class="task-card-meta">
+      <span class="task-priority-badge priority-${task.priority}">${priorityEmoji[task.priority] || ''} ${task.priority}</span>
+      ${task.assignee ? `<span class="task-card-assignee">👤 ${escHtml(task.assignee)}</span>` : ''}
+      ${dueDateHtml}
+    </div>
+    <div class="task-card-actions">
+      ${nextStatus ? `<button class="task-action-btn btn-move-next" onclick="moveTask('${task.task_id}', '${nextStatus.status}')">${nextStatus.label}</button>` : ''}
+      <button class="task-action-btn" onclick="editTask('${task.task_id}')">✏️ Edit</button>
+      <button class="task-action-btn btn-delete" onclick="deleteTask('${task.task_id}')">🗑️</button>
+    </div>
+  `;
+
+  return card;
+}
+
+function escHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+async function moveTask(taskId, newStatus) {
+  try {
+    const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    await loadTrackerTasks();
+  } catch (err) {
+    alert(`Error moving task: ${err.message}`);
+  }
+}
+
+function editTask(taskId) {
+  const task = allTasks.find(t => t.task_id === taskId);
+  if (!task) return;
+  openTaskModal(task);
+}
+
+async function deleteTask(taskId) {
+  if (!confirm('Are you sure you want to delete this task?')) return;
+  try {
+    const res = await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(await res.text());
+    await loadTrackerTasks();
+  } catch (err) {
+    alert(`Error deleting task: ${err.message}`);
+  }
+}
+
+function openTaskModal(existingTask = null) {
+  const overlay = document.getElementById('task-modal-overlay');
+  const modalTitle = document.getElementById('task-modal-title');
+  const submitLabel = document.getElementById('task-submit-label');
+  const editId = document.getElementById('task-edit-id');
+
+  // Reset form
+  document.getElementById('task-form').reset();
+  editId.value = '';
+
+  if (existingTask) {
+    modalTitle.textContent = '✏️ Edit Task';
+    submitLabel.textContent = '💾 Update Task';
+    editId.value = existingTask.task_id;
+    document.getElementById('task-title').value = existingTask.title;
+    document.getElementById('task-description').value = existingTask.description || '';
+    document.getElementById('task-priority').value = existingTask.priority;
+    document.getElementById('task-assignee').value = existingTask.assignee || '';
+    document.getElementById('task-due-date').value = existingTask.due_date || '';
+  } else {
+    modalTitle.textContent = '➕ Add New Task';
+    submitLabel.textContent = '💾 Create Task';
+  }
+
+  overlay.classList.remove('hidden');
+}
+
+function closeTaskModal() {
+  const overlay = document.getElementById('task-modal-overlay');
+  if (overlay) overlay.classList.add('hidden');
+}
+
+
+// ==========================================================================
+// KĀLARĀJA – Dark Lord Anime Logo & Sanskrit Aura Studio Controller
+// ==========================================================================
+const AURA_THEMES = [
+  { id: 'void-monarch', name: 'Void Monarch', devanagari: 'शून्य', symbol: '🟣' },
+  { id: 'crimson-asura', name: 'Crimson Asura', devanagari: 'असुर', symbol: '🔴' },
+  { id: 'cyber-trishula', name: 'Cyber Trishula', devanagari: 'त्रिशूल', symbol: '🔵' },
+  { id: 'abyssal-gold', name: 'Abyssal Gold', devanagari: 'काल', symbol: '🟡' }
+];
+
+let currentAuraIndex = 0;
+
+function initKalarajaLogo() {
+  const auraButtons = document.querySelectorAll('.btn-aura-opt');
+  const velButtons = document.querySelectorAll('.btn-vel-opt');
+  const btnCycleAura = document.getElementById('btn-cycle-aura');
+  const auraPill = document.getElementById('aura-mode-pill');
+  const btnToggleShowcase = document.getElementById('btn-toggle-showcase');
+  const showcaseCard = document.getElementById('kalaraja-showcase');
+  const headerCrest = document.getElementById('header-crest');
+  const stageFrame = document.getElementById('stage-frame');
+  const btnSurge = document.getElementById('btn-surge-aura');
+  const btnDownload = document.getElementById('btn-download-logo');
+  const btnCopySvg = document.getElementById('btn-copy-svg');
+
+  // 1. Aura Selection via Option Buttons
+  auraButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetAura = btn.getAttribute('data-aura');
+      setAuraTheme(targetAura);
+    });
+  });
+
+  // 2. Aura Cycling via Header Pill
+  if (btnCycleAura) {
+    btnCycleAura.addEventListener('click', (e) => {
+      e.stopPropagation();
+      cycleAuraTheme();
+    });
+  }
+  if (auraPill) {
+    auraPill.addEventListener('click', () => {
+      cycleAuraTheme();
+    });
+  }
+
+  // 3. Velocity Speeds
+  velButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const vel = btn.getAttribute('data-vel');
+      document.body.setAttribute('data-velocity', vel);
+      velButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // 4. Energy Surge Shockwaves
+  function triggerSurge() {
+    const ripple = document.getElementById('shockwave-ripple');
+    if (ripple) {
+      ripple.classList.remove('surge-active');
+      void ripple.offsetWidth; // force reflow
+      ripple.classList.add('surge-active');
+    }
+
+    if (headerCrest) {
+      headerCrest.style.transform = 'scale(1.25) rotate(18deg)';
+      setTimeout(() => {
+        headerCrest.style.transform = '';
+      }, 500);
+    }
+  }
+
+  if (btnSurge) btnSurge.addEventListener('click', triggerSurge);
+  if (stageFrame) stageFrame.addEventListener('click', triggerSurge);
+  if (headerCrest) headerCrest.addEventListener('click', triggerSurge);
+
+  // 5. Toggle Showcase
+  if (btnToggleShowcase && showcaseCard) {
+    btnToggleShowcase.addEventListener('click', () => {
+      if (showcaseCard.classList.contains('hidden')) {
+        showcaseCard.classList.remove('hidden');
+        showcaseCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        showcaseCard.classList.add('hidden');
+      }
+    });
+  }
+
+  // 6. Download SVG Logo
+  if (btnDownload) {
+    btnDownload.addEventListener('click', () => {
+      downloadKalarajaSvg();
+    });
+  }
+
+  // 7. Copy SVG Code to Clipboard
+  if (btnCopySvg) {
+    btnCopySvg.addEventListener('click', () => {
+      copyKalarajaSvgCode();
+    });
+  }
+}
+
+function setAuraTheme(auraId) {
+  const foundIdx = AURA_THEMES.findIndex(t => t.id === auraId);
+  if (foundIdx !== -1) currentAuraIndex = foundIdx;
+
+  const current = AURA_THEMES[currentAuraIndex];
+  document.body.setAttribute('data-aura', current.id);
+
+  const auraLabel = document.getElementById('current-aura-name');
+  if (auraLabel) {
+    auraLabel.textContent = current.name;
+  }
+
+  const auraButtons = document.querySelectorAll('.btn-aura-opt');
+  auraButtons.forEach(btn => {
+    if (btn.getAttribute('data-aura') === current.id) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+function cycleAuraTheme() {
+  currentAuraIndex = (currentAuraIndex + 1) % AURA_THEMES.length;
+  setAuraTheme(AURA_THEMES[currentAuraIndex].id);
+}
+
+function downloadKalarajaSvg() {
+  const svgUrl = '/static/assets/logo-kalaraja.svg';
+  const a = document.createElement('a');
+  a.href = svgUrl;
+  a.download = 'kalaraja-dark-lord-logo.svg';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('📥 Downloading KĀLARĀJA Dark Lord SVG Logo...');
+}
+
+async function copyKalarajaSvgCode() {
+  try {
+    const res = await fetch('/static/assets/logo-kalaraja.svg');
+    const svgCode = await res.text();
+    await navigator.clipboard.writeText(svgCode);
+    showToast('🔱 KĀLARĀJA Vector SVG code copied to clipboard!');
+  } catch (err) {
+    // Fallback if fetch fails
+    const svgEl = document.querySelector('.kalaraja-stage-svg');
+    if (svgEl) {
+      const serializer = new XMLSerializer();
+      const code = serializer.serializeToString(svgEl);
+      await navigator.clipboard.writeText(code);
+      showToast('🔱 KĀLARĀJA Vector SVG code copied to clipboard!');
+    } else {
+      showToast('⚠️ Could not copy SVG code directly.');
+    }
+  }
+}
+
+function showToast(message) {
+  let toast = document.getElementById('kalaraja-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'kalaraja-toast';
+    toast.style.position = 'fixed';
+    toast.style.bottom = '2rem';
+    toast.style.right = '2rem';
+    toast.style.background = 'rgba(14, 20, 36, 0.95)';
+    toast.style.border = '1px solid var(--aura-primary, #8b5cf6)';
+    toast.style.boxShadow = '0 10px 30px rgba(0,0,0,0.7), 0 0 20px var(--aura-glow, rgba(139,92,246,0.4))';
+    toast.style.color = '#ffffff';
+    toast.style.fontFamily = 'var(--font-mono, monospace)';
+    toast.style.fontSize = '0.85rem';
+    toast.style.padding = '0.85rem 1.4rem';
+    toast.style.borderRadius = '8px';
+    toast.style.zIndex = '9999';
+    toast.style.transition = 'all 0.3s ease';
+    toast.style.pointerEvents = 'none';
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateY(0)';
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+  }, 3200);
 }

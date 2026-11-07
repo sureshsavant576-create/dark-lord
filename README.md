@@ -1,4 +1,18 @@
-# BrandShield AI
+<div align="center">
+  <img src="./kalaraja-dark-lord-logo.svg" alt="KĀLARĀJA: The Dark Lord Logo" width="400" />
+  
+  # KĀLARĀJA : THE DARK LORD
+  ### Intelligent Brand Sentinel & Company Vibe Verification
+  *कालराज • Tamaso Mā Jyotir Gamaya • Ananta Tamas*
+
+  [![Aura Mode](https://img.shields.io/badge/Aura%20Engine-Void%20Monarch-8b5cf6.svg)](#)
+  [![Symbology](https://img.shields.io/badge/Symbology-Sanskrit%20Trishula-06b6d4.svg)](./LOGO.md)
+  [![Brand DNA](https://img.shields.io/badge/Brand%20DNA-Biometric%20Math-10b981.svg)](#)
+</div>
+
+---
+
+# BrandShield AI (KĀLARĀJA: Dark Lord Sentinel)
 
 BrandShield AI verifies whether developer-submitted marketing content (posters, banners, ad copy, slogans) matches a company's approved brand vibes and guidelines before publication.
 

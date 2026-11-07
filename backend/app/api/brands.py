@@ -32,6 +32,32 @@ def get_brand(brand_id: str) -> BrandProfile:
     return profile
 
 
+@router.post("/scan-reference")
+async def scan_reference_image(file: UploadFile = File(...)):
+    """Runs multi-stage visual, color, and aesthetic filters on an uploaded reference visual.
+    
+    Auto-detects:
+    1. Color palette & dominant brand color (quantized CIELAB centroids)
+    2. Whitespace ratio & visual clutter index
+    3. Aesthetic vibes (mood, personality, visual style)
+    4. Detected slogans/taglines & suggested prohibited claims
+    """
+    settings.init_directories()
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Reference file required.")
+
+    dest_name = f"scan_{uuid.uuid4().hex[:6]}_{file.filename}"
+    dest_path = settings.GUIDELINES_DIR / dest_name
+    with open(dest_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    try:
+        features = await brand_service.scan_reference_features(dest_path)
+        return features
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to scan reference image: {str(exc)}")
+
+
 @router.post("/draft", response_model=BrandProfile)
 async def create_brand_draft(
     brand_name: str = Form(...),

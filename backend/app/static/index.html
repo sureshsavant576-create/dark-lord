@@ -3,21 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BrandShield AI – Intelligent Brand Inspection & Company Vibe Verification</title>
-  <link rel="stylesheet" href="/static/style.css?v=2.2">
+  <title>KĀLARĀJA – Dark Lord Intelligent Brand Sentinel & Company Vibe Verification</title>
+  <link rel="icon" type="image/svg+xml" href="/static/assets/favicon.svg">
+  <link rel="stylesheet" href="/static/style.css?v=3.5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Orbitron:wght@600;800;900&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body data-aura="void-monarch" data-velocity="flow">
   <!-- Header Banner -->
   <header class="app-header">
     <div class="header-container">
-      <div class="brand-logo">
-        <span class="logo-shield">🛡️</span>
-        <div>
-          <h1>BrandShield <span class="ai-badge">AI</span></h1>
-          <p class="tagline">Verify developer marketing creative & posters against company vibes and brand standards.</p>
+      <div class="brand-logo" id="header-brand-logo">
+        <div class="anime-header-crest" id="header-crest" title="KĀLARĀJA: Dark Lord Anime Crest (Click to Surge Aura)">
+          <div class="crest-aura-halo"></div>
+          <svg class="crest-svg" viewBox="0 0 100 100" width="46" height="46">
+            <circle class="crest-ring-outer" cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="1.8" stroke-dasharray="6 3" />
+            <polygon class="crest-oct-ring" points="50,14 75,25 86,50 75,75 50,86 25,75 14,50 25,25" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="14 4" opacity="0.65" />
+            <path class="crest-blade-side" d="M 50 48 C 42 38 32 32 26 22 C 30 34 36 42 44 48 Z" fill="currentColor" opacity="0.8" />
+            <path class="crest-blade-side" d="M 50 48 C 58 38 68 32 74 22 C 70 34 64 42 56 48 Z" fill="currentColor" opacity="0.8" />
+            <path class="crest-blade-center" d="M 50 10 L 55 35 L 53 58 L 50 64 L 47 58 L 45 35 Z" fill="currentColor" />
+            <path class="crest-spear-pommel" d="M 50 68 L 53 78 L 50 88 L 47 78 Z" fill="currentColor" opacity="0.9" />
+            <polygon class="crest-eye-diamond" points="50,42 58,50 50,58 42,50" fill="#07090e" stroke="currentColor" stroke-width="1.5" />
+            <circle class="crest-eye-pupil" cx="50" cy="50" r="2.5" fill="#ffffff" />
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <div class="brand-sanskrit-tag">कालराज • KĀLARĀJA</div>
+          <h1>KĀLARĀJA <span class="ai-badge darklord-badge">DARK LORD</span></h1>
+          <p class="tagline">Sovereign Brand Sentinel: Verify developer marketing creative & posters against company vibes.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="aura-selector-pill" id="aura-mode-pill" title="Click to cycle Anime Aura mode">
+          <span class="aura-dot"></span>
+          <span class="aura-label">Aura: <strong id="current-aura-name">Void Monarch</strong></span>
+          <button type="button" class="btn-aura-cycle" id="btn-cycle-aura" title="Cycle Aura Theme">⚡</button>
+        </div>
+        <button type="button" class="btn-anime-showcase-toggle" id="btn-toggle-showcase" title="Toggle Anime Logo Studio">
+          <span class="showcase-icon">🔱</span> <span class="showcase-text">Logo Studio</span>
+        </button>
+        <div id="ai-status-pill" class="status-pill status-ready">
+          <span class="status-pulse-dot"></span>
+          <span class="status-text">Engine Online</span>
         </div>
       </div>
     </div>
@@ -37,6 +65,197 @@
 
   <!-- Main Container -->
   <main class="main-content">
+    
+    <!-- ====================================================================== -->
+    <!-- HERO: KĀLARĀJA ANIME LOGO & SANSKRIT STUDIO                            -->
+    <!-- ====================================================================== -->
+    <section class="kalaraja-showcase-card" id="kalaraja-showcase">
+      <div class="showcase-inner">
+        
+        <!-- Left Column: Interactive Animated SVG Stage -->
+        <div class="showcase-stage-wrap">
+          <div class="stage-ambient-glow" id="stage-glow"></div>
+          <div class="stage-svg-frame" id="stage-frame" title="Click crest to unleash Energy Surge!">
+            <!-- Embedded Full-Scale Animated Vector Logo -->
+            <svg class="kalaraja-stage-svg" viewBox="0 0 600 600" width="100%" height="100%">
+              <defs>
+                <radialGradient id="showcaseVoid" cx="50%" cy="50%" r="65%">
+                  <stop offset="0%" stop-color="#140c26" stop-opacity="0.9" />
+                  <stop offset="60%" stop-color="#090514" stop-opacity="0.98" />
+                  <stop offset="100%" stop-color="#04020a" stop-opacity="1" />
+                </radialGradient>
+                <linearGradient id="liveNeonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="var(--aura-secondary, #c084fc)" />
+                  <stop offset="50%" stop-color="var(--aura-primary, #8b5cf6)" />
+                  <stop offset="100%" stop-color="var(--aura-accent, #06b6d4)" />
+                </linearGradient>
+                <linearGradient id="liveBladeGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff" />
+                  <stop offset="35%" stop-color="var(--aura-secondary, #c084fc)" />
+                  <stop offset="100%" stop-color="#120524" />
+                </linearGradient>
+                <filter id="liveAnimeGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="5" result="blur1" />
+                  <feGaussianBlur stdDeviation="14" result="blur2" />
+                  <feMerge>
+                    <feMergeNode in="blur2" />
+                    <feMergeNode in="blur1" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <!-- Stage Void Backdrop -->
+              <circle cx="300" cy="300" r="285" fill="url(#showcaseVoid)" stroke="var(--aura-primary, #8b5cf6)" stroke-width="1.5" stroke-opacity="0.35" />
+
+              <!-- Outer Energy Field Rings -->
+              <g class="pulse-aura-field">
+                <circle cx="300" cy="300" r="260" fill="none" stroke="var(--aura-primary, #8b5cf6)" stroke-width="1" stroke-dasharray="4 8" opacity="0.3" />
+                <circle cx="300" cy="300" r="240" fill="none" stroke="var(--aura-accent, #06b6d4)" stroke-width="1.5" stroke-dasharray="16 8" opacity="0.45" />
+              </g>
+
+              <!-- ROTATING LAYER 1: SANSKRIT MANDALA RING -->
+              <g class="spin-slow">
+                <circle cx="300" cy="300" r="200" fill="none" stroke="url(#liveNeonGrad)" stroke-width="2.5" opacity="0.85" />
+                <circle cx="300" cy="300" r="186" fill="none" stroke="var(--aura-secondary, #c084fc)" stroke-width="1" stroke-dasharray="10 6" opacity="0.5" />
+                <!-- 8 Cardinal Runic Spikes -->
+                <path d="M 300 88 L 305 100 L 295 100 Z" fill="var(--aura-accent, #38bdf8)" filter="url(#liveAnimeGlow)" />
+                <path d="M 300 512 L 305 500 L 295 500 Z" fill="var(--aura-accent, #38bdf8)" filter="url(#liveAnimeGlow)" />
+                <path d="M 88 300 L 100 295 L 100 305 Z" fill="var(--aura-accent, #38bdf8)" filter="url(#liveAnimeGlow)" />
+                <path d="M 512 300 L 500 295 L 500 305 Z" fill="var(--aura-accent, #38bdf8)" filter="url(#liveAnimeGlow)" />
+                <!-- Diagonal Sigil Dots -->
+                <circle cx="160" cy="160" r="3.5" fill="var(--aura-accent, #ec4899)" />
+                <circle cx="440" cy="160" r="3.5" fill="var(--aura-accent, #ec4899)" />
+                <circle cx="160" cy="440" r="3.5" fill="var(--aura-accent, #ec4899)" />
+                <circle cx="440" cy="440" r="3.5" fill="var(--aura-accent, #ec4899)" />
+              </g>
+
+              <!-- ROTATING LAYER 2: OCTAGONAL DOMAIN EXPANSION BARRIER (Counter-Rotating) -->
+              <g class="spin-counter">
+                <polygon points="300,135 416,183 465,300 416,417 300,465 184,417 135,300 184,183" 
+                         fill="none" stroke="url(#liveNeonGrad)" stroke-width="1.8" opacity="0.65" stroke-dasharray="20 8" />
+                <polygon points="300,145 304,150 300,155 296,150" fill="var(--aura-accent, #38bdf8)" />
+                <polygon points="455,300 459,305 455,310 451,305" fill="var(--aura-accent, #38bdf8)" />
+                <polygon points="300,455 304,460 300,465 296,460" fill="var(--aura-accent, #38bdf8)" />
+                <polygon points="145,300 149,305 145,310 141,305" fill="var(--aura-accent, #38bdf8)" />
+              </g>
+
+              <!-- CORE TRISHULA CREST (THE DARK LORD'S SPEAR) -->
+              <g class="blade-pulse" id="stage-trishula">
+                <!-- Astral Horns / Wings -->
+                <path d="M 300 250 C 350 190, 420 170, 445 120 C 430 175, 390 240, 345 285 C 375 295, 420 305, 460 280 C 415 330, 355 335, 320 315 Z" 
+                      fill="url(#liveNeonGrad)" opacity="0.8" filter="url(#liveAnimeGlow)" />
+                <path d="M 300 250 C 250 190, 180 170, 155 120 C 170 175, 210 240, 255 285 C 225 295, 180 305, 140 280 C 185 330, 245 335, 280 315 Z" 
+                      fill="url(#liveNeonGrad)" opacity="0.8" filter="url(#liveAnimeGlow)" />
+                <!-- Left & Right Scythe Blades -->
+                <path d="M 260 280 C 230 230, 190 180, 195 125 C 210 170, 245 210, 275 240 L 270 305 Z" fill="url(#liveBladeGrad)" stroke="var(--aura-secondary, #c084fc)" stroke-width="1.5" />
+                <path d="M 340 280 C 370 230, 410 180, 405 125 C 390 170, 355 210, 325 240 L 330 305 Z" fill="url(#liveBladeGrad)" stroke="var(--aura-secondary, #c084fc)" stroke-width="1.5" />
+                <!-- Central Trishula Spear Blade -->
+                <path d="M 300 45 L 318 175 L 312 290 L 300 320 L 288 290 L 282 175 Z" fill="url(#liveBladeGrad)" stroke="#ffffff" stroke-width="2" filter="url(#liveAnimeGlow)" />
+                <path d="M 300 70 L 306 180 L 304 280 L 300 295 L 296 280 L 294 180 Z" fill="url(#liveNeonGrad)" />
+                <!-- Crossguard Collar & Pommel -->
+                <polygon points="300,295 335,315 345,335 300,350 255,335 265,315" fill="#140a2b" stroke="var(--aura-primary, #8b5cf6)" stroke-width="2" />
+                <path d="M 300 350 L 312 405 L 300 460 L 288 405 Z" fill="url(#liveBladeGrad)" stroke="var(--aura-primary, #8b5cf6)" stroke-width="1.5" />
+              </g>
+
+              <!-- AWAKENED KĀLA-NETRA (THIRD EYE CORE) -->
+              <g class="eye-glow">
+                <polygon points="300,260 328,290 300,320 272,290" fill="#05020a" stroke="var(--aura-accent, #38bdf8)" stroke-width="2.5" />
+                <polygon points="300,268 320,290 300,312 280,290" fill="var(--aura-primary, #8b5cf6)" />
+                <ellipse cx="300" cy="290" rx="3.5" ry="14" fill="#ffffff" />
+                <circle cx="300" cy="290" r="3" fill="#ffffff" />
+              </g>
+            </svg>
+          </div>
+
+          <!-- Interactive Shockwave Animation Layer -->
+          <div class="shockwave-ripple" id="shockwave-ripple"></div>
+        </div>
+
+        <!-- Right Column: Sanskrit Lore in English & Live Customizer -->
+        <div class="showcase-content">
+          <div class="showcase-header">
+            <div class="sanskrit-badge-row">
+              <span class="sanskrit-devanagari-chip">कालराज</span>
+              <span class="sanskrit-translit-chip">KĀLARĀJA</span>
+              <span class="sanskrit-meaning-chip">Sanskrit: "The Dark Sovereign"</span>
+            </div>
+            <h2 class="showcase-title">KĀLARĀJA <span class="anime-gradient-word">// THE DARK LORD</span></h2>
+            <p class="showcase-desc">
+              A high-precision fusion of sacred Sanskrit symbology (<em>Trishula</em> &bull; <em>Sudarshana Mandala</em> &bull; <em>Kāla-Netra</em>) with cutting-edge anime energy aesthetics. The sovereign sentinel verifying brand integrity across marketing copy and visual posters.
+            </p>
+          </div>
+
+          <!-- Sanskrit Lore Accordion / Snippets -->
+          <div class="sanskrit-etymology-box">
+            <div class="etymology-grid">
+              <div class="etymology-col">
+                <span class="etymology-term">KĀLA (काल)</span>
+                <span class="etymology-def">Time, Primordial Void, Sovereign of Destiny and Eternal Night.</span>
+              </div>
+              <div class="etymology-col">
+                <span class="etymology-term">RĀJA (राज)</span>
+                <span class="etymology-def">Supreme Monarch, Sovereign King, Cosmic Ruler.</span>
+              </div>
+            </div>
+            <div class="sacred-motto-row">
+              <span class="motto-label">Mantra:</span>
+              <span class="motto-text">"Tamaso Mā Jyotir Gamaya" (From Darkness into Radiant Truth) &bull; Ananta Tamas</span>
+            </div>
+          </div>
+
+          <!-- Aura Customizer Controls -->
+          <div class="showcase-controls">
+            <div class="control-section">
+              <label class="control-label">Aura Power Mode:</label>
+              <div class="aura-buttons-row">
+                <button type="button" class="btn-aura-opt active" data-aura="void-monarch">
+                  <span class="aura-preview-swatch swatch-void"></span>
+                  <span>Void Monarch</span>
+                </button>
+                <button type="button" class="btn-aura-opt" data-aura="crimson-asura">
+                  <span class="aura-preview-swatch swatch-crimson"></span>
+                  <span>Crimson Asura</span>
+                </button>
+                <button type="button" class="btn-aura-opt" data-aura="cyber-trishula">
+                  <span class="aura-preview-swatch swatch-cyber"></span>
+                  <span>Cyber Trishula</span>
+                </button>
+                <button type="button" class="btn-aura-opt" data-aura="abyssal-gold">
+                  <span class="aura-preview-swatch swatch-gold"></span>
+                  <span>Abyssal Gold</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="control-section-inline">
+              <div class="velocity-controls">
+                <label class="control-label">Aura Velocity:</label>
+                <div class="velocity-buttons">
+                  <button type="button" class="btn-vel-opt" data-vel="zen">Zen (Slow)</button>
+                  <button type="button" class="btn-vel-opt active" data-vel="flow">Flow</button>
+                  <button type="button" class="btn-vel-opt" data-vel="hyper">⚡ Hyper</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons: Download SVG, Copy Code, Surge Power -->
+            <div class="showcase-actions-row">
+              <button type="button" class="btn btn-primary btn-anime-glow" id="btn-surge-aura">
+                <span>⚡ Surge Energy</span>
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-download-logo">
+                <span>📥 Download SVG Logo</span>
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-copy-svg">
+                <span>📋 Copy SVG Code</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
     
     <!-- TAB 1: DEVELOPER VIBE CHECK -->
     <section id="tab-inspect" class="tab-pane active">
@@ -289,6 +508,8 @@
           </div>
 
           <form id="onboarding-form" class="app-form">
+            <input type="hidden" id="ob-editing-brand-id">
+
             <div class="form-row">
               <div class="form-group">
                 <label for="ob-brand-name">Company / Brand Name:</label>
@@ -298,6 +519,20 @@
                 <label for="ob-manager-email">Account Lead Email:</label>
                 <input type="email" id="ob-manager-email" placeholder="e.g. brand@company.com" required>
               </div>
+            </div>
+
+            <!-- Reference Image Multi-Filter Auto-Extraction Box -->
+            <div class="form-group reference-scan-box">
+              <label for="ob-reference-files">🖼️ Upload Approved Poster / Reference Creative (Auto-Extract Content):</label>
+              <div class="drop-zone ob-drop-zone" id="ob-drop-zone">
+                <input type="file" id="ob-reference-files" class="file-input" accept=".png,.jpg,.jpeg,.webp,.pdf">
+                <div class="drop-zone-content">
+                  <span class="upload-icon">🪄</span>
+                  <p class="drop-text">Drop reference poster or graphic here to <span class="highlight">auto-extract brand content</span></p>
+                  <span class="drop-subtext">Filters: CIELAB Color Centroids, Layout Whitespace, and Aesthetic Style Extraction</span>
+                </div>
+              </div>
+              <div id="ob-scan-feedback" class="ob-scan-feedback hidden"></div>
             </div>
 
             <div class="form-row">
@@ -330,7 +565,8 @@
             <div class="form-group">
               <label for="ob-palette">Approved Brand Colors (Comma-separated HEX):</label>
               <input type="text" id="ob-palette" placeholder="#000000, #FFFFFF, #86868B" required>
-              <span class="field-hint">Enter your official company HEX color codes.</span>
+              <div id="ob-palette-chips" class="palette-mini-row" style="margin-top: 0.5rem;"></div>
+              <span class="field-hint">Auto-extracted from your reference visual, or click swatches / type HEX codes. You can edit any color anytime.</span>
             </div>
 
             <div class="form-group">
@@ -344,15 +580,14 @@
               <input type="text" id="ob-tagline" placeholder="e.g. Think different">
             </div>
 
-            <div class="form-group">
-              <label>Upload Previous Approved Work / Poster Guidelines (PNG, JPG, PDF):</label>
-              <input type="file" id="ob-reference-files" multiple accept=".pdf,.png,.jpg,.jpeg,.txt,.md">
-              <span class="field-hint">Used to extract your brand's mathematical DNA vector template.</span>
+            <div class="form-actions-row">
+              <button type="submit" id="btn-create-draft" class="btn btn-primary btn-block">
+                <span>💾 Save & Lock Company Vibes</span>
+              </button>
+              <button type="button" id="btn-cancel-edit" class="btn btn-secondary hidden" style="margin-top: 0.5rem; width: 100%;">
+                <span>Cancel Edit</span>
+              </button>
             </div>
-
-            <button type="submit" id="btn-create-draft" class="btn btn-primary btn-block">
-              <span>💾 Save & Lock Company Vibes</span>
-            </button>
           </form>
         </div>
 
@@ -377,9 +612,22 @@
   </main>
 
   <footer class="app-footer">
-    <p>BrandShield AI &copy; 2026 Team Dark Lord (CodeNexus India Hackathon – Inkloom AI Challenge). Fast & lightweight company vibe verification.</p>
+    <div class="footer-kalaraja-brand">
+      <div class="footer-mini-crest">
+        <svg viewBox="0 0 100 100" width="28" height="28">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="var(--aura-primary, #8b5cf6)" stroke-width="2" stroke-dasharray="6 3" />
+          <polygon points="50,18 70,28 80,50 70,72 50,82 30,72 20,50 30,28" fill="none" stroke="var(--aura-accent, #06b6d4)" stroke-width="1.2" />
+          <path d="M 50 14 L 54 36 L 50 60 L 46 36 Z" fill="var(--aura-secondary, #c084fc)" />
+          <circle cx="50" cy="50" r="3" fill="#ffffff" />
+        </svg>
+      </div>
+      <div>
+        <div class="footer-sanskrit-line">कालराज • KĀLARĀJA : THE DARK LORD</div>
+        <p>BrandShield &copy; 2026 <strong>Team Dark Lord</strong>. Sovereign company vibe & compliance verification.</p>
+      </div>
+    </div>
   </footer>
 
-  <script src="/static/app.js?v=2.2"></script>
+  <script src="/static/app.js?v=3.5"></script>
 </body>
 </html>

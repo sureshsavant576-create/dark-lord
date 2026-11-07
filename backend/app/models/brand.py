@@ -83,5 +83,6 @@ class BrandProfileConfirmationRequest(BaseModel):
     approved_palette: List[str]
     disallowed_elements: List[str]
     key_values: List[str] = Field(default_factory=list)
+    mission_statement: Optional[str] = Field(default="")
     confirmed_by: str = Field(default="Brand Manager", description="Name or email of the approver")
     confirmation_notes: Optional[str] = Field(default="Approved after onboarding review")

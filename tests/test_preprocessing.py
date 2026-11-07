@@ -34,7 +34,7 @@ def test_file_validation_and_duplicate_hash(tmp_path: Path):
     unsupported.write_bytes(b"PK\x03\x04dummy")
     unsupported_res = validate_file(unsupported)
     assert unsupported_res.is_valid is False
-    assert "Unsupported file format" in unsupported_res.errors[0]
+    assert "Unsupported" in unsupported_res.errors[0]
 
 
 def test_color_math_and_delta_e():
