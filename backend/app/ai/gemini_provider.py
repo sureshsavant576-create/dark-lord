@@ -1,8 +1,3 @@
-"""BrandShield AI - Google Gemini Multimodal Provider.
-
-Integrates the official Google GenAI SDK for lightweight, fast multimodal inspection
-(supporting image, audio, document text, and JSON schema reasoning).
-"""
 import json
 import logging
 import re
@@ -21,9 +16,7 @@ from backend.app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-
 class GeminiProvider(AIProviderBase):
-    """Real AI provider utilizing Google Gemini (gemini-3.5-flash / gemini-3.5-flash-lite) with resilient fallback."""
 
     FALLBACK_MODELS = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash"]
 
@@ -47,7 +40,6 @@ class GeminiProvider(AIProviderBase):
         return self._client
 
     def _generate_with_fallback(self, contents: Any) -> Tuple[str, str]:
-        """Try primary model; if temporary 503/404 occurs, automatically try candidate models."""
         client = self._get_client()
         models_to_try = [self.model_name] + [m for m in self.FALLBACK_MODELS if m != self.model_name]
         last_error = None
@@ -76,7 +68,6 @@ class GeminiProvider(AIProviderBase):
         request: ContentAnalysisRequest,
         target_profile: Dict[str, Any]
     ) -> MultimodalEvaluation:
-        """Inspect creative content (image, audio, document) against target brand profile."""
         if not self.is_configured():
             return MultimodalEvaluation(
                 provider=self.provider_name(),
@@ -91,12 +82,10 @@ class GeminiProvider(AIProviderBase):
             client = self._get_client()
             contents: List[Any] = []
 
-            # Attach media file if present on disk
             if request.file_path and request.file_path.exists():
                 file_bytes = request.file_path.read_bytes()
                 contents.append(types.Part.from_bytes(data=file_bytes, mime_type=request.mime_type))
 
-            # Build structured evaluation prompt
             prompt_text = f"""
 You are the BrandShield AI inspection engine. Inspect the submitted creative material against the company's approved brand identity.
 
@@ -133,10 +122,8 @@ Return ONLY a valid JSON object matching the following structure:
 """
             contents.append(prompt_text)
 
-            # Call Gemini with resilient automatic fallback
             raw_text, used_model = self._generate_with_fallback(contents)
 
-            # Parse JSON safely
             try:
                 response_data = json.loads(raw_text)
             except Exception:
@@ -176,7 +163,6 @@ Return ONLY a valid JSON object matching the following structure:
         reference_texts: List[str],
         reference_images_info: Optional[List[Dict[str, Any]]] = None
     ) -> BrandSynthesisEvaluation:
-        """Synthesize questionnaire and reference guidelines into a candidate structured brand profile."""
         if not self.is_configured():
             return BrandSynthesisEvaluation(
                 provider=self.provider_name(),

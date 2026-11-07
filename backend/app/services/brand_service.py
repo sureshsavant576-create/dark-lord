@@ -1,11 +1,3 @@
-"""BrandShield AI - Company Brand Identity Service.
-
-Implements the three-stage brand intelligence lifecycle:
-1. Questionnaire & Reference Ingestion.
-2. Preprocessing & AI Candidate Synthesis.
-3. Human Review & Profile Confirmation.
-Stores confirmed profiles persistently for fast, reusable developer inspections.
-"""
 from __future__ import annotations
 import json
 import logging
@@ -30,22 +22,17 @@ from backend.app.preprocessing.pipeline import preprocessing_pipeline
 
 logger = logging.getLogger(__name__)
 
-
 def slugify_brand_name(name: str) -> str:
-    """Create a URL-safe, deterministic brand ID from a brand name."""
     clean = re.sub(r"[^a-zA-Z0-9\s-]", "", name).strip().lower()
     return re.sub(r"[\s-]+", "-", clean) or f"brand-{uuid.uuid4().hex[:6]}"
 
-
 class BrandService:
-    """Manages company brand profile creation, AI synthesis, confirmation, and persistence."""
 
     def __init__(self, db_path: Optional[Path] = None):
         self.db_path = db_path or (settings.DB_DIR / "brand_profiles.json")
         self._ensure_db()
 
     def _ensure_db(self) -> None:
-        """Ensure the storage database file exists."""
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.db_path.exists():
             self.db_path.write_text("{}", encoding="utf-8")
@@ -59,24 +46,20 @@ class BrandService:
             return {}
 
     def _save_all(self, data: Dict[str, dict]) -> None:
-        # Atomic write to temporary file then replace
         temp_path = self.db_path.with_suffix(".tmp")
         temp_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
         temp_path.replace(self.db_path)
 
     def get_brand_profile(self, brand_id: str) -> Optional[BrandProfile]:
-        """Retrieve a brand profile by brand ID in O(1) time."""
         data = self._load_all()
         raw = data.get(brand_id)
         return BrandProfile(**raw) if raw else None
 
     def list_brand_profiles(self) -> List[BrandProfile]:
-        """List all stored brand profiles."""
         data = self._load_all()
         return [BrandProfile(**item) for item in data.values()]
 
     def save_brand_profile(self, profile: BrandProfile) -> BrandProfile:
-        """Persist or update a brand profile in storage."""
         data = self._load_all()
         profile.updated_at = datetime.now(timezone.utc).isoformat()
         data[profile.brand_id] = profile.model_dump()
@@ -88,13 +71,11 @@ class BrandService:
         questionnaire: BrandQuestionnaire,
         uploaded_reference_paths: Optional[List[Path]] = None
     ) -> BrandProfile:
-        """Process onboarding questionnaire and reference documents to generate a candidate profile draft."""
         brand_id = slugify_brand_name(questionnaire.brand_name)
         reference_assets: List[ReferenceAssetInfo] = []
         reference_texts: List[str] = []
         extracted_palette_candidates: List[str] = [clean_hex_code(c) for c in questionnaire.palette if clean_hex_code(c)]
 
-        # Step 1: Preprocess each uploaded reference asset
         if uploaded_reference_paths:
             for path in uploaded_reference_paths:
                 preprocessed = preprocessing_pipeline.preprocess(path)
@@ -104,14 +85,12 @@ class BrandService:
                 asset_id = f"ref-{uuid.uuid4().hex[:8]}"
                 summary = preprocessed.extracted_text_summary
 
-                # Ingest colors from approved reference images
                 if preprocessed.color_palette:
                     for hex_code in preprocessed.color_palette.hex_list:
                         cleaned = clean_hex_code(hex_code)
                         if cleaned and cleaned not in extracted_palette_candidates:
                             extracted_palette_candidates.append(cleaned)
 
-                # Ingest text from guidelines
                 if preprocessed.document_data and preprocessed.document_data.full_text:
                     reference_texts.append(preprocessed.document_data.full_text[:4000])
 
@@ -124,16 +103,13 @@ class BrandService:
                     extracted_summary=summary[:300]
                 ))
 
-        # Step 2: Attempt AI synthesis if provider configured
         q_dict = questionnaire.model_dump()
         ai_result = await ai_gateway.synthesize_brand_identity(
             questionnaire_data=q_dict,
             reference_texts=reference_texts
         )
 
-        # Step 3: Construct Draft Profile
         if ai_result.status == ProviderStatus.OPERATIONAL and ai_result.is_ai_generated:
-            # Profile enriched with actual AI synthesis from guidelines
             profile = BrandProfile(
                 brand_id=brand_id,
                 brand_name=questionnaire.brand_name,
@@ -155,7 +131,6 @@ class BrandService:
                 synthesis_explanation=ai_result.raw_explanation
             )
         else:
-            # Deterministic construction from questionnaire (Rule 10: No mock hallucinated AI output)
             profile = BrandProfile(
                 brand_id=brand_id,
                 brand_name=questionnaire.brand_name,
@@ -180,12 +155,10 @@ class BrandService:
         return profile
 
     def confirm_brand_profile(self, request: BrandProfileConfirmationRequest) -> BrandProfile:
-        """Lock in company-verified brand profile after human review and edits."""
         existing = self.get_brand_profile(request.brand_id)
         if not existing:
             raise ValueError(f"Brand profile with ID '{request.brand_id}' not found.")
 
-        # Update profile with human-approved fields
         existing.personality = [p.strip() for p in request.personality if p.strip()]
         existing.mood = [m.strip() for m in request.mood if m.strip()]
         existing.communication_tone = [t.strip() for t in request.communication_tone if t.strip()]
@@ -199,7 +172,6 @@ class BrandService:
         if request.mission_statement:
             existing.mission_statement = request.mission_statement.strip()
 
-        # Synthesize Biometric Brand DNA Targets
         is_minimal = any("minimal" in s.lower() for s in (existing.visual_style + existing.personality))
         existing.brand_dna = {
             "target_whitespace_ratio": 0.65 if is_minimal else 0.40,
@@ -216,17 +188,14 @@ class BrandService:
         return self.save_brand_profile(existing)
 
     async def scan_reference_features(self, file_path: Path) -> Dict[str, Any]:
-        """Runs multiple filters on an uploaded reference visual to auto-identify palette, layout, and vibes."""
         from backend.app.preprocessing.pipeline import preprocessing_pipeline
         from backend.app.ai.gateway import ai_gateway
 
         preprocessed = preprocessing_pipeline.preprocess(file_path=file_path)
 
-        # Filter 1: Color Quantization & Centroid Filter
         extracted_palette = preprocessed.extracted_colors_hex or []
         dominant_color = preprocessed.dominant_color_hex or ""
 
-        # Filter 2: Whitespace & Layout Density Filter
         ws = preprocessed.visual_fingerprint.whitespace_ratio if preprocessed.visual_fingerprint else 0.55
         cx = preprocessed.visual_fingerprint.complexity_index if preprocessed.visual_fingerprint else 0.25
         is_minimal = ws > 0.60 and cx < 0.35
@@ -238,7 +207,6 @@ class BrandService:
         suggested_avoidances = "super cheap, bargain discount, clearance sale, miracle deal"
         extracted_motto = ""
 
-        # Filter 3: Multimodal Aesthetic & Text Filter (via Gemini)
         provider = ai_gateway.get_primary_provider()
         if provider and provider.is_configured():
             try:
@@ -318,6 +286,5 @@ class BrandService:
             "whitespace_ratio": round(ws, 2),
             "complexity_index": round(cx, 2)
         }
-
 
 brand_service = BrandService()

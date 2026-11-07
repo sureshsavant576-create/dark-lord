@@ -1,10 +1,3 @@
-"""Tests for BrandShield AI Provider Gateway and Rules Compliance.
-
-Verifies:
-- Rule 10: No fictional results when API is unavailable.
-- Rule 11: Clear distinction between AI and deterministic results.
-- Unconfigured status reporting and error diagnostics.
-"""
 import pytest
 from backend.app.ai.base import (
     ContentAnalysisRequest,
@@ -15,28 +8,17 @@ from backend.app.ai.gateway import AIGateway
 from backend.app.ai.gemini_provider import GeminiProvider
 from backend.app.ai.openai_provider import OpenAIProvider
 
-
 def test_gateway_initialization():
-    """Verify Gemini provider is registered in the gateway."""
     gateway = AIGateway()
     assert "gemini" in gateway.providers
 
-
 def test_unconfigured_provider_detection():
-    """Verify that unconfigured providers accurately report False for is_configured."""
     dummy_gemini = GeminiProvider(api_key="")
     assert dummy_gemini.is_configured() is False
 
-
 @pytest.mark.asyncio
 async def test_unconfigured_gateway_inspection_rules_compliance():
-    """Strict Rule 10 & 11 verification:
-
-    When no API key is provided, the gateway MUST NOT invent similarity scores,
-    and MUST mark is_ai_generated as False with ProviderStatus.UNCONFIGURED.
-    """
     gateway = AIGateway()
-    # Force Gemini unconfigured for deterministic testing of the fallback
     gateway.providers["gemini"] = GeminiProvider(api_key="")
 
     req = ContentAnalysisRequest(
@@ -53,17 +35,14 @@ async def test_unconfigured_gateway_inspection_rules_compliance():
 
     result: MultimodalEvaluation = await gateway.analyze_creative_content(req, target_profile)
 
-    # Must NOT hallucinate an AI score
     assert result.alignment_score is None
     assert result.status == ProviderStatus.UNCONFIGURED
     assert result.is_ai_generated is False
     assert "Gemini API is unconfigured" in result.detailed_analysis or "unconfigured" in result.detailed_analysis.lower()
     assert result.confidence_score == 0.0
 
-
 @pytest.mark.asyncio
 async def test_unconfigured_brand_synthesis():
-    """Verify unconfigured brand synthesis returns error state without fabricating profile values."""
     gateway = AIGateway()
     gateway.providers["gemini"] = GeminiProvider(api_key="")
 

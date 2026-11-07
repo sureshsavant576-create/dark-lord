@@ -1,4 +1,3 @@
-"""BrandShield AI - Company Brand Identity & Onboarding Endpoints."""
 from __future__ import annotations
 import json
 import shutil
@@ -17,32 +16,19 @@ from backend.app.services.brand_service import brand_service
 
 router = APIRouter(prefix="/brands", tags=["Brand Onboarding & Governance"])
 
-
 @router.get("", response_model=List[BrandProfile])
 def list_brands() -> List[BrandProfile]:
-    """Retrieve all company brand profiles."""
     return brand_service.list_brand_profiles()
-
 
 @router.get("/{brand_id}", response_model=BrandProfile)
 def get_brand(brand_id: str) -> BrandProfile:
-    """Retrieve a single company brand profile by its ID."""
     profile = brand_service.get_brand_profile(brand_id)
     if not profile:
         raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found.")
     return profile
 
-
 @router.post("/scan-reference")
 async def scan_reference_image(file: UploadFile = File(...)):
-    """Runs multi-stage visual, color, and aesthetic filters on an uploaded reference visual.
-    
-    Auto-detects:
-    1. Color palette & dominant brand color (quantized CIELAB centroids)
-    2. Whitespace ratio & visual clutter index
-    3. Aesthetic vibes (mood, personality, visual style)
-    4. Detected slogans/taglines & suggested prohibited claims
-    """
     settings.init_directories()
     if not file.filename:
         raise HTTPException(status_code=400, detail="Reference file required.")
@@ -59,13 +45,8 @@ async def scan_reference_image(file: UploadFile = File(...)):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Failed to scan reference image: {str(exc)}")
 
-
 @router.post("/extract-palette")
 async def extract_palette_from_image(file: UploadFile = File(...)):
-    """Professional Color Extractor:
-    Extracts detailed color palette with exact percentage coverage,
-    roles, HSL, and WCAG contrast in <10ms for any uploaded image.
-    """
     settings.init_directories()
     if not file.filename:
         raise HTTPException(status_code=400, detail="Image file required.")
@@ -89,7 +70,6 @@ async def extract_palette_from_image(file: UploadFile = File(...)):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Failed to extract color palette: {str(exc)}")
 
-
 @router.post("/draft", response_model=BrandProfile)
 async def create_brand_draft(
     brand_name: str = Form(...),
@@ -103,14 +83,11 @@ async def create_brand_draft(
     tagline_or_mission: Optional[str] = Form(default=""),
     reference_files: Optional[List[UploadFile]] = File(default=None)
 ) -> BrandProfile:
-    """Stage 1 & 2: Ingest company onboarding questionnaire and reference files to generate a draft profile."""
-    # Parse palette
     try:
         parsed_palette = json.loads(palette) if palette.strip().startswith("[") else [p.strip() for p in palette.split(",") if p.strip()]
     except Exception:
         parsed_palette = [p.strip() for p in palette.split(",") if p.strip()]
 
-    # Parse disallowed elements
     try:
         parsed_disallowed = json.loads(disallowed_elements) if disallowed_elements.strip().startswith("[") else [d.strip() for d in disallowed_elements.split(",") if d.strip()]
     except Exception:
@@ -148,10 +125,8 @@ async def create_brand_draft(
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Failed to generate brand draft: {str(exc)}")
 
-
 @router.post("/confirm", response_model=BrandProfile)
 def confirm_brand(request: BrandProfileConfirmationRequest) -> BrandProfile:
-    """Stage 3: Company executive reviews, corrects, and confirms their brand identity."""
     try:
         confirmed = brand_service.confirm_brand_profile(request)
         return confirmed

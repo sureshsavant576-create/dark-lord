@@ -1,4 +1,3 @@
-"""Preprocessing and Feature Extraction Package."""
 from backend.app.preprocessing.audio_processor import AudioMetadataResult, process_audio_metadata
 from backend.app.preprocessing.color_extractor import (
     ColorPaletteResult,

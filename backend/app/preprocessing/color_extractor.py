@@ -1,9 +1,3 @@
-"""BrandShield AI - Color Extraction, Eyedropper, and Brand Palette Engine.
-
-Extracts dominant colors, perceptual CIELAB Delta E distances,
-pixel percentages, HSL color profiles, WCAG contrast ratios, and color harmonies
-from creative images, posters, ads, and brand assets.
-"""
 from collections import Counter
 import math
 from pathlib import Path
@@ -13,13 +7,11 @@ from colorthief import ColorThief
 from PIL import Image
 from pydantic import BaseModel, Field
 
-
 class ExtractedColor(BaseModel):
     hex_code: str = Field(description="Hex color code, e.g. #0055FF")
     rgb: Tuple[int, int, int] = Field(description="RGB tuple (0-255)")
     lab: Tuple[float, float, float] = Field(description="CIELAB (L*, a*, b*) coordinates")
     percentage: float = Field(default=0.0, description="Approximate coverage percentage")
-
 
 class DetailedExtractedColor(BaseModel):
     hex_code: str = Field(description="Hex color code, e.g. #0055FF")
@@ -32,12 +24,10 @@ class DetailedExtractedColor(BaseModel):
     contrast_black: float = Field(default=1.0, description="WCAG contrast ratio against black")
     color_family: str = Field(default="Neutral", description="Human-readable color family")
 
-
 class ColorPaletteResult(BaseModel):
     dominant_color: ExtractedColor
     palette: List[ExtractedColor] = Field(default_factory=list)
     hex_list: List[str] = Field(default_factory=list)
-
 
 class DetailedPaletteResult(BaseModel):
     dominant_color: DetailedExtractedColor
@@ -46,9 +36,7 @@ class DetailedPaletteResult(BaseModel):
     harmony_type: str = Field(default="Dynamic", description="Detected color harmony")
     color_distribution: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 def clean_hex_code(hex_code: str) -> Optional[str]:
-    """Clean and validate any HEX code string into standard #RRGGBB."""
     if not hex_code or not isinstance(hex_code, str):
         return None
     raw = re.sub(r"[^0-9a-fA-F]", "", hex_code.strip())
@@ -60,17 +48,13 @@ def clean_hex_code(hex_code: str) -> Optional[str]:
         return None
     return f"#{raw.upper()}"
 
-
 def rgb_to_hex(r: int, g: int, b: int) -> str:
-    """Convert RGB values to 6-character uppercase HEX."""
     r_clamped = max(0, min(255, int(r)))
     g_clamped = max(0, min(255, int(g)))
     b_clamped = max(0, min(255, int(b)))
     return f"#{r_clamped:02X}{g_clamped:02X}{b_clamped:02X}"
 
-
 def hex_to_rgb(hex_code: str) -> Tuple[int, int, int]:
-    """Convert HEX string (#RRGGBB or RRGGBB) to (r, g, b) tuple. Never crashes."""
     cleaned = clean_hex_code(hex_code)
     if not cleaned:
         return (128, 128, 128)
@@ -80,9 +64,7 @@ def hex_to_rgb(hex_code: str) -> Tuple[int, int, int]:
     except Exception:
         return (128, 128, 128)
 
-
 def rgb_to_xyz(r: int, g: int, b: int) -> Tuple[float, float, float]:
-    """Convert sRGB (0-255) to CIE XYZ (D65 illuminant)."""
     r_lin = r / 255.0
     g_lin = g / 255.0
     b_lin = b / 255.0
@@ -100,9 +82,7 @@ def rgb_to_xyz(r: int, g: int, b: int) -> Tuple[float, float, float]:
     z = r_lin * 0.0193 + g_lin * 0.1192 + b_lin * 0.9505
     return x, y, z
 
-
 def xyz_to_lab(x: float, y: float, z: float) -> Tuple[float, float, float]:
-    """Convert CIE XYZ (D65 standard) to CIELAB (L*, a*, b*)."""
     xn, yn, zn = 95.047, 100.000, 108.883
     xr = x / xn
     yr = y / yn
@@ -117,9 +97,7 @@ def xyz_to_lab(x: float, y: float, z: float) -> Tuple[float, float, float]:
     b_star = 200.0 * (fy - fz)
     return round(l_star, 2), round(a_star, 2), round(b_star, 2)
 
-
 def rgb_to_lab(r: Any, g: Optional[int] = None, b: Optional[int] = None) -> Tuple[float, float, float]:
-    """Direct conversion from sRGB to CIELAB coordinates. Accepts (r, g, b) or ((r, g, b))."""
     if isinstance(r, (tuple, list)) and len(r) >= 3:
         r_val, g_val, b_val = int(r[0]), int(r[1]), int(r[2])
     else:
@@ -127,9 +105,7 @@ def rgb_to_lab(r: Any, g: Optional[int] = None, b: Optional[int] = None) -> Tupl
     x, y, z = rgb_to_xyz(r_val, g_val, b_val)
     return xyz_to_lab(x, y, z)
 
-
 def rgb_to_hsl(r: int, g: int, b: int) -> Tuple[int, int, int]:
-    """Convert RGB (0-255) to HSL (H: 0-360, S: 0-100, L: 0-100)."""
     rn, gn, bn = r / 255.0, g / 255.0, b / 255.0
     cmax, cmin = max(rn, gn, bn), min(rn, gn, bn)
     delta = cmax - cmin
@@ -148,11 +124,7 @@ def rgb_to_hsl(r: int, g: int, b: int) -> Tuple[int, int, int]:
 
     return int(round(h)), int(round(s * 100)), int(round(l * 100))
 
-
 def calculate_wcag_contrast(r: int, g: int, b: int) -> Tuple[float, float, bool]:
-    """Calculates WCAG contrast ratios against pure White and pure Black.
-    Returns (contrast_white, contrast_black, is_dark).
-    """
     def channel_l(c: float) -> float:
         c_norm = c / 255.0
         return ((c_norm + 0.055) / 1.055) ** 2.4 if c_norm > 0.03928 else c_norm / 12.92
@@ -166,9 +138,7 @@ def calculate_wcag_contrast(r: int, g: int, b: int) -> Tuple[float, float, bool]
     is_dark = lum < 0.35
     return c_white, c_black, is_dark
 
-
 def get_color_family(h: int, s: int, l: int) -> str:
-    """Human-readable descriptive color family."""
     if l < 15:
         return "Obsidian Black / Deep Dark"
     if l > 88 and s < 15:
@@ -191,32 +161,20 @@ def get_color_family(h: int, s: int, l: int) -> str:
         return "Violet / Purple"
     return "Magenta / Rose"
 
-
 def delta_e_from_lab(lab1: Tuple[float, float, float], lab2: Tuple[float, float, float]) -> float:
-    """Compute CIE76 Euclidean distance between two CIELAB coordinates."""
     delta_l = lab1[0] - lab2[0]
     delta_a = lab1[1] - lab2[1]
     delta_b = lab1[2] - lab2[2]
     return round(math.sqrt(delta_l**2 + delta_a**2 + delta_b**2), 2)
 
-
 def calculate_delta_e(hex1: str, hex2: str) -> float:
-    """Compute the perceptual color difference (CIE76 Delta E) between two HEX colors.
-
-    - Delta E < 2.0: Imperceptible difference to the human eye.
-    - Delta E 2.0 - 10.0: Perceptible at close inspection.
-    - Delta E 10.0 - 25.0: Significant visual difference (likely off-brand).
-    - Delta E > 25.0: Entirely different color family.
-    """
     rgb1 = hex_to_rgb(hex1)
     rgb2 = hex_to_rgb(hex2)
     lab1 = rgb_to_lab(*rgb1)
     lab2 = rgb_to_lab(*rgb2)
     return delta_e_from_lab(lab1, lab2)
 
-
 def find_closest_brand_color(detected_hex: str, brand_palette: List[str]) -> Tuple[str, float]:
-    """Find the closest approved brand color to a detected color, returning (closest_hex, delta_e)."""
     valid_palette = [clean_hex_code(c) for c in brand_palette if clean_hex_code(c)]
     if not valid_palette:
         return detected_hex, 0.0
@@ -233,9 +191,7 @@ def find_closest_brand_color(detected_hex: str, brand_palette: List[str]) -> Tup
 
     return best_match, min_delta
 
-
 def detect_color_harmony(palette: List[DetailedExtractedColor]) -> str:
-    """Classifies the color harmony of an extracted palette."""
     if not palette:
         return "Minimalist Neutral"
 
@@ -243,7 +199,6 @@ def detect_color_harmony(palette: List[DetailedExtractedColor]) -> str:
     if len(hues) <= 1:
         return "Monochromatic / High-Contrast Minimalist"
 
-    # Spread of hues
     hue_diffs = [abs(hues[i] - hues[j]) for i in range(len(hues)) for j in range(i + 1, len(hues))]
     max_diff = max(hue_diffs) if hue_diffs else 0
     min_diff = min(hue_diffs) if hue_diffs else 0
@@ -257,16 +212,10 @@ def detect_color_harmony(palette: List[DetailedExtractedColor]) -> str:
 
     return "Dynamic Multi-Accent Harmony"
 
-
 def extract_detailed_palette(image_path: Path, max_colors: int = 8) -> DetailedPaletteResult:
-    """Professional Color Extractor:
-    Computes exact pixel coverage percentages, color clustering via CIELAB perceptual centroids,
-    role classification, HSL attributes, and WCAG contrast ratings in <10ms.
-    """
     try:
         with Image.open(image_path) as img:
             img_rgb = img.convert("RGB")
-            # Downsample for lightning-fast statistical clustering
             img_thumb = img_rgb.resize((150, 150), Image.Resampling.LANCZOS)
             pixels = list(img_thumb.getdata())
     except Exception:
@@ -290,12 +239,10 @@ def extract_detailed_palette(image_path: Path, max_colors: int = 8) -> DetailedP
         )
 
     total_pixels = len(pixels)
-    # Quantize to 16 levels per RGB channel to remove micro-noise
     quantized_pixels = [((r // 16) * 16 + 8, (g // 16) * 16 + 8, (b // 16) * 16 + 8) for (r, g, b) in pixels]
     counts = Counter(quantized_pixels)
 
     clusters: List[Dict[str, Any]] = []
-    # Merge perceptual neighbors within Delta E < 12.0
     for rgb, cnt in counts.most_common(50):
         lab = xyz_to_lab(*rgb_to_xyz(*rgb))
         merged = False
@@ -322,7 +269,6 @@ def extract_detailed_palette(image_path: Path, max_colors: int = 8) -> DetailedP
         c_white, c_black, is_dark = calculate_wcag_contrast(*rgb)
         family = get_color_family(h, s, l)
 
-        # Dynamic role classification
         if idx == 0:
             role = "Dominant / Background" if pct > 45 or l > 85 or l < 15 else "Primary Brand Color"
         elif pct > 18:
@@ -366,9 +312,7 @@ def extract_detailed_palette(image_path: Path, max_colors: int = 8) -> DetailedP
         color_distribution=distribution
     )
 
-
 def extract_color_palette(image_path: Path, color_count: int = 6) -> ColorPaletteResult:
-    """Backward-compatible color palette extraction used across tests and pipelines."""
     try:
         ct = ColorThief(str(image_path))
         dom_rgb = ct.get_color(quality=5)
@@ -415,15 +359,10 @@ def extract_color_palette(image_path: Path, color_count: int = 6) -> ColorPalett
         hex_list=hex_list
     )
 
-
 def prefilter_color_compliance(
     detected_hex_list: List[str],
     approved_palette: List[str]
 ) -> Dict[str, Any]:
-    """Deterministic Pre-AI Filter:
-    Evaluates detected creative colors against approved company brand palette
-    without requiring any slow or expensive cloud AI calls.
-    """
     clean_approved = [clean_hex_code(c) for c in approved_palette if clean_hex_code(c)]
     if not clean_approved:
         return {

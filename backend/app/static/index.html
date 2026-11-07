@@ -12,16 +12,12 @@
 </head>
 <body class="light-theme">
 
-  <!-- =========================================================================
-       TOP APPLICATION NAVIGATION BAR
-       ========================================================================= -->
   <header class="app-topbar">
     <div class="topbar-container">
       <div class="brand-brandmark" onclick="switchMainView('landing')" role="button" tabindex="0" title="Sanket AI Home">
         <img src="/static/logo.png" alt="Sanket AI" class="app-logo-img">
       </div>
 
-      <!-- Center Navigation Links -->
       <nav class="topbar-nav" aria-label="Main Navigation">
         <button type="button" class="topbar-link active" id="nav-btn-landing" onclick="switchMainView('landing')">
           <span>Overview</span>
@@ -34,7 +30,6 @@
         </button>
       </nav>
 
-      <!-- Right Header Actions -->
       <div class="topbar-actions">
         <div id="ai-status-pill" class="status-pill status-ready">
           <span class="status-pulse-dot"></span>
@@ -48,9 +43,6 @@
     </div>
   </header>
 
-  <!-- =========================================================================
-       SECTION 1: PRODUCT OVERVIEW & ARCHITECTURE (Landing View)
-       ========================================================================= -->
   <section id="view-landing" class="landing-view">
     <div class="landing-hero-container">
       <div class="hero-badge-pill">
@@ -61,7 +53,7 @@
       <h1 class="hero-headline">
         Automated brand governance<br><span class="highlight-text">and creative verification</span>
       </h1>
-      
+
       <p class="hero-subtitle">
         Evaluate developer creative, banners, posters, and advertising copy against company brand guidelines before production release. Enforced through perceptual color science, layout density vectors, and multimodal aesthetic reasoning.
       </p>
@@ -77,7 +69,6 @@
         </button>
       </div>
 
-      <!-- Enterprise Architecture Pillars Grid -->
       <div class="hero-floating-grid">
         <div class="floating-tile tile-blue" onclick="switchMainView('developer')">
           <div class="tile-icon-box">
@@ -122,13 +113,9 @@
     </div>
   </section>
 
-  <!-- =========================================================================
-       SECTION 2: MAIN DASHBOARD & GOVERNANCE WORKSPACE
-       ========================================================================= -->
   <section id="view-dashboard" class="dashboard-view hidden">
     <div class="dashboard-layout">
-      
-      <!-- Left Sidebar Navigation -->
+
       <aside class="dashboard-sidebar">
         <div class="sidebar-brand" onclick="switchMainView('landing')" role="button" tabindex="0" title="Return to Overview">
           <img src="/static/logo.png" alt="Sanket AI" class="sidebar-logo-img">
@@ -156,7 +143,7 @@
         <div class="sidebar-registered-section">
           <span class="sidebar-section-label">Active Brand Standards</span>
           <div id="sidebar-brands-quicklist" class="sidebar-brands-quicklist">
-            <!-- Dynamically populated -->
+
           </div>
         </div>
 
@@ -171,13 +158,10 @@
         </div>
       </aside>
 
-      <!-- Center Main Area -->
       <main class="dashboard-main-area">
 
-        <!-- TAB 1: DEVELOPER VIBE CHECK & AUDIT WORKSPACE -->
         <div id="tab-inspect" class="dashboard-tab-pane active">
-          
-          <!-- Workspace Executive Header Banner -->
+
           <div class="welcome-banner">
             <div class="welcome-banner-content">
               <span class="banner-date" id="banner-live-date">Brand Governance Workspace</span>
@@ -196,7 +180,6 @@
             </div>
           </div>
 
-          <!-- Registered Company Standards Selection Grid -->
           <div class="section-container">
             <div class="section-header-row">
               <div>
@@ -205,14 +188,12 @@
               </div>
             </div>
             <div id="company-cards-grid" class="company-cards-grid">
-              <!-- Dynamically populated company cards -->
+
             </div>
           </div>
 
-          <!-- Dual Workspace Grid: Submission & Report -->
           <div class="workspace-dual-grid">
-            
-            <!-- Left Submission Card -->
+
             <div class="card submission-card">
               <div class="card-header">
                 <div>
@@ -222,8 +203,7 @@
               </div>
 
               <form id="inspection-form" class="app-form">
-                
-                <!-- Target Brand Dropdown -->
+
                 <div class="form-group">
                   <label for="inspect-brand-select">Target Brand Standard:</label>
                   <select id="inspect-brand-select" required>
@@ -241,7 +221,6 @@
                   </div>
                 </div>
 
-                <!-- Asset Modality Selector -->
                 <div class="form-group">
                   <label>Creative Asset Modality:</label>
                   <div class="input-mode-tabs">
@@ -255,13 +234,11 @@
                     </button>
                   </div>
 
-                  <!-- Text Input Container -->
                   <div id="mode-text-container">
                     <textarea id="inspect-copy-text" rows="4" placeholder="Paste promotional copy, headline, body text, or ad slogan to inspect..."></textarea>
                     <span class="field-hint">Scans communication tone, emotional resonance, and strictly prohibited marketing claims.</span>
                   </div>
 
-                  <!-- File Input Container -->
                   <div id="mode-file-container" class="hidden">
                     <div id="drop-zone" class="drop-zone">
                       <input type="file" id="inspect-file" class="file-input" accept=".png,.jpg,.jpeg,.webp,.pdf,.txt,.md">
@@ -273,14 +250,13 @@
                         <span class="drop-subtext">PNG, JPG, WEBP, PDF up to 30MB</span>
                       </div>
                     </div>
-                    
+
                     <div id="file-preview-info" class="file-preview-info hidden">
                       <span id="preview-filename"></span>
                       <span id="preview-filesize"></span>
                       <button type="button" id="btn-clear-file" class="btn-text-sm text-danger">Remove</button>
                     </div>
 
-                    <!-- Pre-AI Color Adherence Filter Panel -->
                     <div id="dev-color-filter-panel" class="dev-color-filter-panel hidden">
                       <div class="prefilter-header">
                         <div class="prefilter-title-group">
@@ -290,7 +266,7 @@
                         <span id="dev-prefilter-score" class="prefilter-score-badge">--% Match</span>
                       </div>
                       <p class="prefilter-subtext">Evaluates color accuracy using CIELAB ΔE perceptual distance before cloud AI reasoning:</p>
-                      
+
                       <div id="dev-spectrum-bar" class="color-spectrum-bar"></div>
                       <div id="dev-color-filter-results" class="dev-filter-chips-grid"></div>
                     </div>
@@ -309,7 +285,6 @@
               </form>
             </div>
 
-            <!-- Right Inspection Report Card -->
             <div id="report-panel" class="card report-card">
               <div class="card-header">
                 <div>
@@ -319,7 +294,6 @@
                 <span id="report-id-badge" class="id-badge">Awaiting submission</span>
               </div>
 
-              <!-- Empty State -->
               <div id="inspection-empty-state" class="empty-state">
                 <div class="empty-icon-circle">
                   <svg class="svg-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -328,17 +302,14 @@
                 <p>Select a target brand standard on the left and submit marketing copy or visual assets to execute an automated audit.</p>
               </div>
 
-              <!-- Loading State -->
               <div id="inspection-loading-state" class="empty-state hidden">
                 <div class="spinner"></div>
                 <h3>Extracting Feature Vectors & Checking Guidelines...</h3>
                 <p id="loading-stage-text">Step 1: Extracting CIELAB color centroids and whitespace layout vectors...</p>
               </div>
 
-              <!-- Results View -->
               <div id="inspection-results-view" class="results-view hidden">
-                
-                <!-- Verdict Banner -->
+
                 <div id="verdict-banner" class="verdict-banner">
                   <div class="verdict-header">
                     <span class="verdict-label">AUDIT VERDICT:</span>
@@ -347,7 +318,6 @@
                   <p id="verdict-summary" class="verdict-summary"></p>
                 </div>
 
-                <!-- Score Gauges Grid -->
                 <div class="score-grid">
                   <div class="score-card">
                     <span class="score-title">Overall Compliance</span>
@@ -366,7 +336,6 @@
                   </div>
                 </div>
 
-                <!-- Multimodal Aesthetic Reasoning Card -->
                 <div id="gemini-ai-hero-card" class="gemini-ai-hero-card">
                   <div class="ai-hero-header">
                     <div class="ai-hero-title">
@@ -399,14 +368,13 @@
                   </div>
                 </div>
 
-                <!-- Feature Vector DNA Breakdown Card -->
                 <div class="section-block biometric-dna-card">
                   <div class="biometric-dna-header">
                     <h4>Feature Vector Alignment</h4>
                     <span id="biometric-composite-badge" class="biometric-badge">--% Match</span>
                   </div>
                   <p class="biometric-desc">Mathematical similarity against approved brand baseline vector:</p>
-                  
+
                   <div class="biometric-metrics-grid">
                     <div class="biometric-metric-box">
                       <div class="metric-top">
@@ -442,7 +410,6 @@
                   </div>
                 </div>
 
-                <!-- Color Palette Alignment Section -->
                 <div class="section-block">
                   <h4>Color Palette Alignment</h4>
                   <div class="palette-comparison-container">
@@ -457,13 +424,11 @@
                   </div>
                 </div>
 
-                <!-- Findings & Remediation Section -->
                 <div class="section-block">
                   <h4>Audit Evidence & Remediation</h4>
                   <div id="findings-table-container" class="findings-list"></div>
                 </div>
 
-                <!-- Review Status Card -->
                 <div class="section-block signoff-summary-box">
                   <div class="signoff-summary-header">
                     <span class="signoff-lbl">Review Status:</span>
@@ -476,12 +441,9 @@
           </div>
         </div>
 
-        <!-- =========================================================================
-             TAB 2: COMPANY PORTAL & BRAND STANDARDS CONFIGURATION
-             ========================================================================= -->
         <div id="tab-onboard" class="dashboard-tab-pane">
           <div class="portal-centered-container">
-            
+
             <div class="card company-portal-card">
               <div class="card-header portal-header-center">
                 <div class="portal-icon-circle">
@@ -505,7 +467,6 @@
                   </div>
                 </div>
 
-                <!-- Reference Image Multi-Filter Auto-Extraction Box -->
                 <div class="form-group reference-scan-box">
                   <label for="ob-reference-files">Reference Brand Asset (Auto-Extract Palette & Layout):</label>
                   <div class="drop-zone ob-drop-zone" id="ob-drop-zone">
@@ -520,7 +481,6 @@
                   </div>
                   <div id="ob-scan-feedback" class="ob-scan-feedback hidden"></div>
 
-                  <!-- Interactive Visual Colour Studio & Eyedropper Stage -->
                   <div id="color-studio-container" class="color-studio-container hidden">
                     <div class="studio-header">
                       <div class="studio-title-group">
@@ -539,7 +499,6 @@
                       </div>
                     </div>
 
-                    <!-- Eyedropper Canvas Stage -->
                     <div class="studio-canvas-stage">
                       <div class="canvas-viewport" id="canvas-viewport">
                         <canvas id="studio-canvas"></canvas>
@@ -548,8 +507,7 @@
                           <div class="loupe-color-preview" id="loupe-color-preview"></div>
                         </div>
                       </div>
-                      
-                      <!-- Real-Time Inspector Readout -->
+
                       <div class="inspector-readout-bar">
                         <div class="inspect-live-swatch" id="inspect-live-swatch" style="background: #ffffff;"></div>
                         <div class="inspect-readout-text">
@@ -566,7 +524,6 @@
                       </div>
                     </div>
 
-                    <!-- Extracted Spectrum Distribution Bar -->
                     <div class="spectrum-section">
                       <div class="spectrum-header">
                         <span class="spectrum-label">Color Distribution Spectrum:</span>
@@ -575,7 +532,6 @@
                       <div id="spectrum-distribution-bar" class="color-spectrum-bar"></div>
                     </div>
 
-                    <!-- Extracted Swatches Grid -->
                     <div class="extracted-cards-section">
                       <h4>Extracted Visual Centroids (<span id="extracted-count">0</span> colors identified)</h4>
                       <div id="extracted-swatches-grid" class="extracted-swatches-grid"></div>
@@ -610,7 +566,6 @@
                   <input type="text" id="ob-style" placeholder="e.g. Extreme Minimalism, High Negative Space, Deep Slate Contrast" required>
                 </div>
 
-                <!-- Professional Brand Palette Manager -->
                 <div class="form-group brand-palette-manager-group">
                   <div class="palette-manager-header">
                     <div>
@@ -624,12 +579,10 @@
                     </div>
                   </div>
 
-                  <!-- Active Brand Swatches Strip -->
                   <div id="palette-manager-grid" class="palette-manager-grid">
                     <div class="palette-empty-prompt">No colors registered. Upload reference asset above or pick custom colors below.</div>
                   </div>
 
-                  <!-- Add Custom Color Controls -->
                   <div class="custom-color-picker-bar">
                     <div class="picker-swatch-wrap" title="Click to open color picker">
                       <input type="color" id="custom-color-picker" value="#2563EB" class="native-color-input">
@@ -646,7 +599,6 @@
                     </button>
                   </div>
 
-                  <!-- Hidden backing store for form compatibility -->
                   <input type="hidden" id="ob-palette" name="palette" required>
                 </div>
 
@@ -672,7 +624,6 @@
               </form>
             </div>
 
-            <!-- Directory of Confirmed Company Standards -->
             <div class="card company-directory-card">
               <div class="card-header">
                 <div>
@@ -693,7 +644,6 @@
 
       </main>
 
-      <!-- Right Activity Feed: Tracked Inspection Audits -->
       <aside class="dashboard-activity-panel" id="dashboard-activity-panel">
         <div class="activity-header">
           <div class="activity-title-group">
@@ -703,7 +653,7 @@
           <span class="activity-count" id="activity-reports-badge">0 reports</span>
         </div>
         <p class="activity-subtitle">Recent creative submissions verified against active standards:</p>
-        
+
         <div id="recent-inspections-list" class="recent-inspections-list">
           <div class="empty-note">No recent audits. Submit creative work on the left to inspect.</div>
         </div>
@@ -712,10 +662,8 @@
     </div>
   </section>
 
-  <!-- Modern Clean Toast Notification Container -->
   <div id="app-toast" class="app-toast hidden"></div>
 
-  <!-- Corporate Application Footer -->
   <footer class="app-footer">
     <div class="footer-container">
       <p>Sanket AI &copy; 2026. Automated Brand Compliance & Creative Verification Platform. All rights reserved.</p>

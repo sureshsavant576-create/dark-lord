@@ -1,13 +1,7 @@
-"""BrandShield AI - Audio Feature & Metadata Extractor.
-
-Inspects audio advertisements and brand jingles using Mutagen to extract
-technical audio properties, duration, sample rate, and format characteristics.
-"""
 from pathlib import Path
 from typing import Optional
 import mutagen
 from pydantic import BaseModel, Field
-
 
 class AudioMetadataResult(BaseModel):
     duration_seconds: float
@@ -19,9 +13,7 @@ class AudioMetadataResult(BaseModel):
     is_valid_audio: bool = True
     error_message: Optional[str] = None
 
-
 def process_audio_metadata(audio_path: Path) -> AudioMetadataResult:
-    """Extract technical and acoustic container properties from an audio file."""
     try:
         audio = mutagen.File(str(audio_path))
         if audio is None or audio.info is None:
@@ -42,7 +34,6 @@ def process_audio_metadata(audio_path: Path) -> AudioMetadataResult:
         sample_rate = int(getattr(info, "sample_rate", 44100))
         bitrate = int(getattr(info, "bitrate", 0) / 1000) if getattr(info, "bitrate", 0) else 192
 
-        # Brand jingles are typically 3 to 60 seconds
         is_jingle = 2.0 <= duration <= 60.0
 
         return AudioMetadataResult(

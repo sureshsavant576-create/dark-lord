@@ -1,8 +1,3 @@
-"""BrandShield AI - Hugging Face Inference API Provider Adapter.
-
-Provides specialized lightweight NLP inference for tone analysis, emotion detection,
-and embeddings via the official Hugging Face Serverless Inference API.
-"""
 import logging
 from typing import Any, Dict, List, Optional
 import httpx
@@ -18,9 +13,7 @@ from backend.app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-
 class HuggingFaceProvider(AIProviderBase):
-    """Hugging Face Inference API client for specialized NLP and sentiment classification."""
 
     HF_API_BASE = "https://api-inference.huggingface.co/models"
     DEFAULT_SENTIMENT_MODEL = "distilbert-base-uncased-finetuned-sst-2-english"
@@ -70,7 +63,6 @@ class HuggingFaceProvider(AIProviderBase):
                 response.raise_for_status()
                 data = response.json()
 
-            # Process Hugging Face sentiment output: [[{'label': 'POSITIVE', 'score': 0.99}, ...]]
             scores = data[0] if isinstance(data, list) and data and isinstance(data[0], list) else []
             top_prediction = max(scores, key=lambda x: x.get("score", 0.0)) if scores else {}
 
@@ -104,7 +96,6 @@ class HuggingFaceProvider(AIProviderBase):
         reference_texts: List[str],
         reference_images_info: Optional[List[Dict[str, Any]]] = None
     ) -> BrandSynthesisEvaluation:
-        # Complex multi-field synthesis is designated for Gemini / OpenAI; HF specializes in targeted NLP tasks
         return BrandSynthesisEvaluation(
             provider=self.provider_name(),
             model_used=self.model_name,

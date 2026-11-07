@@ -1,8 +1,3 @@
-"""BrandShield AI - Content Inspection & Explainable Report Service.
-
-Combines deterministic code-based validations (CIELAB color distance, disallowed terminology regex)
-with lightweight AI model assessments (mood, tone, visual style) into an explainable governance report.
-"""
 from __future__ import annotations
 import json
 import logging
@@ -36,9 +31,7 @@ from backend.app.services.brand_service import brand_service
 
 logger = logging.getLogger(__name__)
 
-
 class InspectionService:
-    """Manages the full developer content inspection lifecycle and persistent report store."""
 
     def __init__(self, db_path: Optional[Path] = None, brand_svc: Optional[BrandService] = None):
         self.db_path = db_path or (settings.DB_DIR / "inspection_reports.json")
@@ -89,13 +82,10 @@ class InspectionService:
         preferred_ai_provider: Optional[str] = None,
         submission_copy_text: Optional[str] = None
     ) -> InspectionReport:
-        """Execute end-to-end inspection of a creative submission against a company's brand profile."""
-        # 1. Retrieve Stored Brand Profile
         brand = self.brand_service.get_brand_profile(brand_id)
         if not brand:
             raise ValueError(f"Brand with ID '{brand_id}' not found. Company must complete onboarding first.")
 
-        # 2. Run Preprocessing & Feature Extraction
         preprocessed = preprocessing_pipeline.preprocess(
             file_path=file_path,
             declared_mime_type=declared_mime_type,
@@ -109,7 +99,6 @@ class InspectionService:
         violations: List[str] = []
         corrections: List[str] = []
 
-        # If file itself is invalid/unsupported
         if not preprocessed.is_supported:
             finding = InspectionFinding(
                 id=f"f-{uuid.uuid4().hex[:6]}",
@@ -136,8 +125,6 @@ class InspectionService:
                 human_review_required=True
             ))
 
-        # 3. Biometric Brand Vector Filtering & Mathematical Distance Matching
-        # Resolves target brand DNA coordinates
         brand_dna_data = brand.brand_dna or {}
         is_minimalist = any("minimal" in s.lower() for s in (brand.visual_style + brand.personality))
         target_ws = brand_dna_data.get("target_whitespace_ratio", 0.65 if is_minimalist else 0.40)
@@ -165,7 +152,6 @@ class InspectionService:
 
         det_score = 100.0
 
-        # A. Color Palette Adherence (CIELAB Delta E)
         if preprocessed.color_palette and brand.approved_palette:
             dominant_hex = preprocessed.dominant_color_hex or ""
             closest_brand_color, delta_e = find_closest_brand_color(dominant_hex, brand.approved_palette)
@@ -202,7 +188,6 @@ class InspectionService:
                     suggested_correction=correction_msg
                 ))
 
-        # B. Disallowed Terminology & Avoidances (Deterministic Regex)
         text_content = ""
         if submission_copy_text and submission_copy_text.strip():
             text_content = submission_copy_text.strip()
@@ -235,7 +220,6 @@ class InspectionService:
                     evidence_snippet=snippet
                 ))
 
-        # C. Technical Specifications (Sharpness & Quality)
         if preprocessed.image_metadata:
             meta = preprocessed.image_metadata
             if meta.is_blurry:
@@ -254,7 +238,6 @@ class InspectionService:
             else:
                 matching_chars.append(f"Image sharpness ({meta.sharpness_score:.1f}) meets quality threshold.")
 
-        # D. Biometric Brand Vector Finding
         bio_severity = FindingSeverity.PASS if bio_result.composite_biometric_score >= 70.0 else (
             FindingSeverity.WARNING if bio_result.composite_biometric_score >= 45.0 else FindingSeverity.CRITICAL
         )
@@ -270,13 +253,11 @@ class InspectionService:
             suggested_correction="Harmonize layout whitespace and palette distribution to match company brand DNA." if bio_result.composite_biometric_score < 70.0 else None
         ))
 
-        # Preserve full deterministic rule score when no violations exist, otherwise blend with vector similarity
         if not violations and det_score >= 85.0:
             det_score = det_score
         else:
             det_score = max(0.0, min(100.0, round((det_score * 0.8) + (bio_result.composite_biometric_score * 0.2), 1)))
 
-        # 4. AI Semantic & Multimodal Inspection
         brand_target_profile = {
             "brand_name": brand.brand_name,
             "personality": ", ".join(brand.personality),
@@ -306,10 +287,8 @@ class InspectionService:
 
         if ai_eval.status == ProviderStatus.OPERATIONAL and ai_eval.is_ai_generated:
             ai_score = ai_eval.alignment_score
-            # Blended weighted score: 45% deterministic criteria, 55% AI subjective alignment
             overall_score = round((det_score * 0.45) + (float(ai_score or 50.0) * 0.55), 1)
 
-            # Mood Finding
             findings.append(InspectionFinding(
                 id=f"f-{uuid.uuid4().hex[:6]}",
                 title="Mood Alignment",
@@ -322,7 +301,6 @@ class InspectionService:
                 confidence_score=ai_eval.confidence_score
             ))
 
-            # Personality & Tone Finding
             findings.append(InspectionFinding(
                 id=f"f-{uuid.uuid4().hex[:6]}",
                 title="Brand Personality & Tone Alignment",
@@ -335,7 +313,6 @@ class InspectionService:
                 confidence_score=ai_eval.confidence_score
             ))
 
-            # Record aesthetic mismatches
             for m in ai_eval.mismatches_identified:
                 mismatches.append(f"[Observation] {m}")
                 findings.append(InspectionFinding(
@@ -352,7 +329,6 @@ class InspectionService:
                 ))
 
         else:
-            # Rule 10 & 11: Do not invent AI scores when unconfigured
             ai_score = None
             overall_score = det_score
             findings.append(InspectionFinding(
@@ -367,7 +343,6 @@ class InspectionService:
                 suggested_correction="Add an API key to .env to unlock AI semantic and multimodal reasoning."
             ))
 
-        # 5. Determine Overall Verdict
         has_critical = any(f.severity == FindingSeverity.CRITICAL for f in findings)
         effective_score = overall_score if overall_score is not None else det_score
 
@@ -422,7 +397,6 @@ class InspectionService:
         return self.save_report(report)
 
     def record_human_decision(self, submission: HumanReviewSubmission) -> InspectionReport:
-        """Record the final approval or change request decision by a human reviewer."""
         report = self.get_report(submission.inspection_id)
         if not report:
             raise ValueError(f"Inspection report '{submission.inspection_id}' not found.")
@@ -440,6 +414,5 @@ class InspectionService:
             report.verdict = InspectionVerdict.REJECTED
 
         return self.save_report(report)
-
 
 inspection_service = InspectionService()

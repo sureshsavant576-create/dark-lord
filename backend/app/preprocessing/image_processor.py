@@ -1,7 +1,3 @@
-"""BrandShield AI - Image Inspection & Metadata Processor.
-
-Extracts resolution, dimensions, aspect ratio, and sharpness metrics from creative visual assets.
-"""
 import math
 from pathlib import Path
 from typing import Tuple
@@ -9,43 +5,35 @@ import numpy as np
 from PIL import Image
 from pydantic import BaseModel, Field
 
-
 class ImageMetadataResult(BaseModel):
     width: int
     height: int
     megapixels: float
-    aspect_ratio: str  # e.g. "1:1", "16:9", "9:16", "4:5", "Custom"
+    aspect_ratio: str
     aspect_ratio_decimal: float
     format: str
     color_mode: str
-    sharpness_score: float  # Higher means sharper, < 100 indicates blur
+    sharpness_score: float
     is_blurry: bool
     is_high_resolution: bool
 
-
 def calculate_sharpness(img: Image.Image) -> float:
-    """Estimate image sharpness using the variance of the Laplacian gradient on grayscale pixels."""
     try:
         gray = img.convert("L")
-        # Resize to standard size for consistent sharpness score across resolutions
         gray = gray.resize((256, 256))
         arr = np.array(gray, dtype=np.float64)
 
-        # Discrete Laplacian kernel computation
         laplacian = (
             np.roll(arr, 1, axis=0) + np.roll(arr, -1, axis=0) +
             np.roll(arr, 1, axis=1) + np.roll(arr, -1, axis=1) -
             4 * arr
         )
-        # Variance of Laplacian
         variance = float(np.var(laplacian))
         return round(variance, 2)
     except Exception:
-        return 150.0  # Safe default if numpy variance fails
-
+        return 150.0
 
 def classify_aspect_ratio(width: int, height: int) -> Tuple[str, float]:
-    """Identify common creative design aspect ratios."""
     ratio = width / height if height > 0 else 1.0
     ratio_dec = round(ratio, 2)
 
@@ -64,16 +52,13 @@ def classify_aspect_ratio(width: int, height: int) -> Tuple[str, float]:
     else:
         return f"{width}:{height} (Custom)", ratio_dec
 
-
 def process_image_metadata(image_path: Path) -> ImageMetadataResult:
-    """Inspect and extract detailed technical and visual characteristics of an image."""
     with Image.open(image_path) as img:
         width, height = img.size
         megapixels = round((width * height) / 1_000_000.0, 2)
         aspect_label, ratio_dec = classify_aspect_ratio(width, height)
         sharpness = calculate_sharpness(img)
 
-        # Thresholds: image with resolution < 720p or low sharpness is flagged
         is_blurry = sharpness < 60.0
         is_high_resolution = (width >= 1080 and height >= 1080) or (width >= 1200 or height >= 1200)
 

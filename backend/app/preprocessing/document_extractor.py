@@ -1,20 +1,13 @@
-"""BrandShield AI - Document Text & Terminology Extractor.
-
-Extracts text from PDF brand guidelines and promotional copy using PyMuPDF,
-and provides deterministic disallowed terminology checking.
-"""
 import re
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 import pymupdf
 from pydantic import BaseModel, Field
 
-
 class TerminologyMatch(BaseModel):
     forbidden_term: str
     occurrences: int
     context_snippets: List[str] = Field(default_factory=list)
-
 
 class DocumentExtractionResult(BaseModel):
     full_text: str
@@ -26,9 +19,7 @@ class DocumentExtractionResult(BaseModel):
     snippets: List[str] = Field(default_factory=list)
     forbidden_terms_found: List[TerminologyMatch] = Field(default_factory=list)
 
-
 def extract_text_from_pdf(pdf_path: Path) -> DocumentExtractionResult:
-    """Extract clean text, metadata, and structural metrics from a PDF document using PyMuPDF."""
     doc = pymupdf.open(str(pdf_path))
     pages_text: List[str] = []
 
@@ -42,7 +33,6 @@ def extract_text_from_pdf(pdf_path: Path) -> DocumentExtractionResult:
     full_text = "\n\n".join(pages_text)
     words = full_text.split()
 
-    # Create top paragraph snippets for fast overview
     snippets = [p.strip() for p in full_text.split("\n\n") if len(p.strip()) > 30][:10]
 
     return DocumentExtractionResult(
@@ -55,9 +45,7 @@ def extract_text_from_pdf(pdf_path: Path) -> DocumentExtractionResult:
         snippets=snippets
     )
 
-
 def extract_text_from_plain_file(file_path: Path) -> DocumentExtractionResult:
-    """Extract text from plain text or Markdown files."""
     content = file_path.read_text(encoding="utf-8", errors="replace")
     words = content.split()
     snippets = [p.strip() for p in content.split("\n\n") if len(p.strip()) > 20][:10]
@@ -72,9 +60,7 @@ def extract_text_from_plain_file(file_path: Path) -> DocumentExtractionResult:
         snippets=snippets
     )
 
-
 def check_forbidden_terms(text: str, disallowed_terms: List[str]) -> List[TerminologyMatch]:
-    """Deterministically scan text for disallowed terminology or off-brand phrases (case-insensitive)."""
     matches: List[TerminologyMatch] = []
     if not text or not disallowed_terms:
         return matches
@@ -84,13 +70,12 @@ def check_forbidden_terms(text: str, disallowed_terms: List[str]) -> List[Termin
         if not cleaned_term:
             continue
 
-        # Word-boundary regex check
         pattern = re.compile(rf"\b{re.escape(cleaned_term)}\b", re.IGNORECASE)
         found_matches = list(pattern.finditer(text))
 
         if found_matches:
             snippets = []
-            for match in found_matches[:3]:  # Capture context of up to 3 occurrences
+            for match in found_matches[:3]:
                 start = max(0, match.start() - 40)
                 end = min(len(text), match.end() + 40)
                 snippet = "..." + text[start:end].replace("\n", " ").strip() + "..."

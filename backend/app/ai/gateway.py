@@ -1,8 +1,3 @@
-"""BrandShield AI - AI Provider Gateway (Exclusively Powered by Google Gemini).
-
-Orchestrates multimodal and NLP reasoning strictly via Google Gemini API (gemini-2.5-flash),
-adhering to real API inference with zero fabricated or mocked metrics.
-"""
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -18,9 +13,7 @@ from backend.app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-
 class AIGateway:
-    """Central AI orchestrator powered exclusively by Google Gemini."""
 
     def __init__(self):
         self.providers: Dict[str, AIProviderBase] = {
@@ -31,13 +24,11 @@ class AIGateway:
         return self.providers.get("gemini")
 
     def get_primary_provider(self) -> Optional[AIProviderBase]:
-        """Returns the primary Google Gemini provider if configured."""
         if self.providers["gemini"].is_configured():
             return self.providers["gemini"]
         return None
 
     def get_status(self) -> Dict[str, Any]:
-        """Returns an operational overview of the integrated Gemini AI service."""
         return {
             "gemini": {
                 "configured": self.providers["gemini"].is_configured(),
@@ -52,11 +43,9 @@ class AIGateway:
         target_profile: Dict[str, Any],
         preferred_provider: Optional[str] = None
     ) -> MultimodalEvaluation:
-        """Inspect creative material using Google Gemini multimodal AI."""
         provider = self.get_primary_provider()
 
         if provider is None:
-            # Rule 10: Do NOT generate fictional results when a model or API is unavailable
             return MultimodalEvaluation(
                 provider="gemini",
                 model_used=settings.DEFAULT_VISION_MODEL,
@@ -82,7 +71,6 @@ class AIGateway:
         reference_images_info: Optional[List[Dict[str, Any]]] = None,
         preferred_provider: Optional[str] = None
     ) -> BrandSynthesisEvaluation:
-        """Synthesize unstructured reference docs into a candidate structured brand profile using Gemini."""
         provider = self.get_primary_provider()
 
         if provider is None:
@@ -99,6 +87,5 @@ class AIGateway:
             reference_texts=reference_texts,
             reference_images_info=reference_images_info
         )
-
 
 ai_gateway = AIGateway()

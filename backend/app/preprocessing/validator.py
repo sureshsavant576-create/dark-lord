@@ -1,9 +1,3 @@
-"""BrandShield AI - File Validation and Normalization Module.
-
-Validates file extensions, MIME signatures, file sizes, and generates SHA-256 hashes
-for duplicate detection without discarding original assets.
-Focused strictly on Visual Marketing Assets (Posters, Banners, Graphics) and Copy.
-"""
 import hashlib
 import os
 import re
@@ -11,7 +5,6 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 from pydantic import BaseModel, Field
 
-# Allowed MIME types and extensions for visual creatives and marketing copy
 SUPPORTED_IMAGE_TYPES: Dict[str, Set[str]] = {
     "image/png": {".png"},
     "image/jpeg": {".jpg", ".jpeg"},
@@ -32,37 +25,30 @@ SUPPORTED_AUDIO_TYPES: Dict[str, Set[str]] = {
     "audio/ogg": {".ogg"}
 }
 
-MAX_FILE_SIZE_BYTES = 30 * 1024 * 1024  # 30 MB
-
+MAX_FILE_SIZE_BYTES = 30 * 1024 * 1024
 
 class ValidationResult(BaseModel):
     is_valid: bool
     mime_type: str
-    media_category: str  # "image", "document", "unsupported"
+    media_category: str
     file_size_bytes: int
     sha256_hash: str
     normalized_filename: str
     errors: List[str] = Field(default_factory=list)
 
-
 def sanitize_filename(filename: str) -> str:
-    """Sanitize a filename by removing path traversal characters and unsafe symbols."""
     base = os.path.basename(filename)
     clean = re.sub(r"[^a-zA-Z0-9_.-]", "_", base)
     return clean or "unnamed_asset"
 
-
 def calculate_sha256(file_path: Path) -> str:
-    """Compute SHA-256 hash of a file for fast duplicate detection."""
     hasher = hashlib.sha256()
     with open(file_path, "rb") as f:
         while chunk := f.read(65536):
             hasher.update(chunk)
     return hasher.hexdigest()
 
-
 def validate_file(file_path: Path, declared_mime_type: Optional[str] = None) -> ValidationResult:
-    """Inspect and validate an uploaded file before preprocessing."""
     errors: List[str] = []
 
     if not file_path.exists():
@@ -86,18 +72,15 @@ def validate_file(file_path: Path, declared_mime_type: Optional[str] = None) -> 
     sha256 = calculate_sha256(file_path)
     clean_name = sanitize_filename(file_path.name)
 
-    # Detect category and canonical MIME type
     media_category = "unsupported"
     canonical_mime = declared_mime_type or "application/octet-stream"
 
-    # Check images (posters, banners, graphics)
     for mime, exts in SUPPORTED_IMAGE_TYPES.items():
         if suffix in exts:
             media_category = "image"
             canonical_mime = mime
             break
 
-    # Check documents (marketing copy, slogans, guidelines)
     if media_category == "unsupported":
         for mime, exts in SUPPORTED_DOCUMENT_TYPES.items():
             if suffix in exts:
@@ -105,7 +88,6 @@ def validate_file(file_path: Path, declared_mime_type: Optional[str] = None) -> 
                 canonical_mime = mime
                 break
 
-    # Check audio (audio jingles, acoustic creative)
     if media_category == "unsupported":
         for mime, exts in SUPPORTED_AUDIO_TYPES.items():
             if suffix in exts:

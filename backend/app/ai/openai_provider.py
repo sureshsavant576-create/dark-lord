@@ -1,7 +1,3 @@
-"""BrandShield AI - OpenAI Multimodal & Text Provider Adapter.
-
-Integrates the official OpenAI SDK for gpt-4o-mini multimodal reasoning and structured outputs.
-"""
 import base64
 import json
 import logging
@@ -19,9 +15,7 @@ from backend.app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-
 class OpenAIProvider(AIProviderBase):
-    """OpenAI API provider for lightweight multimodal reasoning and tone analysis."""
 
     def __init__(self, api_key: Optional[str] = None, model_name: str = "gpt-4o-mini"):
         self.api_key = api_key or settings.OPENAI_API_KEY
@@ -60,7 +54,6 @@ class OpenAIProvider(AIProviderBase):
             client = self._get_client()
             content_payload: List[Dict[str, Any]] = []
 
-            # If image file is provided, encode to base64
             if request.file_path and request.file_path.exists() and request.mime_type.startswith("image/"):
                 b64 = base64.b64encode(request.file_path.read_bytes()).decode("utf-8")
                 content_payload.append({

@@ -1,4 +1,3 @@
-"""AI Provider and Gateway Package."""
 from backend.app.ai.base import (
     AIProviderBase,
     BrandSynthesisEvaluation,

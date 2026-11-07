@@ -1,19 +1,3 @@
-"""BrandShield AI - Biometric Brand DNA & Feature Vector Engine.
-
-Inspired by biometric facial authentication, this engine extracts mathematical feature
-vectors (fingerprints) from creative marketing assets (posters, banners, ad copy) instead
-of passing heavy raw media to slow, quota-limited cloud AI models.
-
-Extracts:
-1. Color Distribution Vector (CIELAB centroids & palette coverage)
-2. Whitespace / Negative Space DNA (ratio of uniform background area)
-3. Visual Clutter & Complexity Index (normalized Laplacian gradient density)
-4. Luminance & Contrast Fingerprint (high-key vs dark-mode tone)
-5. Lexical & Tone Vector (prohibited claims bitmask, sentiment, vocabulary)
-
-Computes fast mathematical vector similarity (Cosine & Euclidean distance)
-in milliseconds on lightweight free-tier servers.
-"""
 import math
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -30,9 +14,7 @@ from backend.app.preprocessing.color_extractor import (
     rgb_to_lab,
 )
 
-
 class VisualVectorFingerprint(BaseModel):
-    """Normalized mathematical feature vector representing a visual creative asset."""
     dominant_lab: Tuple[float, float, float]
     palette_hex: List[str]
     whitespace_ratio: float = Field(description="Percentage of clean negative/background space (0.0 to 1.0)")
@@ -41,9 +23,7 @@ class VisualVectorFingerprint(BaseModel):
     contrast_ratio: float = Field(description="Standard deviation of luminance (dynamic contrast)")
     aspect_ratio_decimal: float = 1.0
 
-
 class TextVectorFingerprint(BaseModel):
-    """Mathematical feature vector representing marketing copy / slogans."""
     word_count: int
     char_count: int
     vocabulary_density: float = Field(description="Unique words / total words ratio")
@@ -51,9 +31,7 @@ class TextVectorFingerprint(BaseModel):
     prohibited_term_count: int = 0
     prohibited_terms_detected: List[str] = Field(default_factory=list)
 
-
 class BrandDNAFingerprint(BaseModel):
-    """Authoritative company brand vector signature (the reference 'biometric template')."""
     brand_id: str
     target_palette_hex: List[str]
     target_whitespace_ratio: float = 0.50
@@ -61,9 +39,7 @@ class BrandDNAFingerprint(BaseModel):
     target_luminance_mean: float = 0.50
     prohibited_terms: List[str] = Field(default_factory=list)
 
-
 class BiometricVectorMatchResult(BaseModel):
-    """Mathematical similarity scores computed between submission vector and company brand DNA."""
     color_dna_score: float = Field(description="Color palette conformity (0-100)")
     whitespace_dna_score: float = Field(description="Layout & negative space conformity (0-100)")
     complexity_dna_score: float = Field(description="Aesthetic density & visual style match (0-100)")
@@ -71,42 +47,31 @@ class BiometricVectorMatchResult(BaseModel):
     composite_biometric_score: float = Field(description="Blended biometric match confidence (0-100)")
     divergent_factors: List[str] = Field(default_factory=list)
 
-
 def extract_visual_fingerprint(image_path: Path) -> VisualVectorFingerprint:
-    """Extract a lightweight mathematical feature vector from an image file."""
     with Image.open(image_path) as raw_img:
         img = raw_img.convert("RGB")
         width, height = img.size
         aspect_ratio = round(width / max(1, height), 2)
 
-        # Downsample to standard 256x256 thumbnail for lightning-fast zero-load vector math
         thumb = img.resize((256, 256), Image.Resampling.BILINEAR)
         arr = np.array(thumb, dtype=np.float32)
 
-        # 1. Luminance & Contrast
-        # Rec. 601 formula for relative perceptual luminance: Y = 0.299R + 0.587G + 0.114B
         luminance = (arr[:, :, 0] * 0.299 + arr[:, :, 1] * 0.587 + arr[:, :, 2] * 0.114) / 255.0
         lum_mean = float(np.mean(luminance))
         lum_contrast = float(np.std(luminance))
 
-        # 2. Visual Clutter / Complexity Index (Discrete Laplacian Energy)
-        # Low variance = clean minimalist poster; High variance = detailed photo / chaotic banner
         laplacian = (
             np.roll(luminance, 1, axis=0) + np.roll(luminance, -1, axis=0) +
             np.roll(luminance, 1, axis=1) + np.roll(luminance, -1, axis=1) -
             4 * luminance
         )
         edge_energy = float(np.var(laplacian))
-        # Normalize to 0.0 - 1.0 scale
         complexity_index = min(1.0, max(0.0, edge_energy / 0.08))
 
-        # 3. Whitespace / Negative Space Ratio
-        # Pixels with very low local gradient variance belong to flat background/whitespace
         local_grad = np.abs(np.gradient(luminance)[0]) + np.abs(np.gradient(luminance)[1])
         flat_pixels = np.sum(local_grad < 0.04)
         whitespace_ratio = round(float(flat_pixels / (256 * 256)), 3)
 
-        # 4. Color Extraction
         color_res = extract_color_palette(image_path)
         dominant_hex = color_res.dominant_color.hex_code
         dom_rgb = hex_to_rgb(dominant_hex)
@@ -122,21 +87,17 @@ def extract_visual_fingerprint(image_path: Path) -> VisualVectorFingerprint:
             aspect_ratio_decimal=aspect_ratio
         )
 
-
 def extract_text_fingerprint(text: str, prohibited_terms: List[str]) -> TextVectorFingerprint:
-    """Extract lexical and sentiment vector metrics from marketing copy."""
     clean_text = text.strip()
     words = [w.lower().strip(".,!?;:\"'()[]") for w in clean_text.split() if w.strip()]
     word_count = len(words)
     unique_words = len(set(words))
     vocab_density = round(unique_words / max(1, word_count), 2)
 
-    # Urgent / aggressive sales terms
     urgent_lexicon = {"urgent", "hurry", "limited", "now", "act", "instant", "guarantee", "cheap", "bargain", "clearance"}
     urgent_count = sum(1 for w in words if w in urgent_lexicon)
     urgency_score = round(min(1.0, urgent_count / max(1, word_count) * 4), 2)
 
-    # Check prohibited terms
     detected = []
     text_lower = clean_text.lower()
     for term in prohibited_terms:
@@ -152,19 +113,13 @@ def extract_text_fingerprint(text: str, prohibited_terms: List[str]) -> TextVect
         prohibited_terms_detected=detected
     )
 
-
 def compute_biometric_vector_match(
     brand_dna: BrandDNAFingerprint,
     visual_fp: Optional[VisualVectorFingerprint] = None,
     text_fp: Optional[TextVectorFingerprint] = None
 ) -> BiometricVectorMatchResult:
-    """Compute mathematical similarity scores between candidate vector and brand DNA.
-
-    Operates purely in memory using vector distance math without touching the LLM API.
-    """
     divergent: List[str] = []
 
-    # 1. Color Vector Similarity (CIELAB distance to nearest approved brand centroid)
     color_score = 100.0
     if visual_fp and brand_dna.target_palette_hex:
         cand_lab = visual_fp.dominant_lab
@@ -179,12 +134,10 @@ def compute_biometric_vector_match(
             except Exception:
                 continue
 
-        # Perceptual mapping: Delta E < 10 is imperceptible (100%), Delta E > 50 is total mismatch (0%)
         color_score = max(0.0, min(100.0, 100.0 - (min_delta_e * 2.0)))
         if min_delta_e > 15.0:
             divergent.append(f"Dominant color departs from approved palette (CIELAB ΔE = {min_delta_e:.1f})")
 
-    # 2. Whitespace / Layout DNA Conformity
     whitespace_score = 100.0
     if visual_fp:
         ws_diff = abs(visual_fp.whitespace_ratio - brand_dna.target_whitespace_ratio)
@@ -194,7 +147,6 @@ def compute_biometric_vector_match(
                 f"Negative space ratio ({visual_fp.whitespace_ratio:.0%}) deviates from brand standard ({brand_dna.target_whitespace_ratio:.0%})"
             )
 
-    # 3. Complexity & Visual Clutter Match
     complexity_score = 100.0
     if visual_fp:
         cx_diff = abs(visual_fp.complexity_index - brand_dna.target_complexity_index)
@@ -204,24 +156,20 @@ def compute_biometric_vector_match(
                 f"Visual density/clutter index ({visual_fp.complexity_index:.2f}) departs from brand target ({brand_dna.target_complexity_index:.2f})"
             )
 
-    # 4. Copy & Terminology Match
     copy_score = 100.0
     if text_fp:
-        # Strict penalty for prohibited terms
         if text_fp.prohibited_term_count > 0:
             penalty = min(75.0, text_fp.prohibited_term_count * 25.0)
             copy_score -= penalty
             divergent.append(
                 f"Contains {text_fp.prohibited_term_count} prohibited brand terms: {', '.join(text_fp.prohibited_terms_detected)}"
             )
-        # Urgency penalty for calm/minimalist brands
         if text_fp.urgency_score > 0.40 and brand_dna.target_whitespace_ratio > 0.50:
             copy_score -= 15.0
             divergent.append("Copy displays aggressive sales urgency inconsistent with understated brand guidelines.")
 
         copy_score = max(0.0, min(100.0, copy_score))
 
-    # 5. Composite Biometric Score
     if visual_fp and text_fp:
         composite = (color_score * 0.35) + (whitespace_score * 0.20) + (complexity_score * 0.20) + (copy_score * 0.25)
     elif visual_fp:

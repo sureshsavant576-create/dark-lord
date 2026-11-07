@@ -1,4 +1,3 @@
-"""Integration Tests for BrandShield AI FastAPI Endpoints (Phase 7)."""
 import io
 from pathlib import Path
 from PIL import Image
@@ -9,18 +8,14 @@ from backend.app.main import app
 
 client = TestClient(app)
 
-
 def test_health_endpoint():
-    """Verify system health check endpoint."""
     response = client.get("/api/v1/health")
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
     assert data["app_name"] == "Sanket AI"
 
-
 def test_providers_diagnostic_endpoint():
-    """Verify provider diagnostics return safe operational data without exposing secrets."""
     response = client.get("/api/v1/providers")
     assert response.status_code == 200
     data = response.json()
@@ -29,10 +24,7 @@ def test_providers_diagnostic_endpoint():
     assert "deterministic_local" in data["providers"]
     assert "deterministic_local" in data["providers"]
 
-
 def test_end_to_end_onboarding_and_inspection_flow():
-    """Verify complete lifecycle: Onboarding Draft -> Confirmation -> Submission Inspection -> Human Sign-off."""
-    # 1. Onboarding Draft Creation
     draft_payload = {
         "brand_name": "Aura Cosmetics",
         "personality": "Elegant, Clean",
@@ -51,7 +43,6 @@ def test_end_to_end_onboarding_and_inspection_flow():
     brand_id = draft_data["brand_id"]
     assert draft_data["status"] == "DRAFT_PENDING_CONFIRMATION"
 
-    # 2. Company Brand Profile Confirmation
     confirm_payload = {
         "brand_id": brand_id,
         "personality": ["Elegant", "Clean", "Mindful"],
@@ -70,7 +61,6 @@ def test_end_to_end_onboarding_and_inspection_flow():
     assert confirmed_data["status"] == "CONFIRMED"
     assert confirmed_data["is_human_confirmed"] is True
 
-    # 3. Developer Submission Inspection: Off-brand Copy with Disallowed Word
     copy_content = b"Aura Cosmetics offers an instant guarantee on our newest moisturizing serum."
     files = {
         "file": ("ad_copy.txt", io.BytesIO(copy_content), "text/plain")
@@ -83,7 +73,6 @@ def test_end_to_end_onboarding_and_inspection_flow():
     assert report["verdict"] in ["CHANGES_REQUESTED", "REJECTED"]
     assert any("instant guarantee" in v for v in report["guideline_violations"])
 
-    # 4. Human Review Governance Sign-off
     inspection_id = report["inspection_id"]
     review_payload = {
         "inspection_id": inspection_id,
