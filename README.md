@@ -1,40 +1,25 @@
-<div align="center">
-  <img src="./kalaraja-dark-lord-logo.svg" alt="KĀLARĀJA: The Dark Lord Logo" width="400" />
-  
-  # KĀLARĀJA : THE DARK LORD
-  ### Intelligent Brand Sentinel & Company Vibe Verification
-  *कालराज • Tamaso Mā Jyotir Gamaya • Ananta Tamas*
+# BrandShield
 
-  [![Aura Mode](https://img.shields.io/badge/Aura%20Engine-Void%20Monarch-8b5cf6.svg)](#)
-  [![Symbology](https://img.shields.io/badge/Symbology-Sanskrit%20Trishula-06b6d4.svg)](./LOGO.md)
-  [![Brand DNA](https://img.shields.io/badge/Brand%20DNA-Biometric%20Math-10b981.svg)](#)
-</div>
-
----
-
-# BrandShield AI (KĀLARĀJA: Dark Lord Sentinel)
-
-BrandShield AI verifies whether developer-submitted marketing content (posters, banners, ad copy, slogans) matches a company's approved brand vibes and guidelines before publication.
+BrandShield verifies whether developer-submitted marketing content (posters, banners, ad copy, slogans) matches a company's approved brand vibes and guidelines before publication.
 
 ## What It Does
 
 1. **Company Brand & Vibe Setup**:
-   - A company creates an account and defines its approved brand identity: personality, mood, visual style, approved HEX color palette, mission statement, and words/claims developers must strictly avoid.
-   - The company can upload reference creative work or guidelines to establish its ground-truth standard.
-   - The platform extracts and stores a mathematical feature vector (Brand DNA) capturing these standards for $O(1)$ fast retrieval without repeatedly re-reading large files.
+   - A company creates an account and defines its approved brand identity: personality, mood, communication tone, visual style, approved HEX color palette, mission statement, and words/claims developers must strictly avoid.
+   - **Multi-Filter Auto-Extraction**: The company can drop an approved reference poster or graphic. The engine automatically runs multiple filters (color centroid quantization, whitespace ratio, visual clutter index, and aesthetic reasoning) to identify and auto-populate all vibe fields.
+   - **Full Editing**: The company can edit, customize, or toggle any extracted colors and attributes before saving, as well as update existing company profiles at any time.
 
 2. **Pre-Publication Developer Inspection**:
-   - Developers submit their creative assets (image graphics or marketing copy) to inspect compliance against any registered company profile.
-   - Accepts either visual image files (PNG, JPG, WEBP) or direct text copy (headlines, body text, slogans).
+   - Developers submit their creative work (posters/graphic images or advertising copy) to inspect compliance against any registered company profile.
+   - Runs instantly and produces a verification report.
 
 3. **Multi-Stage Biometric-Style Filtration**:
-   - **Color Harmony**: Evaluates dominant colors against approved palettes using CIELAB $\Delta E$ perceptual distance math.
-   - **Layout & Negative Space**: Measures whitespace ratios and visual clutter (Laplacian gradient energy) to detect aesthetic departures (e.g., cluttered layouts vs. clean minimalism).
-   - **Terminology Scanner**: Deterministically detects prohibited words and claims (e.g., "cheap", "clearance sale", "unlicensed") with context snippet reporting.
+   - **Color Harmony**: Evaluates dominant colors against approved palettes using CIELAB ΔE perceptual distance math.
+   - **Layout & Negative Space**: Measures whitespace ratios and visual clutter (Laplacian gradient energy) to detect aesthetic departures.
+   - **Terminology Scanner**: Deterministically detects prohibited words and claims with context snippet reporting.
 
-4. **Lightweight AI Synthesis**:
-   - Compresses the mathematical feature vectors into a concise summary passed to Google Gemini (`gemini-3.5-flash-lite`).
-   - Generates fast, explainable feedback on tone, mood, and brand alignment without sending heavy media payloads to the cloud, preserving free-tier quotas and minimizing server resource usage.
+4. **Lightweight Intelligence Synthesis**:
+   - Synthesizes the extracted feature vectors into fast, explainable feedback on tone, mood, and brand alignment without sending heavy media payloads to cloud servers, preserving free-tier quotas and minimizing server load.
 
-5. **Actionable Governance & Fixes**:
+5. **Actionable Fixes & Report**:
    - Produces an explainable inspection report with an overall Vibe Match score (0–100%), biometric breakdown metrics, detected discrepancies, and actionable remediation tips for the developer.
