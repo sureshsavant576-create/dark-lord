@@ -28,6 +28,7 @@ from backend.app.preprocessing.document_extractor import check_forbidden_terms
 from backend.app.preprocessing.fingerprint_engine import (
     BrandDNAFingerprint,
     compute_biometric_vector_match,
+    extract_text_fingerprint,
 )
 from backend.app.preprocessing.pipeline import PreprocessedContent, preprocessing_pipeline
 from backend.app.services.brand_service import brand_service
@@ -84,7 +85,8 @@ class InspectionService:
         brand_id: str,
         file_path: Path,
         declared_mime_type: Optional[str] = None,
-        preferred_ai_provider: Optional[str] = None
+        preferred_ai_provider: Optional[str] = None,
+        submission_copy_text: Optional[str] = None
     ) -> InspectionReport:
         """Execute end-to-end inspection of a creative submission against a company's brand profile."""
         # 1. Retrieve Stored Brand Profile
@@ -150,10 +152,14 @@ class InspectionService:
             prohibited_terms=brand.disallowed_elements
         )
 
+        active_text_fp = preprocessed.text_fingerprint
+        if not active_text_fp and submission_copy_text and submission_copy_text.strip():
+            active_text_fp = extract_text_fingerprint(submission_copy_text.strip(), brand.disallowed_elements)
+
         bio_result = compute_biometric_vector_match(
             brand_dna=brand_dna,
             visual_fp=preprocessed.visual_fingerprint,
-            text_fp=preprocessed.text_fingerprint
+            text_fp=active_text_fp
         )
 
         det_score = 100.0
@@ -197,7 +203,11 @@ class InspectionService:
 
         # B. Disallowed Terminology & Avoidances (Deterministic Regex)
         text_content = ""
-        if preprocessed.document_data:
+        if submission_copy_text and submission_copy_text.strip():
+            text_content = submission_copy_text.strip()
+            if preprocessed.document_data:
+                text_content += f"\n{preprocessed.document_data.full_text}"
+        elif preprocessed.document_data:
             text_content = preprocessed.document_data.full_text
         elif preprocessed.extracted_text_summary:
             text_content = preprocessed.extracted_text_summary

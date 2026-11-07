@@ -5,7 +5,7 @@ from backend.app.core.config import Settings, settings
 
 def test_settings_initialization():
     """Verify settings defaults, storage directories, and app metadata."""
-    assert settings.APP_NAME == "BrandShield AI"
+    assert settings.APP_NAME == "Sanket AI"
     assert settings.API_V1_PREFIX == "/api/v1"
     assert settings.STORAGE_DIR.exists()
     assert settings.UPLOADS_DIR.exists()

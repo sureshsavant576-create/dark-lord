@@ -48,6 +48,9 @@ yarn-error.log*
 .next/
 out/
 
+# Scratch scripts
+scratch/
+
 # IDE / OS
 .vscode/
 .idea/

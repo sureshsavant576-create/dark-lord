@@ -117,7 +117,8 @@ async def inspect_developer_content(
             brand_id=brand_id,
             file_path=dest_path,
             declared_mime_type=declared_mime,
-            preferred_ai_provider=preferred_ai_provider
+            preferred_ai_provider=preferred_ai_provider,
+            submission_copy_text=copy_text if has_text else None
         )
         return report
     except Exception as exc:

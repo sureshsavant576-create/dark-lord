@@ -11,7 +11,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # Application Info
-    APP_NAME: str = Field(default="BrandShield AI", description="System application name")
+    APP_NAME: str = Field(default="Sanket AI", description="System application name")
     ENVIRONMENT: str = Field(default="development", description="Environment: development, test, or production")
     API_V1_PREFIX: str = Field(default="/api/v1", description="API version prefix")
 

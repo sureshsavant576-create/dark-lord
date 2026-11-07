@@ -3,514 +3,698 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BrandShield – Brand Vibe & Compliance Verification</title>
-  <link rel="stylesheet" href="/static/style.css?v=6.0">
+  <title>Sanket AI</title>
+  <link rel="icon" type="image/png" href="/static/emblem.png">
+  <link rel="stylesheet" href="/static/style.css?v=8.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-  <!-- Header Banner -->
-  <header class="app-header">
-    <div class="header-container">
-      <div class="brand-logo">
-        <span class="logo-shield">🛡️</span>
-        <div>
-          <h1>BrandShield</h1>
-          <p class="tagline">Verify developer marketing creative & posters against company vibes and brand standards.</p>
-        </div>
+<body class="light-theme">
+  <!-- Top Application Navbar (ChronoTask & Ace Academy Inspired) -->
+  <header class="app-topbar">
+    <div class="topbar-container">
+      <div class="brand-brandmark" onclick="switchMainView('landing')">
+        <img src="/static/logo.png" alt="Sanket AI" class="app-logo-img">
       </div>
-      <div class="header-actions">
+
+      <!-- Center Nav Links -->
+      <nav class="topbar-nav">
+        <button type="button" class="topbar-link active" id="nav-btn-landing" onclick="switchMainView('landing')">
+          <span>Overview</span>
+        </button>
+        <button type="button" class="topbar-link" id="nav-btn-developer" onclick="switchMainView('developer')">
+          <span>Vibe Dashboard</span>
+        </button>
+        <button type="button" class="topbar-link" id="nav-btn-company" onclick="switchMainView('company')">
+          <span>Company Portal</span>
+        </button>
+      </nav>
+
+      <!-- Right Header Actions -->
+      <div class="topbar-actions">
         <div id="ai-status-pill" class="status-pill status-ready">
           <span class="status-pulse-dot"></span>
           <span class="status-text">Engine Online</span>
         </div>
+        <button type="button" class="btn btn-sm btn-primary-top" onclick="switchMainView('developer')">
+          <span>🚀 Run Vibe Check</span>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Clean 2-Role Navigation Tabs -->
-  <nav class="app-nav">
-    <div class="nav-container">
-      <button class="nav-tab active" data-tab="tab-inspect">
-        <span class="tab-icon">🔍</span> Developer: Check Vibe Match
-      </button>
-      <button class="nav-tab" data-tab="tab-onboard">
-        <span class="tab-icon">🏢</span> Company: Sign In & Set Brand Vibes
-      </button>
+  <!-- =========================================================================
+       SECTION 1: LANDING PAGE HERO (ChronoTask Inspired - landing page.png)
+       ========================================================================= -->
+  <section id="view-landing" class="landing-view">
+    <div class="landing-hero-container">
+      <div class="hero-badge-pill">
+        <span class="hero-badge-spark">✨</span>
+        <span>Deterministic Pre-Filters + Multimodal Brand Intelligence</span>
+      </div>
+
+      <h1 class="hero-headline">
+        Think, plan, and verify<br><span class="highlight-text">all in one place</span>
+      </h1>
+      
+      <p class="hero-subtitle">
+        Verify developer marketing creative, posters, banners, and advertising copy against company brand vibes before launch — powered by mathematical color centroids and brand DNA vectors.
+      </p>
+
+      <div class="hero-cta-group">
+        <button type="button" class="btn btn-hero-primary" onclick="switchMainView('developer')">
+          <span>🚀 Check Creative Vibe</span>
+        </button>
+        <button type="button" class="btn btn-hero-secondary" onclick="switchMainView('company')">
+          <span>🏢 Company Sign-In & Setup</span>
+        </button>
+      </div>
+
+      <!-- Floating SaaS Feature Badges (ChronoTask Style) -->
+      <div class="hero-floating-grid">
+        <div class="floating-tile tile-amber" onclick="switchMainView('developer')">
+          <span class="tile-icon">⚡</span>
+          <div>
+            <strong>Pre-AI Color Filter</strong>
+            <p>&lt;15ms CIELAB ΔE checks before AI</p>
+          </div>
+        </div>
+
+        <div class="floating-tile tile-blue" onclick="switchMainView('company'); scrollColorStudio();">
+          <span class="tile-icon">🎨</span>
+          <div>
+            <strong>Colour Studio & Eyedropper</strong>
+            <p>Live pixel loupe & WCAG contrast</p>
+          </div>
+        </div>
+
+        <div class="floating-tile tile-emerald" onclick="switchMainView('developer')">
+          <span class="tile-icon">🧬</span>
+          <div>
+            <strong>Brand DNA Vectors</strong>
+            <p>Whitespace & layout density math</p>
+          </div>
+        </div>
+
+        <div class="floating-tile tile-purple" onclick="switchMainView('developer')">
+          <span class="tile-icon">📋</span>
+          <div>
+            <strong>Evidence-Backed Reviews</strong>
+            <p>Specific findings & fixes for devs</p>
+          </div>
+        </div>
+      </div>
     </div>
-  </nav>
+  </section>
 
-  <!-- Main Container -->
-  <main class="main-content">
-    
-    <!-- TAB 1: DEVELOPER VIBE CHECK -->
-    <section id="tab-inspect" class="tab-pane active">
-      <div class="pane-grid">
-        <!-- Submission Form -->
-        <div class="card submission-card">
-          <div class="card-header">
-            <div>
-              <h2>Check Marketing Work Against Company Vibes</h2>
-              <p>Pick your company and test your poster, banner graphic, or ad copy to verify brand vibe alignment.</p>
+  <!-- =========================================================================
+       SECTION 2: MAIN DASHBOARD WORKSPACE (Ace Academy Style - dashboard.png)
+       ========================================================================= -->
+  <section id="view-dashboard" class="dashboard-view hidden">
+    <div class="dashboard-layout">
+      
+      <!-- Left Sidebar Navigation (Ace Academy Style) -->
+      <aside class="dashboard-sidebar">
+        <div class="sidebar-brand" onclick="switchMainView('landing')" style="cursor: pointer;">
+          <img src="/static/logo.png" alt="Sanket AI" class="sidebar-logo-img">
+        </div>
+
+        <nav class="sidebar-nav">
+          <button type="button" class="sidebar-nav-item active" id="side-tab-inspect" onclick="switchDashboardTab('tab-inspect')">
+            <span class="side-icon">🔍</span>
+            <span>Vibe Inspector</span>
+          </button>
+          <button type="button" class="sidebar-nav-item" id="side-tab-onboard" onclick="switchDashboardTab('tab-onboard')">
+            <span class="side-icon">🏢</span>
+            <span>Company Portal</span>
+          </button>
+          <button type="button" class="sidebar-nav-item" onclick="switchDashboardTab('tab-onboard'); scrollColorStudio();">
+            <span class="side-icon">🎨</span>
+            <span>Colour Studio</span>
+          </button>
+          <button type="button" class="sidebar-nav-item" onclick="scrollToTrackedReports();">
+            <span class="side-icon">📊</span>
+            <span>Tracked Reports</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-registered-section">
+          <span class="sidebar-section-label">Active Brands</span>
+          <div id="sidebar-brands-quicklist" class="sidebar-brands-quicklist">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-user-card">
+            <div class="user-avatar-initials">BL</div>
+            <div class="user-meta">
+              <span class="user-name">Brand Lead</span>
+              <span class="user-role">Creative Reviewer</span>
             </div>
           </div>
+        </div>
+      </aside>
+
+      <!-- Center Main Content -->
+      <main class="dashboard-main-area">
+
+        <!-- TAB 1: DEVELOPER VIBE CHECK (Ace Academy Main Area) -->
+        <div id="tab-inspect" class="dashboard-tab-pane active">
           
-          <form id="inspection-form" class="app-form">
-            <div class="form-group">
-              <label for="inspect-brand-select">Target Company:</label>
-              <select id="inspect-brand-select" required>
-                <option value="">-- Select Company to Check Against --</option>
-              </select>
-              <div id="selected-brand-preview" class="selected-brand-preview hidden">
-                <div class="preview-header">
-                  <span id="prev-brand-name" class="prev-title"></span>
-                  <span id="prev-brand-tone" class="id-badge"></span>
-                </div>
-                <div class="prev-details">
-                  <p><strong>Approved Colors:</strong> <span id="prev-palette-chips" class="palette-mini-row"></span></p>
-                  <p><strong>Strict Avoidances:</strong> <span id="prev-avoid-text" class="prev-avoid"></span></p>
-                </div>
-              </div>
-              <span class="field-hint">Select the registered company whose brand vibes you are designing for.</span>
+          <!-- Ace Academy Style Welcome Banner -->
+          <div class="welcome-banner">
+            <div class="welcome-banner-content">
+              <span class="banner-date" id="banner-live-date">Brand Governance Workspace</span>
+              <h2>Welcome to Sanket AI Vibe Dashboard</h2>
+              <p>Select your company brand below, inspect your creative designs or marketing copy, and verify brand vibe alignment in real time.</p>
             </div>
-
-            <!-- Dual Input Mode Selector -->
-            <div class="form-group">
-              <label>What are you checking?</label>
-              <div class="input-mode-tabs">
-                <button type="button" class="mode-tab-btn active" id="tab-mode-text" onclick="setInputMode('text')">✍️ Marketing Copy / Ad Text</button>
-                <button type="button" class="mode-tab-btn" id="tab-mode-file" onclick="setInputMode('file')">📁 Poster / Graphic Image</button>
+            <div class="welcome-banner-stats">
+              <div class="banner-stat-pill">
+                <span class="stat-num" id="stat-registered-count">2</span>
+                <span class="stat-lbl">Brands Active</span>
               </div>
-
-              <!-- Mode 1: Direct Copy Text Input -->
-              <div id="mode-text-container">
-                <textarea id="inspect-copy-text" rows="4" placeholder="Type or paste advertising copy, slogan, or promotional body text (e.g. 'Designed with titanium. Remarkably light. The next generation of iPhone is here.')."></textarea>
-                <span class="field-hint">Checks copy tone, emotional mood, and strictly prohibited claims.</span>
-              </div>
-
-              <!-- Mode 2: Creative Asset File Upload -->
-              <div id="mode-file-container" class="hidden">
-                <div id="drop-zone" class="drop-zone">
-                  <input type="file" id="inspect-file" class="file-input" accept=".png,.jpg,.jpeg,.webp,.pdf,.txt,.md">
-                  <div class="drop-zone-content">
-                    <span class="upload-icon">📁</span>
-                    <p class="drop-text">Drag & drop poster or graphic here or <span class="highlight">browse</span></p>
-                    <span class="drop-subtext">Posters & Banners (PNG/JPG/WEBP), Copy (PDF/TXT) up to 30MB</span>
-                  </div>
-                </div>
-                <div id="file-preview-info" class="file-preview-info hidden">
-                  <span id="preview-filename"></span>
-                  <span id="preview-filesize"></span>
-                  <button type="button" id="btn-clear-file" class="btn-text-sm">Remove</button>
-                </div>
-
-                <!-- Developer Pre-AI Color Filter Panel -->
-                <div id="dev-color-filter-panel" class="dev-color-filter-panel hidden">
-                  <div class="prefilter-header">
-                    <div class="prefilter-title-group">
-                      <span class="prefilter-badge">⚡ Pre-AI Color Filter</span>
-                      <h4>Deterministic Palette Adherence</h4>
-                    </div>
-                    <span id="dev-prefilter-score" class="prefilter-score-badge">--% Match</span>
-                  </div>
-                  <p class="prefilter-subtext">Filters visual colors using CIELAB ΔE distance against company standards before cloud AI analysis:</p>
-                  
-                  <div id="dev-spectrum-bar" class="color-spectrum-bar"></div>
-                  <div id="dev-color-filter-results" class="dev-filter-chips-grid"></div>
-                </div>
+              <div class="banner-stat-pill">
+                <span class="stat-num" id="stat-inspections-count">0</span>
+                <span class="stat-lbl">Inspections</span>
               </div>
             </div>
-
-            <button type="submit" id="btn-run-inspect" class="btn btn-primary btn-block">
-              <span>🚀 Check Vibe Match</span>
-            </button>
-
-            <!-- Inline Submission Alert Banner -->
-            <div id="inspect-inline-status" class="inspect-inline-status hidden">
-              <div id="inline-status-spinner" class="inline-spinner"></div>
-              <span id="inline-status-text">Scanning Brand DNA vectors & analyzing brand vibes...</span>
-            </div>
-          </form>
-        </div>
-
-        <!-- Live Inspection Report Panel -->
-        <div id="report-panel" class="card report-card">
-          <div class="card-header">
-            <div>
-              <h2>Vibe Match & Verification Report</h2>
-              <p>Real-time Brand DNA vector match & multimodal aesthetic reasoning.</p>
-            </div>
-            <span id="report-id-badge" class="id-badge">Awaiting submission</span>
           </div>
 
-          <!-- Empty State -->
-          <div id="inspection-empty-state" class="empty-state">
-            <div class="empty-icon">📊</div>
-            <h3>Ready to Check Your Work</h3>
-            <p>Select your company on the left, paste your copy or upload your poster, and click "Check Vibe Match"!</p>
+          <!-- Quick Company Selection Cards Grid (Ace Academy "My Courses" style) -->
+          <div class="section-container">
+            <div class="section-header-row">
+              <div>
+                <h3 class="section-title">Select Company Brand Standard</h3>
+                <p class="section-subtitle">Choose the registered brand vibes you are designing for:</p>
+              </div>
+            </div>
+            <div id="company-cards-grid" class="company-cards-grid">
+              <!-- Dynamically populated company cards with approved palettes -->
+            </div>
           </div>
 
-          <!-- Loading State -->
-          <div id="inspection-loading-state" class="empty-state hidden">
-            <div class="spinner"></div>
-            <h3>Extracting Feature Vectors & Checking Company Vibes...</h3>
-            <p id="loading-stage-text">Step 1: Extracting CIELAB color centroids and whitespace layout vectors...</p>
-          </div>
-
-          <!-- Results View -->
-          <div id="inspection-results-view" class="results-view hidden">
+          <!-- Dual Workspace Grid: Submission & Report -->
+          <div class="workspace-dual-grid">
             
-            <!-- Verdict Banner -->
-            <div id="verdict-banner" class="verdict-banner">
-              <div class="verdict-header">
-                <span class="verdict-label">VIBE VERDICT:</span>
-                <span id="verdict-title" class="verdict-title">APPROVED</span>
-              </div>
-              <p id="verdict-summary" class="verdict-summary"></p>
-            </div>
-
-            <!-- Score Gauges -->
-            <div class="score-grid">
-              <div class="score-card">
-                <span class="score-title">Overall Vibe Match</span>
-                <span id="score-overall" class="score-number">--</span>
-                <span class="score-sub">Composite Score</span>
-              </div>
-              <div class="score-card">
-                <span class="score-title">Color & Rule Checks</span>
-                <span id="score-deterministic" class="score-number">--</span>
-                <span class="score-sub">Palette & Forbidden Words</span>
-              </div>
-              <div class="score-card">
-                <span class="score-title">Aesthetic Vibe Alignment</span>
-                <span id="score-ai" class="score-number">--</span>
-                <span class="score-sub">Mood, Tone & Aesthetic</span>
-              </div>
-            </div>
-
-            <!-- Vibe Intelligence Analysis Hero Card -->
-            <div id="gemini-ai-hero-card" class="gemini-ai-hero-card">
-              <div class="ai-hero-header">
-                <div class="ai-hero-title">
-                  <span class="ai-chip-gemini">✨ Vibe Intelligence</span>
-                  <span class="ai-hero-subtitle">Multimodal Aesthetic & Tone Reasoning</span>
-                </div>
-                <span id="ai-hero-score-badge" class="ai-score-pill">100% Vibe Alignment</span>
-              </div>
-              <div class="ai-hero-body">
-                <div class="ai-quote-container">
-                  <div class="ai-quote-icon">🎯</div>
-                  <p id="ai-hero-explanation" class="ai-hero-explanation">Creative piece analyzed against company brand guidelines.</p>
-                </div>
-                <div class="ai-attributes-grid">
-                  <div class="ai-attr-pill">
-                    <span class="attr-lbl">Mood Detected:</span>
-                    <strong id="ai-hero-mood">--</strong>
-                  </div>
-                  <div class="ai-attr-pill">
-                    <span class="attr-lbl">Brand Personality:</span>
-                    <strong id="ai-hero-personality">--</strong>
-                  </div>
-                  <div class="ai-attr-pill">
-                    <span class="attr-lbl">Communication Tone:</span>
-                    <strong id="ai-hero-tone">--</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Biometric Brand DNA Vector Match Card -->
-            <div class="section-block biometric-dna-card">
-              <div class="biometric-dna-header">
-                <h3>🧬 Brand DNA Vector Match</h3>
-                <span id="biometric-composite-badge" class="biometric-badge">--% Match</span>
-              </div>
-              <p class="biometric-desc">Mathematical feature vector similarity against the company's approved vibe template (computed locally in &lt;10ms without heavy cloud server load):</p>
-              
-              <div class="biometric-metrics-grid">
-                <div class="biometric-metric-box">
-                  <div class="metric-top">
-                    <span class="metric-name">🎨 Color Harmony</span>
-                    <span id="bio-color-score" class="metric-val">--%</span>
-                  </div>
-                  <div class="progress-bar-bg"><div id="bio-color-bar" class="progress-bar-fill" style="width: 0%"></div></div>
-                </div>
-
-                <div class="biometric-metric-box">
-                  <div class="metric-top">
-                    <span class="metric-name">📐 Whitespace & Clean Layout</span>
-                    <span id="bio-whitespace-score" class="metric-val">--%</span>
-                  </div>
-                  <div class="progress-bar-bg"><div id="bio-whitespace-bar" class="progress-bar-fill" style="width: 0%"></div></div>
-                </div>
-
-                <div class="biometric-metric-box">
-                  <div class="metric-top">
-                    <span class="metric-name">📊 Visual Clutter & Density</span>
-                    <span id="bio-complexity-score" class="metric-val">--%</span>
-                  </div>
-                  <div class="progress-bar-bg"><div id="bio-complexity-bar" class="progress-bar-fill" style="width: 0%"></div></div>
-                </div>
-
-                <div class="biometric-metric-box">
-                  <div class="metric-top">
-                    <span class="metric-name">✍️ Copy Tone & Vocabulary</span>
-                    <span id="bio-copy-score" class="metric-val">--%</span>
-                  </div>
-                  <div class="progress-bar-bg"><div id="bio-copy-bar" class="progress-bar-fill" style="width: 0%"></div></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Palette Comparison -->
-            <div class="section-block">
-              <h3>🎨 Color Palette Alignment</h3>
-              <div class="palette-comparison-container">
-                <div class="palette-group">
-                  <span class="group-label">Detected from Your Work:</span>
-                  <div id="detected-palette-row" class="palette-row"></div>
-                </div>
-                <div class="palette-group">
-                  <span class="group-label">Company's Approved Colors:</span>
-                  <div id="approved-palette-row" class="palette-row"></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Findings Breakdown -->
-            <div class="section-block">
-              <h3>📋 Evidence & What to Fix</h3>
-              <div id="findings-table-container" class="findings-list"></div>
-            </div>
-
-            <!-- Clean Approval Status Banner -->
-            <div class="section-block signoff-summary-box">
-              <div class="signoff-summary-header">
-                <span class="signoff-lbl">Lead Review Status:</span>
-                <span id="human-decision-text" class="tag-badge tag-PASS">PENDING REVIEW</span>
-              </div>
-              <p class="signoff-sub">Reports are permanently logged and available for company lead confirmation.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 2: COMPANY SIGN IN & SET BRAND VIBES -->
-    <section id="tab-onboard" class="tab-pane">
-      <div class="pane-grid">
-        <!-- Company Sign In & Vibes Form -->
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2>🏢 Company Portal: Sign In & Set Your Brand Vibes</h2>
-              <p>Register your company and define the vibes, colors, and strict avoidances your dev team must follow.</p>
-            </div>
-          </div>
-
-          <form id="onboarding-form" class="app-form">
-            <input type="hidden" id="ob-editing-brand-id">
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="ob-brand-name">Company / Brand Name:</label>
-                <input type="text" id="ob-brand-name" placeholder="Enter company or brand name" required>
-              </div>
-              <div class="form-group">
-                <label for="ob-manager-email">Account Lead Email:</label>
-                <input type="email" id="ob-manager-email" placeholder="e.g. brand@company.com" required>
-              </div>
-            </div>
-
-            <!-- Reference Image Multi-Filter Auto-Extraction Box -->
-            <div class="form-group reference-scan-box">
-              <label for="ob-reference-files">🖼️ Upload Approved Poster / Reference Creative (Auto-Extract Content):</label>
-              <div class="drop-zone ob-drop-zone" id="ob-drop-zone">
-                <input type="file" id="ob-reference-files" class="file-input" accept=".png,.jpg,.jpeg,.webp,.pdf">
-                <div class="drop-zone-content">
-                  <span class="upload-icon">🪄</span>
-                  <p class="drop-text">Drop reference poster or graphic here to <span class="highlight">auto-extract brand content</span></p>
-                  <span class="drop-subtext">Filters: CIELAB Color Centroids, Layout Whitespace, and Aesthetic Style Extraction</span>
-                </div>
-              </div>
-              <div id="ob-scan-feedback" class="ob-scan-feedback hidden"></div>
-
-              <!-- Interactive Visual Colour Studio & Eyedropper Stage -->
-              <div id="color-studio-container" class="color-studio-container hidden">
-                <div class="studio-header">
-                  <div class="studio-title-group">
-                    <span class="studio-badge">🎨 Creative Colour Studio</span>
-                    <h3>Interactive Eyedropper & Color Extractor</h3>
-                  </div>
-                  <div class="studio-actions">
-                    <button type="button" id="btn-native-eyedropper" class="btn-studio-action hidden" title="Sample pixel anywhere on screen">
-                      <span>🎯 Screen Eyedropper</span>
-                    </button>
-                    <button type="button" id="btn-add-all-extracted" class="btn-studio-action">
-                      <span>✨ Add All Extracted to Palette</span>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Eyedropper Canvas Stage -->
-                <div class="studio-canvas-stage">
-                  <div class="canvas-viewport" id="canvas-viewport">
-                    <canvas id="studio-canvas"></canvas>
-                    <div id="eyedropper-loupe" class="eyedropper-loupe hidden">
-                      <div class="loupe-reticle"></div>
-                      <div class="loupe-color-preview" id="loupe-color-preview"></div>
-                    </div>
-                  </div>
-                  
-                  <!-- Real-time Inspector Readout -->
-                  <div class="inspector-readout-bar">
-                    <div class="inspect-live-swatch" id="inspect-live-swatch" style="background: #ffffff;"></div>
-                    <div class="inspect-readout-text">
-                      <span class="inspect-label">HOVER PIXEL:</span>
-                      <strong id="inspect-live-hex">#FFFFFF</strong>
-                      <span class="inspect-rgb" id="inspect-live-rgb">RGB(255, 255, 255)</span>
-                    </div>
-                    <div class="inspect-sample-action">
-                      <span id="inspect-sample-hint">Click creative to sample pixel</span>
-                      <button type="button" id="btn-add-sampled-color" class="btn-sm btn-primary hidden">
-                        <span>➕ Add Picked to Palette</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Extracted Spectrum Bar -->
-                <div class="spectrum-section">
-                  <div class="spectrum-header">
-                    <span class="spectrum-label">Color Distribution Spectrum:</span>
-                    <span id="spectrum-harmony-badge" class="id-badge">Dynamic Harmony</span>
-                  </div>
-                  <div id="spectrum-distribution-bar" class="color-spectrum-bar"></div>
-                </div>
-
-                <!-- Extracted Color Cards Grid -->
-                <div class="extracted-cards-section">
-                  <h4>Extracted Visual Centroids (<span id="extracted-count">0</span> colors identified)</h4>
-                  <div id="extracted-swatches-grid" class="extracted-swatches-grid"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="ob-personality">Company Vibe & Personality:</label>
-                <input type="text" id="ob-personality" placeholder="e.g. Understated, Confident, Human, Sleek" required>
-              </div>
-              <div class="form-group">
-                <label for="ob-mood">Desired Emotional Mood:</label>
-                <input type="text" id="ob-mood" placeholder="e.g. Premium, Focused, Calm" required>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="ob-tone">Communication Tone:</label>
-                <input type="text" id="ob-tone" placeholder="e.g. Minimalist, Inspiring, Clear, Direct" required>
-              </div>
-              <div class="form-group">
-                <label for="ob-audience">Target Audience:</label>
-                <input type="text" id="ob-audience" placeholder="e.g. Creators, professionals, enthusiasts" required>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="ob-style">Visual Aesthetic Style:</label>
-              <input type="text" id="ob-style" placeholder="e.g. Extreme Minimalism, Negative Space, High-contrast" required>
-            </div>
-
-            <!-- Professional Brand Palette Manager -->
-            <div class="form-group brand-palette-manager-group">
-              <div class="palette-manager-header">
+            <!-- Left Submission Card -->
+            <div class="card submission-card">
+              <div class="card-header">
                 <div>
-                  <label>🎨 Approved Brand Palette Manager:</label>
-                  <span class="field-hint">Manage official company brand colors, assign roles, pick custom colors, and export palettes.</span>
-                </div>
-                <div class="palette-quick-actions">
-                  <button type="button" id="btn-copy-palette-hex" class="btn-text-sm" title="Copy comma-separated HEX string">📋 Copy HEX</button>
-                  <button type="button" id="btn-export-css-vars" class="btn-text-sm" title="Export CSS Variables snippet">💻 CSS Vars</button>
-                  <button type="button" id="btn-clear-palette" class="btn-text-sm text-danger" title="Clear all colors">🗑️ Clear</button>
+                  <h3 class="card-title">Submit Creative for Vibe Inspection</h3>
+                  <p class="card-subtitle">Test advertising copy or upload posters/banners against brand guidelines.</p>
                 </div>
               </div>
 
-              <!-- Active Brand Swatches Strip -->
-              <div id="palette-manager-grid" class="palette-manager-grid">
-                <div class="palette-empty-prompt">No colors added yet. Upload creative above or pick custom colors below.</div>
-              </div>
-
-              <!-- Add Custom Color Bar -->
-              <div class="custom-color-picker-bar">
-                <div class="picker-swatch-wrap" title="Click to open color picker">
-                  <input type="color" id="custom-color-picker" value="#3B82F6" class="native-color-input">
-                  <span class="color-picker-icon-badge">🎨</span>
+              <form id="inspection-form" class="app-form">
+                
+                <!-- Target Brand Dropdown -->
+                <div class="form-group">
+                  <label for="inspect-brand-select">Target Company:</label>
+                  <select id="inspect-brand-select" required>
+                    <option value="">-- Select Company to Check Against --</option>
+                  </select>
+                  <div id="selected-brand-preview" class="selected-brand-preview hidden">
+                    <div class="preview-header">
+                      <span id="prev-brand-name" class="prev-title"></span>
+                      <span id="prev-brand-tone" class="id-badge"></span>
+                    </div>
+                    <div class="prev-details">
+                      <p><strong>Approved Colors:</strong> <span id="prev-palette-chips" class="palette-mini-row"></span></p>
+                      <p><strong>Strict Avoidances:</strong> <span id="prev-avoid-text" class="prev-avoid"></span></p>
+                    </div>
+                  </div>
                 </div>
-                <input type="text" id="custom-hex-input" placeholder="#HEX (e.g. #0055FF)" maxlength="7" class="hex-text-input">
-                <select id="custom-role-select" class="role-select">
-                  <option value="Primary Brand Color">Primary Brand Color</option>
-                  <option value="Secondary Accent">Secondary Accent</option>
-                  <option value="Highlight / CTA">Highlight / CTA</option>
-                  <option value="Background / Base">Background / Base</option>
-                </select>
-                <button type="button" id="btn-add-custom-color" class="btn btn-secondary btn-sm">
-                  <span>➕ Add Color</span>
+
+                <!-- Dual Mode Selector -->
+                <div class="form-group">
+                  <label>Creative Asset Modality:</label>
+                  <div class="input-mode-tabs">
+                    <button type="button" class="mode-tab-btn active" id="tab-mode-text" onclick="setInputMode('text')">✍️ Marketing Copy / Ad Text</button>
+                    <button type="button" class="mode-tab-btn" id="tab-mode-file" onclick="setInputMode('file')">📁 Poster / Graphic Image</button>
+                  </div>
+
+                  <!-- Text Input -->
+                  <div id="mode-text-container">
+                    <textarea id="inspect-copy-text" rows="4" placeholder="Type or paste advertising copy, slogan, or promotional body text (e.g. 'Designed with titanium. Remarkably light. The next generation of iPhone is here.')."></textarea>
+                    <span class="field-hint">Checks copy tone, emotional mood, and strictly prohibited claims.</span>
+                  </div>
+
+                  <!-- File Input -->
+                  <div id="mode-file-container" class="hidden">
+                    <div id="drop-zone" class="drop-zone">
+                      <input type="file" id="inspect-file" class="file-input" accept=".png,.jpg,.jpeg,.webp,.pdf,.txt,.md">
+                      <div class="drop-zone-content">
+                        <span class="upload-icon">📁</span>
+                        <p class="drop-text">Drag & drop poster or graphic here or <span class="highlight">browse</span></p>
+                        <span class="drop-subtext">Posters & Banners (PNG/JPG/WEBP), Copy (PDF/TXT) up to 30MB</span>
+                      </div>
+                    </div>
+                    
+                    <div id="file-preview-info" class="file-preview-info hidden">
+                      <span id="preview-filename"></span>
+                      <span id="preview-filesize"></span>
+                      <button type="button" id="btn-clear-file" class="btn-text-sm text-danger">Remove</button>
+                    </div>
+
+                    <!-- Developer Pre-AI Color Filter Panel -->
+                    <div id="dev-color-filter-panel" class="dev-color-filter-panel hidden">
+                      <div class="prefilter-header">
+                        <div class="prefilter-title-group">
+                          <span class="prefilter-badge">⚡ Pre-AI Color Filter</span>
+                          <h4>Deterministic Palette Adherence</h4>
+                        </div>
+                        <span id="dev-prefilter-score" class="prefilter-score-badge">--% Match</span>
+                      </div>
+                      <p class="prefilter-subtext">Filters visual colors using CIELAB ΔE distance against company standards before cloud AI analysis:</p>
+                      
+                      <div id="dev-spectrum-bar" class="color-spectrum-bar"></div>
+                      <div id="dev-color-filter-results" class="dev-filter-chips-grid"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="submit" id="btn-run-inspect" class="btn btn-primary btn-block">
+                  <span>🚀 Check Vibe Match</span>
                 </button>
+
+                <div id="inspect-inline-status" class="inspect-inline-status hidden">
+                  <div id="inline-status-spinner" class="inline-spinner"></div>
+                  <span id="inline-status-text">Scanning Brand DNA vectors & analyzing brand vibes...</span>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right Inspection Report Card -->
+            <div id="report-panel" class="card report-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Vibe Match & Verification Report</h3>
+                  <p class="card-subtitle">Real-time Brand DNA vector match & multimodal aesthetic reasoning.</p>
+                </div>
+                <span id="report-id-badge" class="id-badge">Awaiting submission</span>
               </div>
 
-              <!-- Hidden backing store for form compatibility -->
-              <input type="hidden" id="ob-palette" name="palette" required>
-            </div>
+              <!-- Empty State -->
+              <div id="inspection-empty-state" class="empty-state">
+                <div class="empty-icon">📊</div>
+                <h3>Ready to Check Your Work</h3>
+                <p>Select your company on the left, paste your copy or upload your poster, and click "Check Vibe Match"!</p>
+              </div>
 
-            <div class="form-group">
-              <label for="ob-avoid">Words & Claims Developers Must NEVER Use (Comma-separated):</label>
-              <input type="text" id="ob-avoid" placeholder="super cheap, bargain discount, miracle deal, clearance sale">
-              <span class="field-hint">The engine will immediately flag and reject any developer creative containing these prohibited claims.</span>
-            </div>
+              <!-- Loading State -->
+              <div id="inspection-loading-state" class="empty-state hidden">
+                <div class="spinner"></div>
+                <h3>Extracting Feature Vectors & Checking Company Vibes...</h3>
+                <p id="loading-stage-text">Step 1: Extracting CIELAB color centroids and whitespace layout vectors...</p>
+              </div>
 
-            <div class="form-group">
-              <label for="ob-tagline">Company Motto / Mission Statement:</label>
-              <input type="text" id="ob-tagline" placeholder="e.g. Think different">
-            </div>
+              <!-- Results View -->
+              <div id="inspection-results-view" class="results-view hidden">
+                
+                <!-- Verdict Banner -->
+                <div id="verdict-banner" class="verdict-banner">
+                  <div class="verdict-header">
+                    <span class="verdict-label">VIBE VERDICT:</span>
+                    <span id="verdict-title" class="verdict-title">APPROVED</span>
+                  </div>
+                  <p id="verdict-summary" class="verdict-summary"></p>
+                </div>
 
-            <div class="form-actions-row">
-              <button type="submit" id="btn-create-draft" class="btn btn-primary btn-block">
-                <span>💾 Save & Lock Company Vibes</span>
-              </button>
-              <button type="button" id="btn-cancel-edit" class="btn btn-secondary hidden" style="margin-top: 0.5rem; width: 100%;">
-                <span>Cancel Edit</span>
-              </button>
-            </div>
-          </form>
-        </div>
+                <!-- Score Gauges -->
+                <div class="score-grid">
+                  <div class="score-card">
+                    <span class="score-title">Overall Vibe Match</span>
+                    <span id="score-overall" class="score-number">--</span>
+                    <span class="score-sub">Composite Score</span>
+                  </div>
+                  <div class="score-card">
+                    <span class="score-title">Color & Rule Checks</span>
+                    <span id="score-deterministic" class="score-number">--</span>
+                    <span class="score-sub">Palette & Forbidden Words</span>
+                  </div>
+                  <div class="score-card">
+                    <span class="score-title">Aesthetic Vibe Alignment</span>
+                    <span id="score-ai" class="score-number">--</span>
+                    <span class="score-sub">Mood, Tone & Aesthetic</span>
+                  </div>
+                </div>
 
-        <!-- Directory of Confirmed Company Vibes -->
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2>Active Registered Companies & Brand DNA</h2>
-              <p>Companies ready for developer vibe checking across posters and marketing copy.</p>
+                <!-- Vibe Intelligence Analysis Hero Card -->
+                <div id="gemini-ai-hero-card" class="gemini-ai-hero-card">
+                  <div class="ai-hero-header">
+                    <div class="ai-hero-title">
+                      <span class="ai-chip-gemini">✨ Vibe Intelligence</span>
+                      <span class="ai-hero-subtitle">Multimodal Aesthetic & Tone Reasoning</span>
+                    </div>
+                    <span id="ai-hero-score-badge" class="ai-score-pill">100% Vibe Alignment</span>
+                  </div>
+                  <div class="ai-hero-body">
+                    <div class="ai-quote-container">
+                      <div class="ai-quote-icon">🎯</div>
+                      <p id="ai-hero-explanation" class="ai-hero-explanation">Creative piece analyzed against company brand guidelines.</p>
+                    </div>
+                    <div class="ai-attributes-grid">
+                      <div class="ai-attr-pill">
+                        <span class="attr-lbl">Mood Detected:</span>
+                        <strong id="ai-hero-mood">--</strong>
+                      </div>
+                      <div class="ai-attr-pill">
+                        <span class="attr-lbl">Brand Personality:</span>
+                        <strong id="ai-hero-personality">--</strong>
+                      </div>
+                      <div class="ai-attr-pill">
+                        <span class="attr-lbl">Communication Tone:</span>
+                        <strong id="ai-hero-tone">--</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Biometric Brand DNA Vector Match Card -->
+                <div class="section-block biometric-dna-card">
+                  <div class="biometric-dna-header">
+                    <h4>🧬 Brand DNA Vector Match</h4>
+                    <span id="biometric-composite-badge" class="biometric-badge">--% Match</span>
+                  </div>
+                  <p class="biometric-desc">Mathematical feature vector similarity against company approved vibe template:</p>
+                  
+                  <div class="biometric-metrics-grid">
+                    <div class="biometric-metric-box">
+                      <div class="metric-top">
+                        <span class="metric-name">🎨 Color Harmony</span>
+                        <span id="bio-color-score" class="metric-val">--%</span>
+                      </div>
+                      <div class="progress-bar-bg"><div id="bio-color-bar" class="progress-bar-fill" style="width: 0%"></div></div>
+                    </div>
+
+                    <div class="biometric-metric-box">
+                      <div class="metric-top">
+                        <span class="metric-name">📐 Whitespace Layout</span>
+                        <span id="bio-whitespace-score" class="metric-val">--%</span>
+                      </div>
+                      <div class="progress-bar-bg"><div id="bio-whitespace-bar" class="progress-bar-fill" style="width: 0%"></div></div>
+                    </div>
+
+                    <div class="biometric-metric-box">
+                      <div class="metric-top">
+                        <span class="metric-name">📊 Visual Clutter & Density</span>
+                        <span id="bio-complexity-score" class="metric-val">--%</span>
+                      </div>
+                      <div class="progress-bar-bg"><div id="bio-complexity-bar" class="progress-bar-fill" style="width: 0%"></div></div>
+                    </div>
+
+                    <div class="biometric-metric-box">
+                      <div class="metric-top">
+                        <span class="metric-name">✍️ Copy Tone & Vocabulary</span>
+                        <span id="bio-copy-score" class="metric-val">--%</span>
+                      </div>
+                      <div class="progress-bar-bg"><div id="bio-copy-bar" class="progress-bar-fill" style="width: 0%"></div></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Palette Comparison -->
+                <div class="section-block">
+                  <h4>🎨 Color Palette Alignment</h4>
+                  <div class="palette-comparison-container">
+                    <div class="palette-group">
+                      <span class="group-label">Detected from Your Work:</span>
+                      <div id="detected-palette-row" class="palette-row"></div>
+                    </div>
+                    <div class="palette-group">
+                      <span class="group-label">Company's Approved Colors:</span>
+                      <div id="approved-palette-row" class="palette-row"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Findings Breakdown -->
+                <div class="section-block">
+                  <h4>📋 Evidence & What to Fix</h4>
+                  <div id="findings-table-container" class="findings-list"></div>
+                </div>
+
+                <!-- Lead Review Status -->
+                <div class="section-block signoff-summary-box">
+                  <div class="signoff-summary-header">
+                    <span class="signoff-lbl">Review Status:</span>
+                    <span id="human-decision-text" class="tag-badge tag-PASS">PENDING REVIEW</span>
+                  </div>
+                  <p class="signoff-sub">Reports are permanently logged and available in the Tracked Reports feed on the right.</p>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div class="existing-profiles-container">
-            <div id="confirmed-brands-list" class="brands-list">
-              <p class="empty-note">Loading registered companies...</p>
+        <!-- =========================================================================
+             TAB 2: COMPANY SIGN IN & SET BRAND VIBES (Razor login page.png inspired)
+             ========================================================================= -->
+        <div id="tab-onboard" class="dashboard-tab-pane">
+          <div class="portal-centered-container">
+            
+            <div class="card company-portal-card">
+              <div class="card-header portal-header-center">
+                <span class="portal-badge-icon">🏢</span>
+                <h2 class="portal-title">Company Portal & Brand Vibes</h2>
+                <p class="portal-subtitle">Register your company, define brand personality & tone, and manage your brand palette.</p>
+              </div>
+
+              <form id="onboarding-form" class="app-form">
+                <input type="hidden" id="ob-editing-brand-id">
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="ob-brand-name">Company / Brand Name:</label>
+                    <input type="text" id="ob-brand-name" placeholder="Enter company or brand name" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="ob-manager-email">Account Lead Email:</label>
+                    <input type="email" id="ob-manager-email" placeholder="brand@company.com" required>
+                  </div>
+                </div>
+
+                <!-- Reference Image Multi-Filter Auto-Extraction Box -->
+                <div class="form-group reference-scan-box">
+                  <label for="ob-reference-files">🖼️ Upload Approved Poster / Reference Creative (Auto-Extract Content):</label>
+                  <div class="drop-zone ob-drop-zone" id="ob-drop-zone">
+                    <input type="file" id="ob-reference-files" class="file-input" accept=".png,.jpg,.jpeg,.webp,.pdf">
+                    <div class="drop-zone-content">
+                      <span class="upload-icon">🪄</span>
+                      <p class="drop-text">Drop reference poster or graphic here to <span class="highlight">auto-extract brand content</span></p>
+                      <span class="drop-subtext">Filters: CIELAB Color Centroids, Whitespace Layout, and Aesthetic Style Extraction</span>
+                    </div>
+                  </div>
+                  <div id="ob-scan-feedback" class="ob-scan-feedback hidden"></div>
+
+                  <!-- Interactive Visual Colour Studio & Eyedropper Stage -->
+                  <div id="color-studio-container" class="color-studio-container hidden">
+                    <div class="studio-header">
+                      <div class="studio-title-group">
+                        <span class="studio-badge">🎨 Creative Colour Studio</span>
+                        <h3>Interactive Eyedropper & Color Extractor</h3>
+                      </div>
+                      <div class="studio-actions">
+                        <button type="button" id="btn-native-eyedropper" class="btn-studio-action hidden" title="Sample pixel anywhere on screen">
+                          <span>🎯 Screen Eyedropper</span>
+                        </button>
+                        <button type="button" id="btn-add-all-extracted" class="btn-studio-action">
+                          <span>✨ Add All Extracted to Palette</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Eyedropper Canvas Stage -->
+                    <div class="studio-canvas-stage">
+                      <div class="canvas-viewport" id="canvas-viewport">
+                        <canvas id="studio-canvas"></canvas>
+                        <div id="eyedropper-loupe" class="eyedropper-loupe hidden">
+                          <div class="loupe-reticle"></div>
+                          <div class="loupe-color-preview" id="loupe-color-preview"></div>
+                        </div>
+                      </div>
+                      
+                      <!-- Real-time Inspector Readout -->
+                      <div class="inspector-readout-bar">
+                        <div class="inspect-live-swatch" id="inspect-live-swatch" style="background: #ffffff;"></div>
+                        <div class="inspect-readout-text">
+                          <span class="inspect-label">HOVER PIXEL:</span>
+                          <strong id="inspect-live-hex">#FFFFFF</strong>
+                          <span class="inspect-rgb" id="inspect-live-rgb">RGB(255, 255, 255)</span>
+                        </div>
+                        <div class="inspect-sample-action">
+                          <span id="inspect-sample-hint">Click creative to sample pixel</span>
+                          <button type="button" id="btn-add-sampled-color" class="btn-sm btn-primary hidden">
+                            <span>➕ Add Picked to Palette</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Extracted Spectrum Bar -->
+                    <div class="spectrum-section">
+                      <div class="spectrum-header">
+                        <span class="spectrum-label">Color Distribution Spectrum:</span>
+                        <span id="spectrum-harmony-badge" class="id-badge">Dynamic Harmony</span>
+                      </div>
+                      <div id="spectrum-distribution-bar" class="color-spectrum-bar"></div>
+                    </div>
+
+                    <!-- Extracted Color Cards Grid -->
+                    <div class="extracted-cards-section">
+                      <h4>Extracted Visual Centroids (<span id="extracted-count">0</span> colors identified)</h4>
+                      <div id="extracted-swatches-grid" class="extracted-swatches-grid"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="ob-personality">Company Vibe & Personality:</label>
+                    <input type="text" id="ob-personality" placeholder="e.g. Understated, Confident, Sleek" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="ob-mood">Desired Emotional Mood:</label>
+                    <input type="text" id="ob-mood" placeholder="e.g. Premium, Focused, Calm" required>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="ob-tone">Communication Tone:</label>
+                    <input type="text" id="ob-tone" placeholder="e.g. Minimalist, Direct, Clear" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="ob-audience">Target Audience:</label>
+                    <input type="text" id="ob-audience" placeholder="e.g. Creators, professionals, enterprise" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="ob-style">Visual Aesthetic Style:</label>
+                  <input type="text" id="ob-style" placeholder="e.g. Extreme Minimalism, Negative Space, High-contrast" required>
+                </div>
+
+                <!-- Professional Brand Palette Manager -->
+                <div class="form-group brand-palette-manager-group">
+                  <div class="palette-manager-header">
+                    <div>
+                      <label>🎨 Approved Brand Palette Manager:</label>
+                      <span class="field-hint">Manage official company brand colors, assign roles, pick custom colors, and export palettes.</span>
+                    </div>
+                    <div class="palette-quick-actions">
+                      <button type="button" id="btn-copy-palette-hex" class="btn-text-sm" title="Copy comma-separated HEX string">📋 Copy HEX</button>
+                      <button type="button" id="btn-export-css-vars" class="btn-text-sm" title="Export CSS Variables snippet">💻 CSS Vars</button>
+                      <button type="button" id="btn-clear-palette" class="btn-text-sm text-danger" title="Clear all colors">🗑️ Clear</button>
+                    </div>
+                  </div>
+
+                  <!-- Active Brand Swatches Strip -->
+                  <div id="palette-manager-grid" class="palette-manager-grid">
+                    <div class="palette-empty-prompt">No colors added yet. Upload creative above or pick custom colors below.</div>
+                  </div>
+
+                  <!-- Add Custom Color Bar -->
+                  <div class="custom-color-picker-bar">
+                    <div class="picker-swatch-wrap" title="Click to open color picker">
+                      <input type="color" id="custom-color-picker" value="#3B82F6" class="native-color-input">
+                      <span class="color-picker-icon-badge">🎨</span>
+                    </div>
+                    <input type="text" id="custom-hex-input" placeholder="#HEX (e.g. #0055FF)" maxlength="7" class="hex-text-input">
+                    <select id="custom-role-select" class="role-select">
+                      <option value="Primary Brand Color">Primary Brand Color</option>
+                      <option value="Secondary Accent">Secondary Accent</option>
+                      <option value="Highlight / CTA">Highlight / CTA</option>
+                      <option value="Background / Base">Background / Base</option>
+                    </select>
+                    <button type="button" id="btn-add-custom-color" class="btn btn-secondary btn-sm">
+                      <span>➕ Add Color</span>
+                    </button>
+                  </div>
+
+                  <!-- Hidden backing store for form compatibility -->
+                  <input type="hidden" id="ob-palette" name="palette" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="ob-avoid">Words & Claims Developers Must NEVER Use (Comma-separated):</label>
+                  <input type="text" id="ob-avoid" placeholder="super cheap, bargain discount, miracle deal, clearance sale">
+                  <span class="field-hint">The engine will immediately flag and reject any developer creative containing these prohibited claims.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="ob-tagline">Company Motto / Mission Statement:</label>
+                  <input type="text" id="ob-tagline" placeholder="e.g. Think different">
+                </div>
+
+                <div class="form-actions-row">
+                  <button type="submit" id="btn-create-draft" class="btn btn-primary btn-block">
+                    <span>💾 Save & Lock Company Vibes</span>
+                  </button>
+                  <button type="button" id="btn-cancel-edit" class="btn btn-secondary hidden" style="margin-top: 0.5rem; width: 100%;">
+                    <span>Cancel Edit</span>
+                  </button>
+                </div>
+              </form>
             </div>
+
+            <!-- Directory of Confirmed Company Vibes -->
+            <div class="card company-directory-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Registered Brand DNA Directory</h3>
+                  <p class="card-subtitle">Active companies ready for developer vibe checking across posters and copy.</p>
+                </div>
+              </div>
+
+              <div class="existing-profiles-container">
+                <div id="confirmed-brands-list" class="brands-list">
+                  <p class="empty-note">Loading registered companies...</p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
-      </div>
-    </section>
 
-  </main>
+      </main>
 
+      <!-- Right Activity Feed: Tracked Inspections (Ace Academy "Upcoming Tasks" style - "trsck") -->
+      <aside class="dashboard-activity-panel" id="dashboard-activity-panel">
+        <div class="activity-header">
+          <div class="activity-title-group">
+            <span class="activity-icon">📊</span>
+            <h4>Tracked Inspections</h4>
+          </div>
+          <span class="activity-count" id="activity-reports-badge">0 reports</span>
+        </div>
+        <p class="activity-subtitle">Recent creative submissions verified against company vibes:</p>
+        
+        <div id="recent-inspections-list" class="recent-inspections-list">
+          <div class="empty-note">No inspections yet. Submit work on the left to verify vibes.</div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+  <!-- Modern Clean Toast Container -->
+  <div id="app-toast" class="app-toast hidden"></div>
+
+  <!-- Footer -->
   <footer class="app-footer">
-    <p>BrandShield &copy; 2026 Team Dark Lord. Fast & lightweight company vibe verification.</p>
+    <div class="footer-container">
+      <p>Sanket AI &copy; 2026 Team Dark Lord.</p>
+      <div class="footer-links">
+        <span onclick="switchMainView('landing')">Overview</span> &bull;
+        <span onclick="switchMainView('developer')">Vibe Dashboard</span> &bull;
+        <span onclick="switchMainView('company')">Company Portal</span>
+      </div>
+    </div>
   </footer>
 
-  <script src="/static/app.js?v=6.0"></script>
+  <script src="/static/app.js?v=8.0"></script>
 </body>
 </html>

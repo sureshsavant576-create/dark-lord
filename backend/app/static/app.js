@@ -1,4 +1,4 @@
-// BrandShield – Frontend Application Logic & Creative Colour Studio
+// Sanket AI – Frontend Application Logic & Creative Colour Studio
 const API_BASE = '/api/v1';
 let brandsMap = {};
 let activeInputMode = 'text';
@@ -102,20 +102,100 @@ document.addEventListener('DOMContentLoaded', () => {
   loadRecentReport();
 });
 
-// Tab Switcher (Developer vs Company)
+// Main View Switcher (Landing vs Dashboard)
+function switchMainView(view) {
+  const landingView = document.getElementById('view-landing');
+  const dashboardView = document.getElementById('view-dashboard');
+  const btnLanding = document.getElementById('nav-btn-landing');
+  const btnDev = document.getElementById('nav-btn-developer');
+  const btnCo = document.getElementById('nav-btn-company');
+
+  if (view === 'landing') {
+    if (landingView) landingView.classList.remove('hidden');
+    if (dashboardView) dashboardView.classList.add('hidden');
+    if (btnLanding) btnLanding.classList.add('active');
+    if (btnDev) btnDev.classList.remove('active');
+    if (btnCo) btnCo.classList.remove('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (view === 'developer') {
+    if (landingView) landingView.classList.add('hidden');
+    if (dashboardView) dashboardView.classList.remove('hidden');
+    if (btnLanding) btnLanding.classList.remove('active');
+    if (btnDev) btnDev.classList.add('active');
+    if (btnCo) btnCo.classList.remove('active');
+    switchDashboardTab('tab-inspect');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (view === 'company') {
+    if (landingView) landingView.classList.add('hidden');
+    if (dashboardView) dashboardView.classList.remove('hidden');
+    if (btnLanding) btnLanding.classList.remove('active');
+    if (btnDev) btnDev.classList.remove('active');
+    if (btnCo) btnCo.classList.add('active');
+    switchDashboardTab('tab-onboard');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+window.switchMainView = switchMainView;
+
+// Dashboard Internal Tab Switcher (Developer Vibe Check vs Company Setup)
+function switchDashboardTab(tabId) {
+  const landingView = document.getElementById('view-landing');
+  const dashboardView = document.getElementById('view-dashboard');
+  if (landingView) landingView.classList.add('hidden');
+  if (dashboardView) dashboardView.classList.remove('hidden');
+
+  const panes = document.querySelectorAll('.dashboard-tab-pane');
+  panes.forEach(p => p.classList.remove('active'));
+
+  const targetPane = document.getElementById(tabId);
+  if (targetPane) targetPane.classList.add('active');
+
+  const sideInspect = document.getElementById('side-tab-inspect');
+  const sideOnboard = document.getElementById('side-tab-onboard');
+  const btnDev = document.getElementById('nav-btn-developer');
+  const btnCo = document.getElementById('nav-btn-company');
+  const btnLanding = document.getElementById('nav-btn-landing');
+
+  if (tabId === 'tab-inspect') {
+    if (sideInspect) sideInspect.classList.add('active');
+    if (sideOnboard) sideOnboard.classList.remove('active');
+    if (btnDev) btnDev.classList.add('active');
+    if (btnCo) btnCo.classList.remove('active');
+    if (btnLanding) btnLanding.classList.remove('active');
+  } else {
+    if (sideInspect) sideInspect.classList.remove('active');
+    if (sideOnboard) sideOnboard.classList.add('active');
+    if (btnDev) btnDev.classList.remove('active');
+    if (btnCo) btnCo.classList.add('active');
+    if (btnLanding) btnLanding.classList.remove('active');
+  }
+}
+window.switchDashboardTab = switchDashboardTab;
+
+function scrollColorStudio() {
+  const studio = document.getElementById('color-studio-container');
+  if (studio) {
+    studio.classList.remove('hidden');
+    studio.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+window.scrollColorStudio = scrollColorStudio;
+
+function scrollToTrackedReports() {
+  const panel = document.getElementById('dashboard-activity-panel');
+  if (panel) {
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+window.scrollToTrackedReports = scrollToTrackedReports;
+
 function initTabs() {
+  // Backwards compatibility for any legacy tab listeners
   const tabs = document.querySelectorAll('.nav-tab');
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-
-      tab.classList.add('active');
       const targetId = tab.getAttribute('data-tab');
-      const targetPane = document.getElementById(targetId);
-      if (targetPane) {
-        targetPane.classList.add('active');
-      }
+      if (targetId) switchDashboardTab(targetId);
     });
   });
 }
@@ -372,6 +452,8 @@ async function loadBrands() {
       }
     });
 
+    renderCompanyCards(confirmedBrands);
+
     // Brand Selection Preview Handler
     if (select) {
       select.onchange = () => {
@@ -418,6 +500,66 @@ async function loadBrands() {
     console.error('Failed to load brands:', err);
   }
 }
+
+// Render Select Company Cards Strip (Ace Academy "My Courses" style)
+function renderCompanyCards(brands) {
+  const grid = document.getElementById('company-cards-grid');
+  const statCount = document.getElementById('stat-registered-count');
+  const sidebarList = document.getElementById('sidebar-brands-quicklist');
+  if (statCount) statCount.textContent = brands.length;
+
+  if (sidebarList) {
+    sidebarList.innerHTML = '';
+    brands.forEach(b => {
+      const pill = document.createElement('div');
+      pill.className = 'sidebar-brand-pill';
+      pill.innerHTML = `<span>${b.brand_name}</span> <span class="tone-badge-pill" style="font-size: 0.65rem;">${b.status}</span>`;
+      pill.onclick = () => selectCompanyById(b.brand_id);
+      sidebarList.appendChild(pill);
+    });
+  }
+
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  brands.forEach(b => {
+    const card = document.createElement('div');
+    card.className = 'company-vibe-card';
+    card.setAttribute('data-brand-id', b.brand_id);
+
+    const swatches = (b.approved_palette || []).slice(0, 5).map(h => `
+      <span class="card-swatch-dot" style="background: ${h};" title="${h}"></span>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="card-top-row">
+        <span class="company-title-bold">${b.brand_name}</span>
+        <span class="tone-badge-pill">${b.status}</span>
+      </div>
+      <div class="card-palette-strip">${swatches}</div>
+      <p class="card-meta-notes"><strong>Personality:</strong> ${(b.personality || []).slice(0, 3).join(', ')}</p>
+      <div class="btn-select-company">Select for Inspection →</div>
+    `;
+
+    card.onclick = () => selectCompanyById(b.brand_id);
+    grid.appendChild(card);
+  });
+}
+
+function selectCompanyById(brandId) {
+  const select = document.getElementById('inspect-brand-select');
+  if (select) {
+    select.value = brandId;
+    select.dispatchEvent(new Event('change'));
+  }
+  document.querySelectorAll('.company-vibe-card').forEach(c => {
+    c.classList.toggle('is-selected', c.getAttribute('data-brand-id') === brandId);
+  });
+  const form = document.getElementById('inspection-form');
+  if (form) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  toast(`Selected ${brandsMap[brandId]?.brand_name || brandId} for inspection!`);
+}
+window.selectCompanyById = selectCompanyById;
 
 // ==========================================================================
 // Professional Brand Palette Manager Dashboard
@@ -822,8 +964,7 @@ function startEditingBrand(brandId) {
   if (!b) return;
 
   // Switch to Company Tab
-  const onboardTab = document.querySelector('.nav-tab[data-tab="tab-onboard"]');
-  if (onboardTab) onboardTab.click();
+  switchDashboardTab('tab-onboard');
 
   const editIdInput = document.getElementById('ob-editing-brand-id');
   if (editIdInput) editIdInput.value = b.brand_id;
@@ -1225,6 +1366,7 @@ function initInspection() {
 
       const report = await res.json();
       renderInspectionReport(report);
+      loadRecentReport();
 
       if (inlineStatus) {
         inlineStatus.className = 'inspect-inline-status status-success';
@@ -1417,12 +1559,64 @@ function renderInspectionReport(report) {
   if (resultsView) resultsView.classList.remove('hidden');
 }
 
-// Load Most Recent Report on Page Load
+// Load and Track Recent Inspection Reports (Ace Academy Right Activity Panel - "trsck")
 async function loadRecentReport() {
   try {
     const res = await fetch(`${API_BASE}/reports`);
     if (!res.ok) return;
     const reports = await res.json();
+    
+    // Update badge & counter
+    const badge = document.getElementById('activity-reports-badge');
+    if (badge) badge.textContent = `${reports.length} report${reports.length === 1 ? '' : 's'}`;
+    const statCounter = document.getElementById('stat-inspections-count');
+    if (statCounter) statCounter.textContent = reports.length;
+
+    // Render Tracked Reports Feed in Right Activity Panel
+    const list = document.getElementById('recent-inspections-list');
+    if (list && reports.length > 0) {
+      list.innerHTML = '';
+      reports.slice(0, 15).forEach(rep => {
+        const item = document.createElement('div');
+        item.className = 'tracked-inspection-item';
+        
+        let iconClass = 'tracked-icon-pass';
+        let iconEmoji = '✓';
+        if (rep.verdict === 'CHANGES_REQUESTED') {
+          iconClass = 'tracked-icon-warn';
+          iconEmoji = '⚠️';
+        } else if (rep.verdict === 'REJECTED') {
+          iconClass = 'tracked-icon-fail';
+          iconEmoji = '✕';
+        }
+
+        const dateStr = rep.created_at ? new Date(rep.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent';
+
+        item.innerHTML = `
+          <div class="tracked-item-left">
+            <div class="tracked-icon-box ${iconClass}">${iconEmoji}</div>
+            <div class="tracked-info">
+              <span class="tracked-filename" title="${rep.submission_filename}">${rep.submission_filename || 'Text Creative'}</span>
+              <span class="tracked-brand-time">${rep.brand_name} &bull; ${dateStr}</span>
+            </div>
+          </div>
+          <div class="tracked-item-right">
+            <span class="tracked-score-pill">${rep.overall_score !== null && rep.overall_score !== undefined ? rep.overall_score + '%' : '--'}</span>
+          </div>
+        `;
+
+        item.onclick = () => {
+          switchDashboardTab('tab-inspect');
+          renderInspectionReport(rep);
+          const panel = document.getElementById('report-panel');
+          if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          toast(`Loaded report for ${rep.submission_filename}`);
+        };
+
+        list.appendChild(item);
+      });
+    }
+
     if (reports && reports.length > 0) {
       reports.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       renderInspectionReport(reports[0]);

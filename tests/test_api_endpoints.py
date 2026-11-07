@@ -16,7 +16,7 @@ def test_health_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
-    assert data["app_name"] == "BrandShield AI"
+    assert data["app_name"] == "Sanket AI"
 
 
 def test_providers_diagnostic_endpoint():
