@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BrandShield AI – Intelligent Brand Inspection & Company Vibe Verification</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css?v=2.1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <!-- Header Banner -->
@@ -49,8 +49,10 @@
         <!-- Submission Form -->
         <div class="card submission-card">
           <div class="card-header">
-            <h2>Check Your Marketing Work Against Company Vibes</h2>
-            <p>Select your company and test your poster, graphic, or ad copy to make sure it matches the brand.</p>
+            <div>
+              <h2>Check Marketing Work Against Company Vibes</h2>
+              <p>Pick your company and test your poster, banner graphic, or ad copy to verify brand vibe alignment.</p>
+            </div>
           </div>
           
           <form id="inspection-form" class="app-form">
@@ -69,7 +71,7 @@
                   <p><strong>Strict Avoidances:</strong> <span id="prev-avoid-text" class="prev-avoid"></span></p>
                 </div>
               </div>
-              <span class="field-hint">Select the company whose brand vibes you are designing for.</span>
+              <span class="field-hint">Select the registered company whose brand vibes you are designing for.</span>
             </div>
 
             <!-- Dual Input Mode Selector -->
@@ -83,7 +85,7 @@
               <!-- Mode 1: Direct Copy Text Input -->
               <div id="mode-text-container">
                 <textarea id="inspect-copy-text" rows="4" placeholder="Type or paste advertising copy, slogan, or promotional body text (e.g. 'Designed with titanium. Remarkably light. The next generation of iPhone is here.')."></textarea>
-                <span class="field-hint">Checks copy tone, sentiment, and strictly prohibited company claims.</span>
+                <span class="field-hint">Checks copy tone, emotional mood, and strictly prohibited claims.</span>
               </div>
 
               <!-- Mode 2: Creative Asset File Upload -->
@@ -114,29 +116,42 @@
             <button type="submit" id="btn-run-inspect" class="btn btn-primary btn-block">
               <span>🚀 Check Vibe Match</span>
             </button>
+
+            <!-- Inline Submission Alert Banner -->
+            <div id="inspect-inline-status" class="inspect-inline-status hidden">
+              <div id="inline-status-spinner" class="inline-spinner"></div>
+              <span id="inline-status-text">Scanning feature vectors & querying Google Gemini...</span>
+            </div>
           </form>
         </div>
 
         <!-- Live Inspection Report Panel -->
-        <div class="card report-card">
+        <div id="report-panel" class="card report-card">
           <div class="card-header">
-            <h2>Vibe Match & Verification Report</h2>
+            <div>
+              <h2>Vibe Match & Verification Report</h2>
+              <p>Real-time Brand DNA vector match + Google Gemini multimodal analysis.</p>
+            </div>
             <span id="report-id-badge" class="id-badge">Awaiting submission</span>
           </div>
 
+          <!-- Empty State -->
           <div id="inspection-empty-state" class="empty-state">
             <div class="empty-icon">📊</div>
             <h3>Ready to Check Your Work</h3>
-            <p>Pick a company on the left, paste your copy or upload your poster, and click "Check Vibe Match"!</p>
+            <p>Select your company on the left, paste your copy or upload your poster, and click "Check Vibe Match"!</p>
           </div>
 
+          <!-- Loading State -->
           <div id="inspection-loading-state" class="empty-state hidden">
             <div class="spinner"></div>
             <h3>Extracting Feature Vectors & Checking Company Vibes...</h3>
-            <p>Scanning color harmony, whitespace layout, prohibited terms, and multimodal vibe alignment.</p>
+            <p id="loading-stage-text">Step 1: Extracting CIELAB color centroids and whitespace layout vectors...</p>
           </div>
 
+          <!-- Results View -->
           <div id="inspection-results-view" class="results-view hidden">
+            
             <!-- Verdict Banner -->
             <div id="verdict-banner" class="verdict-banner">
               <div class="verdict-header">
@@ -162,6 +177,37 @@
                 <span class="score-title">AI Vibe Alignment</span>
                 <span id="score-ai" class="score-number">--</span>
                 <span class="score-sub">Mood, Tone & Aesthetic</span>
+              </div>
+            </div>
+
+            <!-- ⭐ PROMINENT GOOGLE GEMINI AI HERO CARD ⭐ -->
+            <div id="gemini-ai-hero-card" class="gemini-ai-hero-card">
+              <div class="ai-hero-header">
+                <div class="ai-hero-title">
+                  <span class="ai-chip-gemini">✨ GOOGLE GEMINI AI</span>
+                  <span class="ai-hero-subtitle">Multimodal Vibe & Tone Reasoning (gemini-3.5-flash-lite)</span>
+                </div>
+                <span id="ai-hero-score-badge" class="ai-score-pill">100% Vibe Alignment</span>
+              </div>
+              <div class="ai-hero-body">
+                <div class="ai-quote-container">
+                  <div class="ai-quote-icon">🤖</div>
+                  <p id="ai-hero-explanation" class="ai-hero-explanation">Creative piece analyzed directly by Gemini AI.</p>
+                </div>
+                <div class="ai-attributes-grid">
+                  <div class="ai-attr-pill">
+                    <span class="attr-lbl">Mood Detected:</span>
+                    <strong id="ai-hero-mood">--</strong>
+                  </div>
+                  <div class="ai-attr-pill">
+                    <span class="attr-lbl">Brand Personality:</span>
+                    <strong id="ai-hero-personality">--</strong>
+                  </div>
+                  <div class="ai-attr-pill">
+                    <span class="attr-lbl">Communication Tone:</span>
+                    <strong id="ai-hero-tone">--</strong>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -229,25 +275,13 @@
               <div id="findings-table-container" class="findings-list"></div>
             </div>
 
-            <!-- Human Sign-Off Action -->
-            <div class="section-block signoff-block">
-              <h3>Lead Sign-Off & Approval Record</h3>
-              <div id="human-status-bar" class="human-status-bar">
-                <span>Status: <strong id="human-decision-text">PENDING REVIEW</strong></span>
+            <!-- Clean Approval Status Banner -->
+            <div class="section-block signoff-summary-box">
+              <div class="signoff-summary-header">
+                <span class="signoff-lbl">Lead Review Status:</span>
+                <span id="human-decision-text" class="tag-badge tag-PASS">PENDING REVIEW</span>
               </div>
-              <form id="signoff-form" class="signoff-form">
-                <input type="hidden" id="signoff-inspection-id">
-                <div class="form-row">
-                  <input type="text" id="signoff-reviewer-name" placeholder="Lead Name / Email" required>
-                  <select id="signoff-decision" required>
-                    <option value="APPROVED">Approve for Release</option>
-                    <option value="CHANGES_REQUESTED">Request Changes</option>
-                    <option value="REJECTED">Reject Submission</option>
-                  </select>
-                </div>
-                <input type="text" id="signoff-notes" placeholder="Reviewer notes or guidance for the developer" class="full-width">
-                <button type="submit" class="btn btn-secondary">Record Sign-Off Decision</button>
-              </form>
+              <p class="signoff-sub">Reports are permanently logged and available for company lead confirmation.</p>
             </div>
           </div>
         </div>
@@ -262,7 +296,7 @@
           <div class="card-header">
             <div>
               <h2>🏢 Company Portal: Sign In & Set Your Brand Vibes</h2>
-              <p>Register or sign in to your company account and define the vibes, colors, and strict avoidances your dev team must follow.</p>
+              <p>Register your company and define the vibes, colors, and strict avoidances your dev team must follow.</p>
             </div>
           </div>
 
@@ -337,34 +371,13 @@
         <!-- Directory of Confirmed Company Vibes -->
         <div class="card">
           <div class="card-header">
-            <h2>Active Registered Companies & Brand DNA</h2>
-            <p>Companies ready for developer vibe checking across posters and marketing copy.</p>
-          </div>
-
-          <!-- Pending Confirmation Notice -->
-          <div id="confirmation-box" class="confirmation-box hidden">
-            <div class="box-badge">VIBES UPDATED SUCCESSFULLY</div>
-            <h3 id="conf-brand-title">Company Profile</h3>
-            <p id="conf-synthesis-expl" class="synthesis-text"></p>
-
-            <form id="confirmation-form" class="app-form">
-              <input type="hidden" id="conf-brand-id">
-              <input type="hidden" id="conf-personality">
-              <input type="hidden" id="conf-mood">
-              <input type="hidden" id="conf-tone">
-              <input type="hidden" id="conf-style">
-              <input type="hidden" id="conf-audience">
-              <input type="hidden" id="conf-palette">
-              <input type="hidden" id="conf-disallowed">
-              <input type="hidden" id="conf-approver" value="Brand Director">
-              <button type="submit" class="btn btn-success btn-block">
-                <span>✅ Confirm & Ready for Developers</span>
-              </button>
-            </form>
+            <div>
+              <h2>Active Registered Companies & Brand DNA</h2>
+              <p>Companies ready for developer vibe checking across posters and marketing copy.</p>
+            </div>
           </div>
 
           <div class="existing-profiles-container">
-            <h3>Registered Companies Directory</h3>
             <div id="confirmed-brands-list" class="brands-list">
               <p class="empty-note">Loading registered companies...</p>
             </div>
@@ -376,9 +389,9 @@
   </main>
 
   <footer class="app-footer">
-    <p>BrandShield AI &copy; 2026 Team Dark Lord (CodeNexus India Hackathon – Inkloom AI Challenge). Fast & lightweight company vibe verification.</p>
+    <p>BrandShield AI &copy; 2026 Team Dark Lord (CodeNexus India Hackathon – Inkloom AI Challenge). Fast & lightweight company vibe verification powered by Google Gemini.</p>
   </footer>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=2.1"></script>
 </body>
 </html>

@@ -1,32 +1,64 @@
-/* BrandShield AI Design System */
-:root {
-  --bg-dark: #090e17;
-  --bg-card: #111a2e;
-  --bg-card-hover: #17233d;
-  --bg-card-alt: #162038;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-highlight: #3a86ff;
-  
-  --text-primary: #f0f4fc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  
-  --primary: #3a86ff;
-  --primary-hover: #2563eb;
-  --success: #10b981;
-  --success-bg: rgba(16, 185, 129, 0.12);
-  --warning: #f59e0b;
-  --warning-bg: rgba(245, 158, 11, 0.12);
-  --danger: #ef4444;
-  --danger-bg: rgba(239, 68, 68, 0.12);
-  --info: #06b6d4;
-  --info-bg: rgba(6, 182, 212, 0.12);
+/* ==========================================================================
+   BrandShield AI – Coursera-Inspired Design System
+   Clean, authoritative, high-accessibility UI with Coursera Blue palette
+   ========================================================================== */
 
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+:root {
+  /* Coursera Brand Colors */
+  --coursera-blue: #0056D2;
+  --coursera-blue-hover: #00419e;
+  --coursera-blue-active: #002f72;
+  --coursera-blue-light: #ebf3ff;
+  --coursera-blue-border: #c2dcff;
+
+  /* Surfaces & Backgrounds */
+  --bg-canvas: #f5f7fa;
+  --bg-card: #ffffff;
+  --bg-card-alt: #f8fafc;
+  --bg-card-hover: #f1f5f9;
+
+  /* Borders */
+  --border-color: #d1d7dc;
+  --border-subtle: #e2e8f0;
+  --border-highlight: var(--coursera-blue);
+
+  /* Typography Colors */
+  --text-primary: #1f1f1f;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-inverse: #ffffff;
+
+  /* Status & Verification Colors */
+  --success: #0f7b46;
+  --success-bg: #e6f4ea;
+  --success-border: #ceead6;
+
+  --warning: #b06000;
+  --warning-bg: #fef7e0;
+  --warning-border: #feefc3;
+
+  --danger: #c5221f;
+  --danger-bg: #fce8e6;
+  --danger-border: #fad2cf;
+
+  --info: #0056D2;
+  --info-bg: #ebf3ff;
+  --info-border: #c2dcff;
+
+  /* Font Families */
+  --font-sans: 'Open Sans', 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, Menlo, monospace;
+
+  /* Elevation & Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  /* Radii */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
 }
 
 * {
@@ -37,23 +69,32 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-dark);
+  background-color: var(--bg-canvas);
   color: var(--text-primary);
-  line-height: 1.5;
+  line-height: 1.55;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* Header */
+/* ==========================================================================
+   Header Banner (Coursera Top Navigation Bar)
+   ========================================================================== */
 .app-header {
   background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
-  padding: 1rem 2rem;
+  padding: 0.85rem 2rem;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .header-container {
-  max-width: 1400px;
+  max-width: 1360px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -63,49 +104,58 @@ body {
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
 .logo-shield {
-  font-size: 2.2rem;
-  background: rgba(58, 134, 255, 0.15);
-  border: 1px solid rgba(58, 134, 255, 0.4);
-  padding: 0.35rem 0.6rem;
-  border-radius: var(--radius-md);
+  font-size: 1.75rem;
+  background: var(--coursera-blue-light);
+  border: 1px solid var(--coursera-blue-border);
+  padding: 0.35rem 0.55rem;
+  border-radius: var(--radius-sm);
+  line-height: 1;
 }
 
 .brand-logo h1 {
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   font-weight: 700;
+  color: var(--coursera-blue);
   letter-spacing: -0.02em;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
+  line-height: 1.2;
 }
 
 .ai-badge {
-  background: linear-gradient(135deg, #3a86ff, #8338ec);
-  font-size: 0.75rem;
-  padding: 0.15rem 0.45rem;
-  border-radius: var(--radius-sm);
+  background: var(--coursera-blue);
+  color: #ffffff;
+  font-size: 0.7rem;
   font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-xs);
+  text-transform: uppercase;
 }
 
 .tagline {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
+  font-weight: 400;
+  margin-top: 2px;
 }
 
 .status-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.4rem 0.9rem;
+  padding: 0.4rem 0.85rem;
   border-radius: 9999px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.82rem;
+  font-weight: 600;
   background: var(--bg-card-alt);
   border: 1px solid var(--border-color);
+  color: var(--text-secondary);
 }
 
 .status-dot {
@@ -115,18 +165,40 @@ body {
   background: var(--text-muted);
 }
 
-.status-ready .status-dot { background: var(--success); }
-.status-loading .status-dot { background: var(--warning); }
-.status-unconfigured .status-dot { background: #94a3b8; }
+.status-ready {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success);
+}
+.status-ready .status-dot {
+  background: var(--success);
+}
 
-/* Navigation */
+.status-loading {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning);
+}
+.status-loading .status-dot {
+  background: var(--warning);
+}
+
+.status-unconfigured {
+  background: var(--bg-card-alt);
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Navigation Tabs (Coursera Module / Course Bar)
+   ========================================================================== */
 .app-nav {
-  background: #0d1527;
+  background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
 }
 
 .nav-container {
-  max-width: 1400px;
+  max-width: 1360px;
   margin: 0 auto;
   display: flex;
   gap: 0.5rem;
@@ -140,31 +212,38 @@ body {
   color: var(--text-secondary);
   font-family: var(--font-sans);
   font-size: 0.95rem;
-  font-weight: 500;
-  padding: 0.85rem 1.25rem;
+  font-weight: 600;
+  padding: 0.95rem 1.25rem;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  display: flex;
+  border-bottom: 3px solid transparent;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
+  gap: 0.55rem;
+  transition: color 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
 }
 
 .nav-tab:hover {
-  color: var(--text-primary);
+  color: var(--coursera-blue);
+  background-color: var(--bg-card-alt);
 }
 
 .nav-tab.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
-  font-weight: 600;
+  color: var(--coursera-blue);
+  border-bottom-color: var(--coursera-blue);
+  background-color: #ffffff;
 }
 
-/* Main Content */
+.tab-icon {
+  font-size: 1.05rem;
+}
+
+/* ==========================================================================
+   Main Content Layout
+   ========================================================================== */
 .main-content {
   flex: 1;
-  max-width: 1400px;
+  max-width: 1360px;
   width: 100%;
   margin: 0 auto;
   padding: 2rem;
@@ -182,21 +261,25 @@ body {
   display: grid;
   grid-template-columns: 1fr 1.35fr;
   gap: 1.75rem;
+  align-items: start;
 }
 
 @media (max-width: 1024px) {
   .pane-grid {
     grid-template-columns: 1fr;
+    align-items: stretch;
   }
 }
 
-/* Cards */
+/* ==========================================================================
+   Cards (Coursera Course / Enterprise Assessment Card)
+   ========================================================================== */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 1.75rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .full-width-card {
@@ -210,20 +293,27 @@ body {
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 1rem;
 }
 
 .card-header h2 {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .card-header p {
   color: var(--text-secondary);
   font-size: 0.9rem;
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
+  line-height: 1.45;
 }
 
-/* Forms */
+/* ==========================================================================
+   Forms & Controls
+   ========================================================================== */
 .app-form {
   display: flex;
   flex-direction: column;
@@ -242,26 +332,45 @@ body {
   gap: 1rem;
 }
 
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 label {
   font-size: 0.88rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
-input[type="text"], select, textarea {
-  background: var(--bg-card-alt);
-  border: 1px solid var(--border-color);
+input[type="text"],
+input[type="email"],
+select,
+textarea {
+  background: #ffffff;
+  border: 1px solid #94a3b8;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 0.92rem;
   padding: 0.65rem 0.85rem;
   border-radius: var(--radius-sm);
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-input[type="text"]:focus, select:focus, textarea:focus {
-  border-color: var(--primary);
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--coursera-blue);
+  box-shadow: 0 0 0 3px rgba(0, 86, 210, 0.15);
 }
 
 .field-hint {
@@ -269,21 +378,73 @@ input[type="text"]:focus, select:focus, textarea:focus {
   color: var(--text-muted);
 }
 
-/* Drop Zone */
+/* Dual Input Mode Tabs */
+.input-mode-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
+}
+
+.mode-tab-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mode-tab-btn:hover {
+  color: var(--coursera-blue);
+  background: var(--bg-card-alt);
+  border-color: var(--coursera-blue-border);
+}
+
+.mode-tab-btn.active {
+  color: #ffffff;
+  background: var(--coursera-blue);
+  border-color: var(--coursera-blue);
+}
+
+textarea#inspect-copy-text {
+  width: 100%;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #94a3b8;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 95px;
+}
+
+/* ==========================================================================
+   Drop Zone (Coursera File Submission Style)
+   ========================================================================== */
 .drop-zone {
-  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border: 2px dashed #94a3b8;
   border-radius: var(--radius-md);
-  padding: 2rem 1.5rem;
+  padding: 2.25rem 1.5rem;
   text-align: center;
   cursor: pointer;
   position: relative;
   transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-card-alt);
 }
 
-.drop-zone:hover, .drop-zone.dragover {
-  border-color: var(--primary);
-  background: rgba(58, 134, 255, 0.05);
+.drop-zone:hover,
+.drop-zone.dragover {
+  border-color: var(--coursera-blue);
+  background: var(--coursera-blue-light);
 }
 
 .file-input {
@@ -297,7 +458,7 @@ input[type="text"]:focus, select:focus, textarea:focus {
 }
 
 .upload-icon {
-  font-size: 2rem;
+  font-size: 2.2rem;
   display: block;
   margin-bottom: 0.5rem;
 }
@@ -305,11 +466,13 @@ input[type="text"]:focus, select:focus, textarea:focus {
 .drop-text {
   font-size: 0.95rem;
   color: var(--text-primary);
+  font-weight: 500;
 }
 
 .highlight {
-  color: var(--primary);
-  font-weight: 600;
+  color: var(--coursera-blue);
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 .drop-subtext {
@@ -319,16 +482,20 @@ input[type="text"]:focus, select:focus, textarea:focus {
 
 .file-preview-info {
   background: var(--bg-card-alt);
-  padding: 0.6rem 0.85rem;
+  padding: 0.65rem 0.95rem;
   border-radius: var(--radius-sm);
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 0.85rem;
   font-family: var(--font-mono);
   border: 1px solid var(--border-color);
+  margin-top: 0.6rem;
 }
 
-/* Buttons */
+/* ==========================================================================
+   Buttons (Coursera Solid & Outlined Action Buttons)
+   ========================================================================== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -337,174 +504,73 @@ input[type="text"]:focus, select:focus, textarea:focus {
   font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 600;
-  padding: 0.75rem 1.5rem;
+  padding: 0.7rem 1.4rem;
   border-radius: var(--radius-sm);
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  line-height: 1.4;
 }
 
 .btn-primary {
-  background: var(--primary);
-  color: #fff;
+  background: var(--coursera-blue);
+  color: #ffffff;
+  border-color: var(--coursera-blue);
 }
 
 .btn-primary:hover {
-  background: var(--primary-hover);
+  background: var(--coursera-blue-hover);
+  border-color: var(--coursera-blue-hover);
+  box-shadow: 0 2px 6px rgba(0, 86, 210, 0.3);
+}
+
+.btn-primary:active {
+  background: var(--coursera-blue-active);
 }
 
 .btn-secondary {
-  background: var(--bg-card-alt);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  color: var(--coursera-blue);
+  border: 1px solid var(--coursera-blue);
 }
 
 .btn-secondary:hover {
-  background: var(--bg-card-hover);
+  background: var(--coursera-blue-light);
 }
 
 .btn-success {
   background: var(--success);
-  color: #fff;
+  color: #ffffff;
+  border-color: var(--success);
 }
 
 .btn-success:hover {
-  background: #059669;
+  background: #0b6036;
 }
 
 .btn-block {
   width: 100%;
 }
 
-/* Results View */
-.empty-state {
-  text-align: center;
-  padding: 3rem 1.5rem;
-  color: var(--text-muted);
-}
-
-.empty-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.empty-state h3 {
-  color: var(--text-primary);
-  font-size: 1.15rem;
-  margin-bottom: 0.5rem;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto 1.5rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Verdict Banner */
-.verdict-banner {
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-  margin-bottom: 1.5rem;
-}
-
-.verdict-APPROVED {
-  background: var(--success-bg);
-  border: 1px solid var(--success);
-}
-
-.verdict-CHANGES_REQUESTED {
-  background: var(--warning-bg);
-  border: 1px solid var(--warning);
-}
-
-.verdict-REJECTED {
-  background: var(--danger-bg);
-  border: 1px solid var(--danger);
-}
-
-.verdict-REQUIRES_HUMAN_REVIEW {
-  background: var(--info-bg);
-  border: 1px solid var(--info);
-}
-
-.verdict-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.verdict-label {
+.btn-text-sm {
+  background: none;
+  border: none;
+  color: var(--danger);
   font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 0.5rem;
 }
 
-.verdict-title {
-  font-size: 1.4rem;
-  font-weight: 800;
-}
-
-.verdict-APPROVED .verdict-title { color: var(--success); }
-.verdict-CHANGES_REQUESTED .verdict-title { color: var(--warning); }
-.verdict-REJECTED .verdict-title { color: var(--danger); }
-.verdict-REQUIRES_HUMAN_REVIEW .verdict-title { color: var(--info); }
-
-.verdict-summary {
-  font-size: 0.9rem;
-  color: var(--text-primary);
-}
-
-/* Score Grid */
-.score-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.75rem;
-}
-
-.score-card {
-  background: var(--bg-card-alt);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1rem;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-}
-
-.score-title {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.25rem;
-}
-
-.score-number {
-  font-size: 1.8rem;
-  font-weight: 800;
-  font-family: var(--font-mono);
-  color: var(--text-primary);
-}
-
-.score-sub {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-}
-
-/* Selected Brand Preview in Inspection Form */
+/* ==========================================================================
+   Selected Brand Preview Card
+   ========================================================================== */
 .selected-brand-preview {
   background: var(--bg-card-alt);
-  border: 1px solid rgba(58, 134, 255, 0.3);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--coursera-blue-border);
+  border-left: 4px solid var(--coursera-blue);
+  border-radius: var(--radius-sm);
   padding: 0.85rem 1rem;
   margin-top: 0.5rem;
   display: flex;
@@ -520,7 +586,7 @@ input[type="text"]:focus, select:focus, textarea:focus {
 
 .prev-title {
   font-weight: 700;
-  color: var(--primary);
+  color: var(--coursera-blue);
   font-size: 0.95rem;
 }
 
@@ -533,65 +599,255 @@ input[type="text"]:focus, select:focus, textarea:focus {
 .prev-avoid {
   color: var(--warning);
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .palette-mini-row {
   display: inline-flex;
-  gap: 0.3rem;
+  gap: 0.35rem;
   vertical-align: middle;
 }
 
-/* Presets */
-.presets-container {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+/* ==========================================================================
+   Inspection Report Panel (Coursera Assessment & Grade View)
+   ========================================================================== */
+.empty-state {
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  color: var(--text-muted);
 }
 
-.preset-label {
-  font-size: 0.8rem;
-  font-weight: 600;
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 0.85rem;
+}
+
+.empty-state h3 {
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.spinner {
+  width: 42px;
+  height: 42px;
+  border: 3px solid #e2e8f0;
+  border-top-color: var(--coursera-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 1.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Verdict Banners (Coursera Course Status Callout) */
+.verdict-banner {
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.verdict-APPROVED {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-left: 6px solid var(--success);
+}
+
+.verdict-CHANGES_REQUESTED {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  border-left: 6px solid var(--warning);
+}
+
+.verdict-REJECTED {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-left: 6px solid var(--danger);
+}
+
+.verdict-REQUIRES_HUMAN_REVIEW {
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  border-left: 6px solid var(--info);
+}
+
+.verdict-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.verdict-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--text-secondary);
 }
 
-.preset-btn-group {
-  display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
+.verdict-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
-.btn-preset {
+.verdict-APPROVED .verdict-title { color: var(--success); }
+.verdict-CHANGES_REQUESTED .verdict-title { color: var(--warning); }
+.verdict-REJECTED .verdict-title { color: var(--danger); }
+.verdict-REQUIRES_HUMAN_REVIEW .verdict-title { color: var(--info); }
+
+.verdict-summary {
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  margin-top: 0.35rem;
+}
+
+/* Score Grid (Coursera Rubric / Grade Cards) */
+.score-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+@media (max-width: 640px) {
+  .score-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.score-card {
   background: var(--bg-card-alt);
   border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
+  border-radius: var(--radius-md);
+  padding: 1.15rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.score-title {
+  font-size: 0.8rem;
   font-weight: 600;
-  padding: 0.4rem 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.score-number {
+  font-size: 1.9rem;
+  font-weight: 800;
+  font-family: var(--font-sans);
+  color: var(--coursera-blue);
+  line-height: 1.2;
+}
+
+.score-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* Biometric Brand DNA Card (Coursera Competency Matrix) */
+.biometric-dna-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.35rem;
+  margin-top: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.biometric-dna-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.biometric-dna-header h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.biometric-badge {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: var(--coursera-blue-light);
+  color: var(--coursera-blue);
+  border: 1px solid var(--coursera-blue-border);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+}
+
+.biometric-desc {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.biometric-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+}
+
+.biometric-metric-box {
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0.85rem 1rem;
 }
 
-.btn-preset:hover {
-  border-color: var(--primary);
-  background: rgba(58, 134, 255, 0.15);
-  color: #fff;
+.metric-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.84rem;
+  margin-bottom: 0.45rem;
 }
 
-/* Palettes */
+.metric-name {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.metric-val {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: var(--coursera-blue);
+}
+
+/* Coursera Progress Bar */
+.progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--coursera-blue);
+  border-radius: 9999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Palette Comparison */
 .palette-comparison-container {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   background: var(--bg-card-alt);
-  padding: 1rem;
+  padding: 1.15rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
 }
@@ -603,7 +859,8 @@ input[type="text"]:focus, select:focus, textarea:focus {
 }
 
 .group-label {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
@@ -616,30 +873,34 @@ input[type="text"]:focus, select:focus, textarea:focus {
 .color-swatch-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 0.3rem 0.55rem;
+  gap: 0.45rem;
+  background: #ffffff;
+  padding: 0.35rem 0.65rem;
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
   font-size: 0.8rem;
   border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .swatch-color-box {
   width: 16px;
   height: 16px;
   border-radius: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid #94a3b8;
 }
 
-/* Findings List */
+/* ==========================================================================
+   Findings / Rubric Feedback List
+   ========================================================================== */
 .section-block {
-  margin-top: 1.5rem;
+  margin-top: 1.75rem;
 }
 
 .section-block h3 {
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text-primary);
   margin-bottom: 0.85rem;
 }
 
@@ -650,13 +911,15 @@ input[type="text"]:focus, select:focus, textarea:focus {
 }
 
 .finding-card {
-  background: var(--bg-card-alt);
-  border-left: 4px solid var(--text-muted);
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-left: 5px solid var(--text-muted);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  padding: 0.85rem 1rem;
+  padding: 0.95rem 1.15rem;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .finding-severity-PASS { border-left-color: var(--success); }
@@ -672,52 +935,60 @@ input[type="text"]:focus, select:focus, textarea:focus {
 
 .finding-title {
   font-size: 0.92rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .tag-badge {
   font-size: 0.7rem;
   font-weight: 700;
-  padding: 0.15rem 0.4rem;
-  border-radius: 3px;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-xs);
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
-.tag-PASS { background: var(--success-bg); color: var(--success); }
-.tag-INFO { background: var(--info-bg); color: var(--info); }
-.tag-WARNING { background: var(--warning-bg); color: var(--warning); }
-.tag-CRITICAL { background: var(--danger-bg); color: var(--danger); }
+.tag-PASS { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.tag-INFO { background: var(--info-bg); color: var(--info); border: 1px solid var(--info-border); }
+.tag-WARNING { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.tag-CRITICAL { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 
 .finding-body {
-  font-size: 0.85rem;
+  font-size: 0.86rem;
   color: var(--text-secondary);
 }
 
 .finding-evidence {
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--bg-card-alt);
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  padding: 0.4rem 0.6rem;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.75rem;
   border-radius: var(--radius-sm);
   color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
 }
 
 .finding-correction {
-  font-size: 0.82rem;
-  color: #38bdf8;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--coursera-blue);
 }
 
-/* Sign-off Block */
+/* ==========================================================================
+   Sign-off & Confirmation Block
+   ========================================================================== */
 .signoff-block {
-  background: rgba(58, 134, 255, 0.05);
-  border: 1px solid rgba(58, 134, 255, 0.25);
+  background: var(--coursera-blue-light);
+  border: 1px solid var(--coursera-blue-border);
   border-radius: var(--radius-md);
-  padding: 1.25rem;
+  padding: 1.35rem;
 }
 
 .human-status-bar {
   margin-bottom: 0.85rem;
   font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
 .signoff-form {
@@ -726,10 +997,9 @@ input[type="text"]:focus, select:focus, textarea:focus {
   gap: 0.75rem;
 }
 
-/* Confirmation Box */
 .confirmation-box {
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid var(--warning);
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
   border-radius: var(--radius-md);
   padding: 1.25rem;
   margin-bottom: 1.5rem;
@@ -738,12 +1008,13 @@ input[type="text"]:focus, select:focus, textarea:focus {
 .box-badge {
   display: inline-block;
   background: var(--warning);
-  color: #000;
+  color: #ffffff;
   font-size: 0.72rem;
-  font-weight: 800;
-  padding: 0.2rem 0.5rem;
-  border-radius: var(--radius-sm);
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-xs);
   margin-bottom: 0.5rem;
+  text-transform: uppercase;
 }
 
 .synthesis-text {
@@ -752,7 +1023,20 @@ input[type="text"]:focus, select:focus, textarea:focus {
   margin-bottom: 1rem;
 }
 
-/* Brands List */
+/* ==========================================================================
+   Registered Companies Directory
+   ========================================================================== */
+.existing-profiles-container {
+  margin-top: 1.5rem;
+}
+
+.existing-profiles-container h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
 .brands-list {
   display: flex;
   flex-direction: column;
@@ -761,10 +1045,11 @@ input[type="text"]:focus, select:focus, textarea:focus {
 }
 
 .brand-card-item {
-  background: var(--bg-card-alt);
+  background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 1rem;
+  padding: 1.15rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .brand-card-header {
@@ -776,324 +1061,226 @@ input[type="text"]:focus, select:focus, textarea:focus {
 
 .brand-card-title {
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--coursera-blue);
 }
 
-/* Provider Diagnostics */
-.provider-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 2rem;
-}
-
-.provider-card {
-  background: var(--bg-card-alt);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.provider-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.config-instructions-box {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1.5rem;
-}
-
-.config-instructions-box ol {
-  margin-left: 1.5rem;
-  margin-top: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-pre {
-  background: #050811;
-  padding: 1rem;
-  border-radius: var(--radius-sm);
-  overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  margin: 0.5rem 0;
-  border: 1px solid var(--border-color);
-}
-
-/* Tables */
-.table-responsive {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-th, td {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border-color);
-}
-
-th {
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-/* Helpers */
-.hidden { display: none !important; }
-.id-badge {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+.empty-note {
   color: var(--text-muted);
+  font-size: 0.88rem;
+  padding: 1rem 0;
+}
+
+/* ==========================================================================
+   Badges, Helpers & Footer
+   ========================================================================== */
+.hidden {
+  display: none !important;
+}
+
+.id-badge {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
   background: var(--bg-card-alt);
-  padding: 0.2rem 0.5rem;
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-xs);
+}
+
+.full-width {
+  width: 100%;
 }
 
 .app-footer {
   text-align: center;
-  padding: 1.5rem;
+  padding: 1.75rem;
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   border-top: 1px solid var(--border-color);
-  background: #070b14;
+  background: var(--bg-card);
+  margin-top: auto;
 }
 
-/* Quick Demo Chips & Dual Input Mode */
-.quick-demo-section {
-  background: linear-gradient(135deg, rgba(58, 134, 255, 0.08), rgba(131, 56, 236, 0.08));
-  border: 1px solid rgba(58, 134, 255, 0.25);
-  border-radius: var(--radius-md);
-  padding: 0.9rem 1.1rem;
-  margin-bottom: 1.5rem;
-}
-
-.quick-demo-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.65rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.lightning-badge {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #38bdf8;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.quick-demo-sub {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.quick-demo-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.btn-sample-chip {
-  background: var(--bg-card-alt);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 0.35rem 0.75rem;
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.btn-sample-chip:hover {
-  border-color: var(--primary);
-  background: rgba(58, 134, 255, 0.2);
-  transform: translateY(-1px);
-}
-
-.btn-sample-chip.chip-pass {
-  border-color: rgba(6, 214, 160, 0.4);
-}
-.btn-sample-chip.chip-pass:hover {
-  background: rgba(6, 214, 160, 0.15);
-  border-color: var(--success);
-}
-
-.btn-sample-chip.chip-fail {
-  border-color: rgba(239, 71, 111, 0.4);
-}
-.btn-sample-chip.chip-fail:hover {
-  background: rgba(239, 71, 111, 0.15);
-  border-color: var(--danger);
-}
-
-.input-mode-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.9rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.5rem;
-}
-
-.mode-tab-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.4rem 0.8rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.mode-tab-btn:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.mode-tab-btn.active {
-  color: #fff;
-  background: var(--primary);
-}
-
-textarea#inspect-copy-text {
-  width: 100%;
-  box-sizing: border-box;
-  background: var(--bg-card-alt);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  padding: 0.75rem 1rem;
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  resize: vertical;
-  min-height: 90px;
-}
-
-textarea#inspect-copy-text:focus {
-  border-color: var(--primary);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(58, 134, 255, 0.2);
-}
-
-.btn-text-sm {
-  background: none;
-  border: none;
-  color: var(--danger);
-  font-size: 0.75rem;
-  cursor: pointer;
-  text-decoration: underline;
-  margin-left: 0.5rem;
-}
-
-/* Biometric Brand DNA Card */
-.biometric-dna-card {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(58, 134, 255, 0.05));
-  border: 1px solid rgba(16, 185, 129, 0.25);
+/* ==========================================================================
+   Google Gemini AI Hero Card
+   ========================================================================== */
+.gemini-ai-hero-card {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(124, 58, 237, 0.12));
+  border: 1px solid rgba(59, 130, 246, 0.35);
   border-radius: var(--radius-md);
   padding: 1.25rem;
-  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.15);
 }
 
-.biometric-dna-header {
+.ai-hero-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-.biometric-dna-header h3 {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #38bdf8;
-  margin: 0;
+.ai-hero-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-.biometric-badge {
+.ai-chip-gemini {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.ai-hero-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.ai-score-pill {
   font-family: var(--font-mono);
   font-size: 0.85rem;
   font-weight: 700;
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(16, 185, 129, 0.18);
   color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  padding: 0.2rem 0.65rem;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  padding: 0.25rem 0.65rem;
   border-radius: 9999px;
 }
 
-.biometric-desc {
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
+.ai-quote-container {
+  background: var(--bg-card-alt);
+  border-left: 4px solid #3b82f6;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 0.85rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
 }
 
-.biometric-metrics-grid {
+.ai-quote-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.ai-hero-explanation {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  margin: 0;
+  font-style: normal;
+}
+
+.ai-attributes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.65rem;
 }
 
-.biometric-metric-box {
+.ai-attr-pill {
   background: var(--bg-card-alt);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: 0.75rem 0.9rem;
-}
-
-.metric-top {
+  padding: 0.55rem 0.75rem;
+  font-size: 0.82rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.82rem;
-  margin-bottom: 0.4rem;
+  gap: 0.5rem;
 }
 
-.metric-name {
-  color: var(--text-primary);
+.ai-attr-pill .attr-lbl {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.ai-attr-pill strong {
+  color: #38bdf8;
   font-weight: 600;
 }
 
-.metric-val {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: #38bdf8;
+/* ==========================================================================
+   Inline Submission Alert Banner
+   ========================================================================== */
+.inspect-inline-status {
+  margin-top: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  transition: all 0.2s ease;
 }
 
-.progress-bar-bg {
-  width: 100%;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 9999px;
-  overflow: hidden;
+.status-running {
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #60a5fa;
 }
 
-.progress-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #3a86ff, #10b981);
-  border-radius: 9999px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+.status-success {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.status-error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+.inline-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Clean Approval Status Box
+   ========================================================================== */
+.signoff-summary-box {
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.signoff-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.signoff-lbl {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.signoff-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
 }

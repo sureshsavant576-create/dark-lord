@@ -68,6 +68,12 @@ class InspectionReport(BaseModel):
     deterministic_score: float = Field(description="Score derived purely from objective code checks (0-100)")
     ai_score: Optional[float] = Field(default=None, description="Score assessed by multimodal AI model or None")
     
+    # Direct AI Multimodal Feedback
+    ai_explanation: Optional[str] = Field(default=None, description="Detailed explanation generated directly by Gemini AI")
+    ai_mood_detected: Optional[str] = Field(default=None, description="Emotional mood detected by Gemini AI")
+    ai_personality_detected: Optional[str] = Field(default=None, description="Brand personality detected by Gemini AI")
+    ai_tone_detected: Optional[str] = Field(default=None, description="Communication tone detected by Gemini AI")
+    
     # Detailed Findings & Evidence
     biometric_match: Optional[Dict[str, Any]] = Field(default=None, description="Biometric mathematical vector match scores")
     findings: List[InspectionFinding] = Field(default_factory=list)

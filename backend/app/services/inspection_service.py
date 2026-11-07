@@ -374,6 +374,10 @@ class InspectionService:
             overall_score=overall_score,
             deterministic_score=det_score,
             ai_score=ai_score,
+            ai_explanation=ai_eval.detailed_analysis if (ai_eval.status == ProviderStatus.OPERATIONAL and ai_eval.is_ai_generated) else None,
+            ai_mood_detected=ai_eval.mood_detected if (ai_eval.status == ProviderStatus.OPERATIONAL and ai_eval.is_ai_generated) else None,
+            ai_personality_detected=ai_eval.personality_detected if (ai_eval.status == ProviderStatus.OPERATIONAL and ai_eval.is_ai_generated) else None,
+            ai_tone_detected=ai_eval.tone_detected if (ai_eval.status == ProviderStatus.OPERATIONAL and ai_eval.is_ai_generated) else None,
             biometric_match={
                 "composite_score": bio_result.composite_biometric_score,
                 "color_dna_score": bio_result.color_dna_score,
