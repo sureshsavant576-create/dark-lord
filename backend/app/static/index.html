@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BrandShield AI – Intelligent Brand Inspection & Company Vibe Verification</title>
-  <link rel="stylesheet" href="/static/style.css?v=4.0">
+  <title>BrandShield – Brand Vibe & Compliance Verification</title>
+  <link rel="stylesheet" href="/static/style.css?v=5.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,14 +16,14 @@
       <div class="brand-logo">
         <span class="logo-shield">🛡️</span>
         <div>
-          <h1>BrandShield <span class="ai-badge">AI</span></h1>
+          <h1>BrandShield</h1>
           <p class="tagline">Verify developer marketing creative & posters against company vibes and brand standards.</p>
         </div>
       </div>
       <div class="header-actions">
         <div id="ai-status-pill" class="status-pill status-ready">
           <span class="status-pulse-dot"></span>
-          <span class="status-text">🟢 AI Engine: Gemini 3.5 Lite Active</span>
+          <span class="status-text">Engine Online</span>
         </div>
       </div>
     </div>
@@ -37,9 +37,6 @@
       </button>
       <button class="nav-tab" data-tab="tab-onboard">
         <span class="tab-icon">🏢</span> Company: Sign In & Set Brand Vibes
-      </button>
-      <button class="nav-tab" data-tab="tab-tracker">
-        <span class="tab-icon">📋</span> Company: Work Tracker
       </button>
     </div>
   </nav>
@@ -399,147 +396,12 @@
       </div>
     </section>
 
-    <!-- TAB 3: COMPANY WORK TRACKER -->
-    <section id="tab-tracker" class="tab-pane">
-      <div class="tracker-layout">
-        <!-- Header + Controls -->
-        <div class="card tracker-controls-card">
-          <div class="card-header">
-            <div>
-              <h2>📋 Company Work Tracker</h2>
-              <p>Track marketing tasks, creative reviews, and brand compliance work across your team.</p>
-            </div>
-          </div>
-
-          <div class="tracker-top-bar">
-            <div class="form-group" style="flex: 1; min-width: 200px;">
-              <label for="tracker-brand-select">Select Company:</label>
-              <select id="tracker-brand-select">
-                <option value="">-- Select Company --</option>
-              </select>
-            </div>
-            <button type="button" id="btn-add-task" class="btn btn-primary" disabled>
-              <span>➕ Add New Task</span>
-            </button>
-          </div>
-
-          <!-- Overall Progress Bar -->
-          <div id="tracker-progress-section" class="tracker-progress-section hidden">
-            <div class="tracker-progress-header">
-              <span class="tracker-progress-label">Overall Progress</span>
-              <span id="tracker-progress-pct" class="tracker-progress-pct">0%</span>
-            </div>
-            <div class="tracker-progress-bar-bg">
-              <div id="tracker-progress-bar-fill" class="tracker-progress-bar-fill" style="width: 0%"></div>
-            </div>
-            <div class="tracker-stats-row">
-              <span class="tracker-stat"><span class="stat-dot stat-todo"></span> To Do: <strong id="stat-todo">0</strong></span>
-              <span class="tracker-stat"><span class="stat-dot stat-progress"></span> In Progress: <strong id="stat-in-progress">0</strong></span>
-              <span class="tracker-stat"><span class="stat-dot stat-review"></span> Review: <strong id="stat-review">0</strong></span>
-              <span class="tracker-stat"><span class="stat-dot stat-done"></span> Done: <strong id="stat-done">0</strong></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Kanban Board -->
-        <div id="kanban-board" class="kanban-board hidden">
-          <div class="kanban-column" data-status="TODO">
-            <div class="kanban-column-header kanban-header-todo">
-              <span class="kanban-col-icon">📝</span>
-              <span class="kanban-col-title">To Do</span>
-              <span id="kanban-count-todo" class="kanban-count">0</span>
-            </div>
-            <div class="kanban-cards" id="kanban-todo"></div>
-          </div>
-
-          <div class="kanban-column" data-status="IN_PROGRESS">
-            <div class="kanban-column-header kanban-header-progress">
-              <span class="kanban-col-icon">🔧</span>
-              <span class="kanban-col-title">In Progress</span>
-              <span id="kanban-count-progress" class="kanban-count">0</span>
-            </div>
-            <div class="kanban-cards" id="kanban-in-progress"></div>
-          </div>
-
-          <div class="kanban-column" data-status="REVIEW">
-            <div class="kanban-column-header kanban-header-review">
-              <span class="kanban-col-icon">👀</span>
-              <span class="kanban-col-title">Review</span>
-              <span id="kanban-count-review" class="kanban-count">0</span>
-            </div>
-            <div class="kanban-cards" id="kanban-review"></div>
-          </div>
-
-          <div class="kanban-column" data-status="DONE">
-            <div class="kanban-column-header kanban-header-done">
-              <span class="kanban-col-icon">✅</span>
-              <span class="kanban-col-title">Done</span>
-              <span id="kanban-count-done" class="kanban-count">0</span>
-            </div>
-            <div class="kanban-cards" id="kanban-done"></div>
-          </div>
-        </div>
-
-        <!-- Empty State -->
-        <div id="tracker-empty-state" class="empty-state">
-          <div class="empty-icon">📋</div>
-          <h3>Select a Company to Track Work</h3>
-          <p>Choose a registered company above to view and manage work tasks across your team.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Add/Edit Task Modal -->
-    <div id="task-modal-overlay" class="task-modal-overlay hidden">
-      <div class="task-modal">
-        <div class="task-modal-header">
-          <h3 id="task-modal-title">➕ Add New Task</h3>
-          <button type="button" id="btn-close-modal" class="task-modal-close">&times;</button>
-        </div>
-        <form id="task-form" class="app-form">
-          <input type="hidden" id="task-edit-id">
-          <div class="form-group">
-            <label for="task-title">Task Title:</label>
-            <input type="text" id="task-title" placeholder="e.g. Design holiday banner for social media" required>
-          </div>
-          <div class="form-group">
-            <label for="task-description">Description:</label>
-            <textarea id="task-description" rows="3" placeholder="Describe the work to be done..."></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="task-priority">Priority:</label>
-              <select id="task-priority">
-                <option value="LOW">🟢 Low</option>
-                <option value="MEDIUM" selected>🟡 Medium</option>
-                <option value="HIGH">🟠 High</option>
-                <option value="URGENT">🔴 Urgent</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="task-assignee">Assignee:</label>
-              <input type="text" id="task-assignee" placeholder="e.g. John Doe">
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="task-due-date">Due Date (optional):</label>
-            <input type="date" id="task-due-date">
-          </div>
-          <div class="form-actions-row">
-            <button type="submit" class="btn btn-primary btn-block">
-              <span id="task-submit-label">💾 Create Task</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
   </main>
 
   <footer class="app-footer">
-    <p>BrandShield AI &copy; 2026 Team Dark Lord (CodeNexus India Hackathon – Inkloom AI Challenge). Fast & lightweight company vibe verification.</p>
+    <p>BrandShield &copy; 2026 Team Dark Lord. Fast & lightweight company vibe verification.</p>
   </footer>
 
-  <script src="/static/app.js?v=4.0"></script>
+  <script src="/static/app.js?v=5.0"></script>
 </body>
 </html>
