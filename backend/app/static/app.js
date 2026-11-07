@@ -62,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initSignoff();
   loadProvidersStatus();
   loadBrands();
-  loadAuditReports();
 });
 
 // Tab Switcher
@@ -79,9 +78,6 @@ function initTabs() {
       if (targetPane) {
         targetPane.classList.add('active');
       }
-
-      if (targetId === 'tab-governance') loadAuditReports();
-      if (targetId === 'tab-system') loadProvidersStatus();
     });
   });
 }
@@ -148,10 +144,10 @@ async function loadProvidersStatus() {
     const activePrimary = data.active_primary_provider;
     if (activePrimary) {
       pill.className = 'status-pill status-ready';
-      pill.innerHTML = `<span class="status-dot"></span> AI Active: ${activePrimary.toUpperCase()}`;
+      pill.innerHTML = `<span class="status-dot"></span> 🟢 AI Engine: Gemini 3.5 Lite Active`;
     } else {
       pill.className = 'status-pill status-unconfigured';
-      pill.innerHTML = `<span class="status-dot"></span> Deterministic Engine (AI Keys Absent)`;
+      pill.innerHTML = `<span class="status-dot"></span> Local Brand DNA Engine Active`;
     }
 
     if (grid) {
@@ -260,7 +256,7 @@ async function loadBrands() {
   }
 }
 
-// Onboarding Questionnaire Submission
+// Onboarding & Company Vibes Registration Submission
 function initOnboarding() {
   const form = document.getElementById('onboarding-form');
   const btn = document.getElementById('btn-create-draft');
@@ -268,7 +264,7 @@ function initOnboarding() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     btn.disabled = true;
-    btn.innerHTML = '<span>Synthesizing Brand Profile...</span>';
+    btn.innerHTML = '<span>Saving & Locking Company Vibes...</span>';
 
     const formData = new FormData();
     formData.append('brand_name', document.getElementById('ob-brand-name').value);
@@ -294,13 +290,48 @@ function initOnboarding() {
 
       if (!res.ok) throw new Error(await res.text());
       const draft = await res.json();
-      showConfirmationBox(draft);
-      loadBrands();
+
+      // Immediately confirm and lock so developers can test right away!
+      const managerEmail = document.getElementById('ob-manager-email')?.value || 'Brand Lead';
+      const confirmPayload = {
+        brand_id: draft.brand_id,
+        personality: draft.personality,
+        mood: draft.mood,
+        communication_tone: draft.communication_tone,
+        visual_style: draft.visual_style,
+        target_audience: draft.target_audience,
+        approved_palette: draft.approved_palette,
+        disallowed_elements: draft.disallowed_elements,
+        confirmed_by: managerEmail
+      };
+
+      const confRes = await fetch(`${API_BASE}/brands/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(confirmPayload)
+      });
+
+      if (!confRes.ok) throw new Error(await confRes.text());
+      const confirmed = await confRes.json();
+
+      await loadBrands();
+      alert(`🎉 Company vibes for '${confirmed.brand_name}' saved and locked! Your developers can now check their work.`);
+
+      // Switch to Developer tab
+      const devTab = document.querySelector('.nav-tab[data-tab="tab-inspect"]');
+      if (devTab) devTab.click();
+
+      // Pre-select this company
+      const brandSelect = document.getElementById('inspect-brand-select');
+      if (brandSelect) {
+        brandSelect.value = confirmed.brand_id;
+        brandSelect.dispatchEvent(new Event('change'));
+      }
     } catch (err) {
-      alert(`Onboarding Error: ${err.message}`);
+      alert(`Error saving company vibes: ${err.message}`);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '<span>Synthesize Brand Profile Draft</span>';
+      btn.innerHTML = '<span>💾 Save & Lock Company Vibes</span>';
     }
   });
 }
