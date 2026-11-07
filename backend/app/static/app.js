@@ -1,6 +1,29 @@
 // BrandShield – Frontend Application Logic
 const API_BASE = '/api/v1';
 let brandsMap = {};
+let activeInputMode = 'text';
+
+// Dual Input Mode Switcher (Global handler & inline fallback)
+function setInputMode(mode) {
+  activeInputMode = mode;
+  const tabText = document.getElementById('tab-mode-text');
+  const tabFile = document.getElementById('tab-mode-file');
+  const textContainer = document.getElementById('mode-text-container');
+  const fileContainer = document.getElementById('mode-file-container');
+
+  if (mode === 'file') {
+    if (tabFile) tabFile.classList.add('active');
+    if (tabText) tabText.classList.remove('active');
+    if (fileContainer) fileContainer.classList.remove('hidden');
+    if (textContainer) textContainer.classList.add('hidden');
+  } else {
+    if (tabText) tabText.classList.add('active');
+    if (tabFile) tabFile.classList.remove('active');
+    if (textContainer) textContainer.classList.remove('hidden');
+    if (fileContainer) fileContainer.classList.add('hidden');
+  }
+}
+window.setInputMode = setInputMode;
 
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
@@ -559,27 +582,8 @@ function initInspection() {
   // Dual Input Mode Switcher
   const tabModeText = document.getElementById('tab-mode-text');
   const tabModeFile = document.getElementById('tab-mode-file');
-  const textContainer = document.getElementById('mode-text-container');
-  const fileContainer = document.getElementById('mode-file-container');
-  let activeInputMode = 'text';
-
-  if (tabModeText && tabModeFile) {
-    tabModeText.addEventListener('click', () => {
-      activeInputMode = 'text';
-      tabModeText.classList.add('active');
-      tabModeFile.classList.remove('active');
-      if (textContainer) textContainer.classList.remove('hidden');
-      if (fileContainer) fileContainer.classList.add('hidden');
-    });
-
-    tabModeFile.addEventListener('click', () => {
-      activeInputMode = 'file';
-      tabModeFile.classList.add('active');
-      tabModeText.classList.remove('active');
-      if (fileContainer) fileContainer.classList.remove('hidden');
-      if (textContainer) textContainer.classList.add('hidden');
-    });
-  }
+  if (tabModeText) tabModeText.addEventListener('click', () => setInputMode('text'));
+  if (tabModeFile) tabModeFile.addEventListener('click', () => setInputMode('file'));
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
