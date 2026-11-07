@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import threading
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -36,6 +37,7 @@ class InspectionService:
     def __init__(self, db_path: Optional[Path] = None, brand_svc: Optional[BrandService] = None):
         self.db_path = db_path or (settings.DB_DIR / "inspection_reports.json")
         self.brand_service = brand_svc or brand_service
+        self._lock = threading.RLock()
         self._ensure_db()
 
     def _ensure_db(self) -> None:
@@ -44,17 +46,19 @@ class InspectionService:
             self.db_path.write_text("{}", encoding="utf-8")
 
     def _load_all(self) -> Dict[str, dict]:
-        try:
-            content = self.db_path.read_text(encoding="utf-8").strip()
-            return json.loads(content) if content else {}
-        except Exception as exc:
-            logger.error("Error reading inspection reports db: %s", exc)
-            return {}
+        with self._lock:
+            try:
+                content = self.db_path.read_text(encoding="utf-8").strip()
+                return json.loads(content) if content else {}
+            except Exception as exc:
+                logger.error("Error reading inspection reports db: %s", exc)
+                return {}
 
     def _save_all(self, data: Dict[str, dict]) -> None:
-        temp_path = self.db_path.with_suffix(".tmp")
-        temp_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-        temp_path.replace(self.db_path)
+        with self._lock:
+            temp_path = self.db_path.with_suffix(".tmp")
+            temp_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+            temp_path.replace(self.db_path)
 
     def get_report(self, inspection_id: str) -> Optional[InspectionReport]:
         data = self._load_all()
@@ -80,7 +84,9 @@ class InspectionService:
         file_path: Path,
         declared_mime_type: Optional[str] = None,
         preferred_ai_provider: Optional[str] = None,
-        submission_copy_text: Optional[str] = None
+        submission_copy_text: Optional[str] = None,
+        submitted_by: str = "default-dev",
+        org_id: str = "default-org"
     ) -> InspectionReport:
         brand = self.brand_service.get_brand_profile(brand_id)
         if not brand:
@@ -357,6 +363,8 @@ class InspectionService:
             inspection_id=inspection_id,
             brand_id=brand_id,
             brand_name=brand.brand_name,
+            submitted_by=submitted_by,
+            org_id=org_id,
             submission_filename=file_path.name,
             media_category=preprocessed.media_category,
             verdict=verdict,
@@ -402,7 +410,7 @@ class InspectionService:
             raise ValueError(f"Inspection report '{submission.inspection_id}' not found.")
 
         report.human_decision = submission.decision.upper()
-        report.reviewed_by = submission.reviewer_name
+        report.reviewed_by = submission.reviewer_name or submission.reviewer_email or "Compliance Reviewer"
         report.reviewer_notes = submission.reviewer_notes
         report.reviewed_at = datetime.now(timezone.utc).isoformat()
 

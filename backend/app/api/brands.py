@@ -1,18 +1,21 @@
 from __future__ import annotations
 import json
-import shutil
+import logging
 from pathlib import Path
 from typing import List, Optional
-import uuid
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
+from backend.app.core.auth import UserContext, get_current_user, verify_can_manage_brand
 from backend.app.core.config import settings
 from backend.app.models.brand import (
     BrandProfile,
     BrandProfileConfirmationRequest,
     BrandQuestionnaire,
 )
+from backend.app.preprocessing.validator import save_upload_safely
 from backend.app.services.brand_service import brand_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/brands", tags=["Brand Onboarding & Governance"])
 
@@ -27,23 +30,39 @@ def get_brand(brand_id: str) -> BrandProfile:
         raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found.")
     return profile
 
+@router.delete("/{brand_id}")
+def delete_brand(
+    brand_id: str,
+    user: UserContext = Depends(get_current_user)
+):
+    profile = brand_service.get_brand_profile(brand_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found.")
+
+    verify_can_manage_brand(user, profile.owner_id)
+
+    deleted = brand_service.delete_brand_profile(brand_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found.")
+    return {"status": "success", "message": f"Brand '{brand_id}' deleted successfully."}
+
 @router.post("/scan-reference")
 async def scan_reference_image(file: UploadFile = File(...)):
     settings.init_directories()
     if not file.filename:
         raise HTTPException(status_code=400, detail="Reference file required.")
 
-    dest_name = f"scan_{uuid.uuid4().hex[:6]}_{file.filename}"
-    dest_path = settings.GUIDELINES_DIR / dest_name
-    with open(dest_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    dest_path = save_upload_safely(file, settings.GUIDELINES_DIR, prefix="scan")
 
     try:
         features = await brand_service.scan_reference_features(dest_path)
-        features["image_url"] = f"/storage/guidelines/{dest_name}"
+        features["image_url"] = f"/storage/guidelines/{dest_path.name}"
         return features
+    except HTTPException:
+        raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to scan reference image: {str(exc)}")
+        logger.exception("Failed to scan reference image: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to scan reference image due to an internal processing error.")
 
 @router.post("/extract-palette")
 async def extract_palette_from_image(file: UploadFile = File(...)):
@@ -51,10 +70,7 @@ async def extract_palette_from_image(file: UploadFile = File(...)):
     if not file.filename:
         raise HTTPException(status_code=400, detail="Image file required.")
 
-    dest_name = f"palette_{uuid.uuid4().hex[:6]}_{file.filename}"
-    dest_path = settings.GUIDELINES_DIR / dest_name
-    with open(dest_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    dest_path = save_upload_safely(file, settings.GUIDELINES_DIR, prefix="palette")
 
     try:
         from backend.app.preprocessing.color_extractor import extract_detailed_palette
@@ -65,10 +81,13 @@ async def extract_palette_from_image(file: UploadFile = File(...)):
             "hex_list": detailed_res.hex_list,
             "harmony_type": detailed_res.harmony_type,
             "color_distribution": detailed_res.color_distribution,
-            "image_url": f"/storage/guidelines/{dest_name}"
+            "image_url": f"/storage/guidelines/{dest_path.name}"
         }
+    except HTTPException:
+        raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to extract color palette: {str(exc)}")
+        logger.exception("Failed to extract color palette: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to extract color palette due to an internal processing error.")
 
 @router.post("/draft", response_model=BrandProfile)
 async def create_brand_draft(
@@ -81,7 +100,8 @@ async def create_brand_draft(
     palette: str = Form(default="[]", description="JSON array or comma-separated hex strings"),
     disallowed_elements: str = Form(default="[]", description="JSON array or comma-separated terms"),
     tagline_or_mission: Optional[str] = Form(default=""),
-    reference_files: Optional[List[UploadFile]] = File(default=None)
+    reference_files: Optional[List[UploadFile]] = File(default=None),
+    user: UserContext = Depends(get_current_user)
 ) -> BrandProfile:
     try:
         parsed_palette = json.loads(palette) if palette.strip().startswith("[") else [p.strip() for p in palette.split(",") if p.strip()]
@@ -102,7 +122,8 @@ async def create_brand_draft(
         visual_style=visual_style,
         palette=parsed_palette,
         disallowed_elements=parsed_disallowed,
-        tagline_or_mission=tagline_or_mission
+        tagline_or_mission=tagline_or_mission,
+        owner_id=user.org_id or user.user_id
     )
 
     saved_paths: List[Path] = []
@@ -110,11 +131,8 @@ async def create_brand_draft(
         for file in reference_files:
             if not file.filename:
                 continue
-            dest_name = f"{uuid.uuid4().hex[:6]}_{file.filename}"
-            dest_path = settings.GUIDELINES_DIR / dest_name
-            with open(dest_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            saved_paths.append(dest_path)
+            saved_path = save_upload_safely(file, settings.GUIDELINES_DIR)
+            saved_paths.append(saved_path)
 
     try:
         draft = await brand_service.create_brand_profile_draft(
@@ -122,15 +140,31 @@ async def create_brand_draft(
             uploaded_reference_paths=saved_paths
         )
         return draft
+    except HTTPException:
+        raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to generate brand draft: {str(exc)}")
+        logger.exception("Failed to generate brand draft: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to generate brand draft due to an internal processing error.")
 
 @router.post("/confirm", response_model=BrandProfile)
-def confirm_brand(request: BrandProfileConfirmationRequest) -> BrandProfile:
+def confirm_brand(
+    request: BrandProfileConfirmationRequest,
+    user: UserContext = Depends(get_current_user)
+) -> BrandProfile:
+    existing = brand_service.get_brand_profile(request.brand_id)
+    if existing:
+        verify_can_manage_brand(user, existing.owner_id)
+
+    if not request.owner_id:
+        request.owner_id = user.org_id or user.user_id
+
     try:
         confirmed = brand_service.confirm_brand_profile(request)
         return confirmed
+    except HTTPException:
+        raise
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to confirm brand profile: {str(exc)}")
+        logger.exception("Failed to confirm brand profile: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to confirm brand profile due to an internal processing error.")

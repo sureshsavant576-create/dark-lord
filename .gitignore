@@ -48,8 +48,12 @@ yarn-error.log*
 .next/
 out/
 
-# Scratch scripts
+# Audit reports & local test assets
+my_mistakes.md
+*.audit.md
 scratch/
+test_assets/
+local_reports/
 
 # IDE / OS
 .vscode/

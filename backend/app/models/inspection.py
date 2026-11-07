@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
@@ -51,6 +52,9 @@ class InspectionReport(BaseModel):
     media_category: str
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
+    submitted_by: str = Field(default="default-dev", description="Identity of the submitting developer/user")
+    org_id: str = Field(default="default-org", description="Organization identity")
+
     verdict: InspectionVerdict
     overall_score: Optional[float] = Field(description="Blended score (0-100) or None if AI is unconfigured and score cannot be verified")
     deterministic_score: float = Field(description="Score derived purely from objective code checks (0-100)")
@@ -79,5 +83,6 @@ class InspectionReport(BaseModel):
 class HumanReviewSubmission(BaseModel):
     inspection_id: str
     decision: str = Field(description="'APPROVED', 'CHANGES_REQUESTED', or 'REJECTED'")
-    reviewer_name: str = Field(description="Name or email of human reviewer")
+    reviewer_name: Optional[str] = Field(default=None, description="Name or identifier of human reviewer")
+    reviewer_email: Optional[str] = Field(default=None, description="Email of human reviewer")
     reviewer_notes: Optional[str] = Field(default="")

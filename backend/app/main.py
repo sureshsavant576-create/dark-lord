@@ -1,13 +1,39 @@
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
+from backend.app.api.auth import router as auth_router
 from backend.app.api.brands import router as brands_router
 from backend.app.api.inspections import router as inspections_router
 from backend.app.api.system import router as system_router
 from backend.app.core.config import settings
+from backend.app.core.rate_limiter import RateLimitMiddleware
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = (
+            "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), "
+            "microphone=(), payment=(), usb=()"
+        )
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com data:; "
+            "img-src 'self' data: blob: /storage/; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none';"
+        )
+        return response
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -17,15 +43,19 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
 app.include_router(system_router, prefix=settings.API_V1_PREFIX)
+app.include_router(auth_router, prefix=settings.API_V1_PREFIX)
 app.include_router(brands_router, prefix=settings.API_V1_PREFIX)
 app.include_router(inspections_router, prefix=settings.API_V1_PREFIX)
 
@@ -35,7 +65,6 @@ settings.init_directories()
 
 app.mount("/storage/uploads", StaticFiles(directory=str(settings.UPLOADS_DIR)), name="uploads")
 app.mount("/storage/guidelines", StaticFiles(directory=str(settings.GUIDELINES_DIR)), name="guidelines")
-
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 @app.get("/")

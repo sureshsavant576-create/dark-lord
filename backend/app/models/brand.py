@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -18,6 +19,7 @@ class BrandQuestionnaire(BaseModel):
     palette: List[str] = Field(default_factory=list, description="Approved brand HEX colors, e.g. ['#0055FF', '#FFCC00']")
     disallowed_elements: List[str] = Field(default_factory=list, description="Explicit avoidances, forbidden words, or aesthetics")
     tagline_or_mission: Optional[str] = Field(default="", description="Core motto or brand promise")
+    owner_id: Optional[str] = Field(default="default-org", description="Organization or user identity owning this brand")
 
 class ReferenceAssetInfo(BaseModel):
     asset_id: str
@@ -33,6 +35,7 @@ class BrandProfile(BaseModel):
     status: ProfileStatus = Field(default=ProfileStatus.DRAFT_PENDING_CONFIRMATION)
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    owner_id: str = Field(default="default-org", description="Organization or user identity that owns this brand standard")
 
     personality: List[str] = Field(default_factory=list)
     mood: List[str] = Field(default_factory=list)
@@ -69,3 +72,4 @@ class BrandProfileConfirmationRequest(BaseModel):
     mission_statement: Optional[str] = Field(default="")
     confirmed_by: str = Field(default="Brand Manager", description="Name or email of the approver")
     confirmation_notes: Optional[str] = Field(default="Approved after onboarding review")
+    owner_id: Optional[str] = Field(default="default-org", description="Owner user or organization ID")

@@ -1,3 +1,14 @@
+// Security Sanitization Helper
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 const API_BASE = '/api/v1';
 let brandsMap = {};
 let activeInputMode = 'text';
@@ -375,11 +386,11 @@ async function loadBrands() {
         `).join('');
         card.innerHTML = `
           <div class="brand-card-header">
-            <span class="brand-card-title">${b.brand_name}</span>
+            <span class="brand-card-title">${escapeHtml(b.brand_name)}</span>
             <span class="tag-badge ${b.status === 'CONFIRMED' ? 'tag-PASS' : 'tag-WARNING'}">${b.status}</span>
           </div>
-          <p class="finding-body"><strong>Personality:</strong> ${(b.personality || []).join(', ')} | <strong>Mood:</strong> ${(b.mood || []).join(', ')}</p>
-          <p class="finding-body"><strong>Tone:</strong> ${(b.communication_tone || []).join(', ')} | <strong>Audience:</strong> ${b.target_audience || 'General'}</p>
+          <p class="finding-body"><strong>Personality:</strong> ${escapeHtml((b.personality || []).join(', '))} | <strong>Mood:</strong> ${escapeHtml((b.mood || []).join(', '))}</p>
+          <p class="finding-body"><strong>Tone:</strong> ${escapeHtml((b.communication_tone || []).join(', '))} | <strong>Audience:</strong> ${escapeHtml(b.target_audience || 'General')}</p>
           <div class="palette-row" style="margin-top: 0.5rem;">${swatches}</div>
           <div class="brand-card-actions">
             <button type="button" class="btn-edit-brand" onclick="startEditingBrand('${b.brand_id}')">
@@ -437,7 +448,7 @@ function renderCompanyCards(brands) {
     brands.forEach(b => {
       const pill = document.createElement('div');
       pill.className = 'sidebar-brand-pill';
-      pill.innerHTML = `<span>${b.brand_name}</span> <span class="tone-badge-pill" style="font-size: 0.65rem;">${b.status}</span>`;
+      pill.innerHTML = `<span>${escapeHtml(b.brand_name)}</span> <span class="tone-badge-pill" style="font-size: 0.65rem;">${b.status}</span>`;
       pill.onclick = () => selectCompanyById(b.brand_id);
       sidebarList.appendChild(pill);
     });
@@ -453,11 +464,11 @@ function renderCompanyCards(brands) {
     `).join('');
     card.innerHTML = `
       <div class="card-top-row">
-        <span class="company-title-bold">${b.brand_name}</span>
+        <span class="company-title-bold">${escapeHtml(b.brand_name)}</span>
         <span class="tone-badge-pill">${b.status}</span>
       </div>
       <div class="card-palette-strip">${swatches}</div>
-      <p class="card-meta-notes"><strong>Personality:</strong> ${(b.personality || []).slice(0, 3).join(', ')}</p>
+      <p class="card-meta-notes"><strong>Personality:</strong> ${escapeHtml((b.personality || []).slice(0, 3).join(', '))}</p>
       <div class="btn-select-company">Select for Inspection →</div>
     `;
     card.onclick = () => selectCompanyById(b.brand_id);
@@ -837,7 +848,7 @@ function startEditingBrand(brandId) {
   const feedback = document.getElementById('ob-scan-feedback');
   if (feedback) {
     feedback.className = 'ob-scan-feedback success';
-    feedback.innerHTML = `Editing <strong>${b.brand_name}</strong>. Configure brand palette and guidelines below.`;
+    feedback.innerHTML = `Editing <strong>${escapeHtml(b.brand_name)}</strong>. Configure brand palette and guidelines below.`;
     feedback.classList.remove('hidden');
   }
   const formEl = document.getElementById('onboarding-form');
@@ -1263,15 +1274,15 @@ function renderInspectionReport(report) {
       const displayTitle = (f.title || '').replace(/^AI Observed Brand Discrepancy/, 'Observed Brand Departure');
       card.innerHTML = `
         <div class="finding-header">
-          <span class="finding-title">${displayTitle}</span>
+          <span class="finding-title">${escapeHtml(displayTitle)}</span>
           <div>
             <span class="tag-badge tag-${f.severity}">${f.severity}</span>
             <span class="id-badge">${sourceLabel}</span>
           </div>
         </div>
-        <p class="finding-body">${f.explanation}</p>
-        ${f.evidence_snippet ? `<div class="finding-evidence">Evidence: ${f.evidence_snippet}</div>` : ''}
-        ${f.suggested_correction ? `<div class="finding-correction"><strong>Remediation:</strong> ${f.suggested_correction}</div>` : ''}
+        <p class="finding-body">${escapeHtml(f.explanation)}</p>
+        ${f.evidence_snippet ? `<div class="finding-evidence">Evidence: ${escapeHtml(f.evidence_snippet)}</div>` : ''}
+        ${f.suggested_correction ? `<div class="finding-correction"><strong>Remediation:</strong> ${escapeHtml(f.suggested_correction)}</div>` : ''}
       `;
       findingsContainer.appendChild(card);
     });
@@ -1312,8 +1323,8 @@ async function loadRecentReport() {
           <div class="tracked-item-left">
             <div class="tracked-icon-box ${iconClass}">${iconEmoji}</div>
             <div class="tracked-info">
-              <span class="tracked-filename" title="${rep.submission_filename}">${rep.submission_filename || 'Text Creative'}</span>
-              <span class="tracked-brand-time">${rep.brand_name} &bull; ${dateStr}</span>
+              <span class="tracked-filename" title="${escapeHtml(rep.submission_filename)}">${escapeHtml(rep.submission_filename || 'Text Creative')}</span>
+              <span class="tracked-brand-time">${escapeHtml(rep.brand_name)} &bull; ${escapeHtml(dateStr)}</span>
             </div>
           </div>
           <div class="tracked-item-right">

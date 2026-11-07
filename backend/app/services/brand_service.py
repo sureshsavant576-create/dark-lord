@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import threading
 import logging
 import re
 from datetime import datetime, timezone
@@ -30,6 +31,7 @@ class BrandService:
 
     def __init__(self, db_path: Optional[Path] = None):
         self.db_path = db_path or (settings.DB_DIR / "brand_profiles.json")
+        self._lock = threading.RLock()
         self._ensure_db()
 
     def _ensure_db(self) -> None:
@@ -38,17 +40,19 @@ class BrandService:
             self.db_path.write_text("{}", encoding="utf-8")
 
     def _load_all(self) -> Dict[str, dict]:
-        try:
-            content = self.db_path.read_text(encoding="utf-8").strip()
-            return json.loads(content) if content else {}
-        except Exception as exc:
-            logger.error("Error reading brand profiles database: %s", exc)
-            return {}
+        with self._lock:
+            try:
+                content = self.db_path.read_text(encoding="utf-8").strip()
+                return json.loads(content) if content else {}
+            except Exception as exc:
+                logger.error("Error reading brand profiles database: %s", exc)
+                return {}
 
     def _save_all(self, data: Dict[str, dict]) -> None:
-        temp_path = self.db_path.with_suffix(".tmp")
-        temp_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-        temp_path.replace(self.db_path)
+        with self._lock:
+            temp_path = self.db_path.with_suffix(".tmp")
+            temp_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+            temp_path.replace(self.db_path)
 
     def get_brand_profile(self, brand_id: str) -> Optional[BrandProfile]:
         data = self._load_all()
@@ -60,11 +64,21 @@ class BrandService:
         return [BrandProfile(**item) for item in data.values()]
 
     def save_brand_profile(self, profile: BrandProfile) -> BrandProfile:
-        data = self._load_all()
-        profile.updated_at = datetime.now(timezone.utc).isoformat()
-        data[profile.brand_id] = profile.model_dump()
-        self._save_all(data)
-        return profile
+        with self._lock:
+            data = self._load_all()
+            profile.updated_at = datetime.now(timezone.utc).isoformat()
+            data[profile.brand_id] = profile.model_dump()
+            self._save_all(data)
+            return profile
+
+    def delete_brand_profile(self, brand_id: str) -> bool:
+        with self._lock:
+            data = self._load_all()
+            if brand_id in data:
+                del data[brand_id]
+                self._save_all(data)
+                return True
+            return False
 
     async def create_brand_profile_draft(
         self,
@@ -113,6 +127,7 @@ class BrandService:
             profile = BrandProfile(
                 brand_id=brand_id,
                 brand_name=questionnaire.brand_name,
+                owner_id=getattr(questionnaire, "owner_id", None) or "default-org",
                 status=ProfileStatus.DRAFT_PENDING_CONFIRMATION,
                 personality=ai_result.brand_personality or [questionnaire.personality],
                 mood=ai_result.brand_mood or [questionnaire.mood],
@@ -134,6 +149,7 @@ class BrandService:
             profile = BrandProfile(
                 brand_id=brand_id,
                 brand_name=questionnaire.brand_name,
+                owner_id=getattr(questionnaire, "owner_id", None) or "default-org",
                 status=ProfileStatus.DRAFT_PENDING_CONFIRMATION,
                 personality=[p.strip() for p in questionnaire.personality.split(",") if p.strip()],
                 mood=[m.strip() for m in questionnaire.mood.split(",") if m.strip()],
@@ -164,6 +180,8 @@ class BrandService:
         existing.communication_tone = [t.strip() for t in request.communication_tone if t.strip()]
         existing.visual_style = [v.strip() for v in request.visual_style if v.strip()]
         existing.target_audience = request.target_audience.strip()
+        if hasattr(request, "owner_id") and request.owner_id:
+            existing.owner_id = request.owner_id
         existing.approved_palette = [clean_hex_code(c) for c in request.approved_palette if clean_hex_code(c)]
         existing.disallowed_elements = [d.strip() for d in request.disallowed_elements if d.strip()]
         if request.key_values:
@@ -235,11 +253,21 @@ class BrandService:
                     prompt
                 ]
 
-                resp = client.models.generate_content(
-                    model=provider.model_name,
-                    contents=contents,
-                    config=types.GenerateContentConfig(response_mime_type="application/json")
-                )
+                models_to_try = [provider.model_name] + [
+                    m for m in getattr(provider, "FALLBACK_MODELS", []) if m != provider.model_name
+                ]
+                resp = None
+                for candidate_model in models_to_try:
+                    try:
+                        resp = client.models.generate_content(
+                            model=candidate_model,
+                            contents=contents,
+                            config=types.GenerateContentConfig(response_mime_type="application/json")
+                        )
+                        if resp and resp.text:
+                            break
+                    except Exception as model_err:
+                        logger.warning("Reference scan error with model %s: %s", candidate_model, model_err)
 
                 if resp.text:
                     parsed = json.loads(resp.text)

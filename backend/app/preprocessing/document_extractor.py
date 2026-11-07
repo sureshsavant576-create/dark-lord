@@ -23,7 +23,7 @@ def extract_text_from_pdf(pdf_path: Path) -> DocumentExtractionResult:
     doc = pymupdf.open(str(pdf_path))
     pages_text: List[str] = []
 
-    for page_idx in range(len(doc)):
+    for page_idx in range(min(len(doc), 100)):
         page = doc[page_idx]
         text = page.get_text("text")
         if text.strip():
