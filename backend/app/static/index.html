@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrandShield AI - Brand Inspection & Governance</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-logo">
+        <div class="logo-shield">🛡️</div>
+        <div>
+          <h1>BrandShield <span class="ai-badge">AI</span></h1>
+          <p class="tagline">Clear brand standards. Evidence-backed reviews. Human approval.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div id="ai-status-pill" class="status-pill status-loading">
+          <span class="status-dot"></span> Checking AI Engine...
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="app-nav">
+    <div class="nav-container">
+      <button class="nav-tab active" data-tab="tab-inspect">
+        <span class="tab-icon">🔍</span> Developer Content Inspection
+      </button>
+      <button class="nav-tab" data-tab="tab-onboard">
+        <span class="tab-icon">🏢</span> Company Onboarding & Profile Confirmation
+      </button>
+      <button class="nav-tab" data-tab="tab-governance">
+        <span class="tab-icon">📋</span> Governance & Review Audit
+      </button>
+      <button class="nav-tab" data-tab="tab-system">
+        <span class="tab-icon">⚙️</span> AI Diagnostics & Config
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-content">
+    
+    <!-- TAB 1: DEVELOPER INSPECTION -->
+    <section id="tab-inspect" class="tab-pane active">
+      <div class="pane-grid">
+        <!-- Submission Form -->
+        <div class="card submission-card">
+          <div class="card-header">
+            <h2>Submit Creative Asset for Brand Inspection</h2>
+            <p>Upload posters, advertising copy, or audio jingles to verify compliance with company guidelines.</p>
+          </div>
+          
+          <form id="inspection-form" class="app-form">
+            <div class="form-group">
+              <label for="inspect-brand-select">Target Company Brand:</label>
+              <select id="inspect-brand-select" required>
+                <option value="">-- Select Confirmed Brand Profile --</option>
+              </select>
+              <span class="field-hint">Only companies with confirmed brand profiles are ready for inspection.</span>
+            </div>
+
+            <div class="form-group">
+              <label>Creative Asset File:</label>
+              <div id="drop-zone" class="drop-zone">
+                <input type="file" id="inspect-file" class="file-input" required accept=".png,.jpg,.jpeg,.webp,.pdf,.txt,.md,.mp3,.wav">
+                <div class="drop-zone-content">
+                  <span class="upload-icon">📁</span>
+                  <p class="drop-text">Drag & drop asset here or <span class="highlight">browse</span></p>
+                  <span class="drop-subtext">Posters (PNG/JPG), Copy (PDF/TXT), Jingles (MP3/WAV) up to 30MB</span>
+                </div>
+              </div>
+              <div id="file-preview-info" class="file-preview-info hidden">
+                <span id="preview-filename"></span>
+                <span id="preview-filesize"></span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="ai-provider-select">Preferred AI Multimodal Provider (Optional):</label>
+              <select id="ai-provider-select">
+                <option value="">Auto (Active Provider: Gemini / OpenAI)</option>
+                <option value="gemini">Google Gemini (gemini-2.5-flash)</option>
+                <option value="openai">OpenAI (gpt-4o-mini)</option>
+                <option value="huggingface">Hugging Face Inference</option>
+              </select>
+            </div>
+
+            <button type="submit" id="btn-run-inspect" class="btn btn-primary btn-block">
+              <span>Inspect Content Alignment</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Live Inspection Report Panel -->
+        <div class="card report-card">
+          <div class="card-header">
+            <h2>Inspection Findings & Verification Report</h2>
+            <span id="report-id-badge" class="id-badge">No active inspection</span>
+          </div>
+
+          <div id="inspection-empty-state" class="empty-state">
+            <div class="empty-icon">📊</div>
+            <h3>Awaiting Content Submission</h3>
+            <p>Select a company profile and upload a creative asset on the left to run deterministic and AI brand inspections.</p>
+          </div>
+
+          <div id="inspection-loading-state" class="empty-state hidden">
+            <div class="spinner"></div>
+            <h3>Inspecting Creative Content...</h3>
+            <p>Running deterministic color palette extraction, terminology scanning, and multimodal AI analysis.</p>
+          </div>
+
+          <div id="inspection-results-view" class="results-view hidden">
+            <!-- Verdict Banner -->
+            <div id="verdict-banner" class="verdict-banner">
+              <div class="verdict-header">
+                <span class="verdict-label">FINAL VERDICT:</span>
+                <span id="verdict-title" class="verdict-title">APPROVED</span>
+              </div>
+              <p id="verdict-summary" class="verdict-summary"></p>
+            </div>
+
+            <!-- Score Gauges -->
+            <div class="score-grid">
+              <div class="score-card">
+                <span class="score-title">Overall Score</span>
+                <span id="score-overall" class="score-number">--</span>
+                <span class="score-sub">Weighted Composite</span>
+              </div>
+              <div class="score-card">
+                <span class="score-title">Deterministic Check</span>
+                <span id="score-deterministic" class="score-number">--</span>
+                <span class="score-sub">Colors, Terms, Specs</span>
+              </div>
+              <div class="score-card">
+                <span class="score-title">AI Subjective Alignment</span>
+                <span id="score-ai" class="score-number">--</span>
+                <span class="score-sub">Mood, Tone, Vibe</span>
+              </div>
+            </div>
+
+            <!-- Palette Comparison -->
+            <div class="section-block">
+              <h3>🎨 Color Palette & CIELAB ΔE Analysis</h3>
+              <div class="palette-comparison-container">
+                <div class="palette-group">
+                  <span class="group-label">Detected from Submission:</span>
+                  <div id="detected-palette-row" class="palette-row"></div>
+                </div>
+                <div class="palette-group">
+                  <span class="group-label">Approved Company Palette:</span>
+                  <div id="approved-palette-row" class="palette-row"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Findings Breakdown -->
+            <div class="section-block">
+              <h3>📋 Evidence & Inspection Findings</h3>
+              <div id="findings-table-container" class="findings-list"></div>
+            </div>
+
+            <!-- Human Sign-Off Action -->
+            <div class="section-block signoff-block">
+              <h3>Human Governance & Final Sign-Off</h3>
+              <div id="human-status-bar" class="human-status-bar">
+                <span>Status: <strong id="human-decision-text">PENDING REVIEW</strong></span>
+              </div>
+              <form id="signoff-form" class="signoff-form">
+                <input type="hidden" id="signoff-inspection-id">
+                <div class="form-row">
+                  <input type="text" id="signoff-reviewer-name" placeholder="Reviewer Name / Email" required>
+                  <select id="signoff-decision" required>
+                    <option value="APPROVED">Approve for Distribution</option>
+                    <option value="CHANGES_REQUESTED">Request Changes</option>
+                    <option value="REJECTED">Reject Submission</option>
+                  </select>
+                </div>
+                <input type="text" id="signoff-notes" placeholder="Reviewer audit comments or remediation notes" class="full-width">
+                <button type="submit" class="btn btn-secondary">Submit Human Decision</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: COMPANY ONBOARDING & PROFILE CONFIRMATION -->
+    <section id="tab-onboard" class="tab-pane">
+      <div class="pane-grid">
+        <!-- Questionnaire & Upload -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Stage 1: Company Brand Questionnaire</h2>
+            <p>Collect structured brand identity and reference guidelines before inspection begins.</p>
+          </div>
+
+          <form id="onboarding-form" class="app-form">
+            <div class="form-group">
+              <label for="ob-brand-name">Company / Brand Name:</label>
+              <input type="text" id="ob-brand-name" placeholder="e.g. Solaris Dynamics" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ob-personality">Brand Personality:</label>
+                <input type="text" id="ob-personality" placeholder="e.g. Youthful, Innovative" required>
+              </div>
+              <div class="form-group">
+                <label for="ob-mood">Desired Mood:</label>
+                <input type="text" id="ob-mood" placeholder="e.g. Energetic, Optimistic" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ob-tone">Communication Tone:</label>
+                <input type="text" id="ob-tone" placeholder="e.g. Friendly, Clear, Direct" required>
+              </div>
+              <div class="form-group">
+                <label for="ob-audience">Target Audience:</label>
+                <input type="text" id="ob-audience" placeholder="e.g. Young professionals, creators" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="ob-style">Visual Style & Aesthetics:</label>
+              <input type="text" id="ob-style" placeholder="e.g. Modern, Minimalist, High-Contrast" required>
+            </div>
+
+            <div class="form-group">
+              <label for="ob-palette">Approved Brand HEX Colors (Comma-separated):</label>
+              <input type="text" id="ob-palette" placeholder="#0055FF, #FFCC00, #111111" required>
+              <span class="field-hint">Enter representative HEX codes (e.g. #0055FF).</span>
+            </div>
+
+            <div class="form-group">
+              <label for="ob-avoid">Strict Avoidances & Disallowed Terms (Comma-separated):</label>
+              <input type="text" id="ob-avoid" placeholder="cheapest, guarantee, corporate jargon, crypto">
+              <span class="field-hint">The inspection engine deterministically flags any creative containing these terms.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="ob-tagline">Tagline or Mission Statement:</label>
+              <input type="text" id="ob-tagline" placeholder="e.g. Powering the future of creators">
+            </div>
+
+            <div class="form-group">
+              <label>Upload Brand Reference Files (Guidelines PDF, approved logos/posters, audio jingles):</label>
+              <input type="file" id="ob-reference-files" multiple accept=".pdf,.png,.jpg,.jpeg,.mp3,.wav,.txt,.md">
+              <span class="field-hint">Reference files are preprocessed once to extract colors and guidelines.</span>
+            </div>
+
+            <button type="submit" id="btn-create-draft" class="btn btn-primary btn-block">
+              <span>Synthesize Brand Profile Draft</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Confirmation Card & Existing Profiles -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Stage 2: Brand Profile Confirmation</h2>
+            <p>Review, adjust, and approve the synthesized brand profile before locking it into the database.</p>
+          </div>
+
+          <!-- Pending Confirmation Card -->
+          <div id="confirmation-box" class="confirmation-box hidden">
+            <div class="box-badge">DRAFT PENDING APPROVAL</div>
+            <h3 id="conf-brand-title">Brand Draft</h3>
+            <p id="conf-synthesis-expl" class="synthesis-text"></p>
+
+            <form id="confirmation-form" class="app-form">
+              <input type="hidden" id="conf-brand-id">
+
+              <div class="form-group">
+                <label>Brand Personality (Verified):</label>
+                <input type="text" id="conf-personality" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Brand Mood:</label>
+                  <input type="text" id="conf-mood" required>
+                </div>
+                <div class="form-group">
+                  <label>Communication Tone:</label>
+                  <input type="text" id="conf-tone" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Visual Style:</label>
+                <input type="text" id="conf-style" required>
+              </div>
+
+              <div class="form-group">
+                <label>Target Audience:</label>
+                <input type="text" id="conf-audience" required>
+              </div>
+
+              <div class="form-group">
+                <label>Approved Palette HEX:</label>
+                <input type="text" id="conf-palette" required>
+              </div>
+
+              <div class="form-group">
+                <label>Disallowed Elements / Forbidden Terms:</label>
+                <input type="text" id="conf-disallowed" required>
+              </div>
+
+              <div class="form-group">
+                <label>Approver Name / Title:</label>
+                <input type="text" id="conf-approver" value="Brand Director" required>
+              </div>
+
+              <button type="submit" class="btn btn-success btn-block">
+                <span>🔒 Confirm & Lock Brand Identity</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Confirmed Profiles List -->
+          <div class="existing-profiles-container">
+            <h3>Confirmed Company Identities Ready for Inspections</h3>
+            <div id="confirmed-brands-list" class="brands-list">
+              <p class="empty-note">No confirmed brand profiles yet. Complete onboarding on the left.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: GOVERNANCE & AUDIT -->
+    <section id="tab-governance" class="tab-pane">
+      <div class="card full-width-card">
+        <div class="card-header">
+          <h2>Inspection Audit Log & Decision History</h2>
+          <p>Full governance trail of creative submissions, model assessments, and human approval sign-offs.</p>
+        </div>
+        <div id="governance-reports-table" class="table-responsive">
+          <p class="empty-note">No inspection records logged yet.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: SYSTEM DIAGNOSTICS & CONFIG -->
+    <section id="tab-system" class="tab-pane">
+      <div class="card full-width-card">
+        <div class="card-header">
+          <h2>AI Model Gateway & Diagnostic Status</h2>
+          <p>Inspection engine model selection, operational availability, and API key management.</p>
+        </div>
+
+        <div id="provider-cards-grid" class="provider-grid"></div>
+
+        <div class="config-instructions-box">
+          <h3>🔐 Secure API Key Setup Instructions</h3>
+          <p>To enable multimodal visual understanding, tone assessment, and deep semantic inspection:</p>
+          <ol>
+            <li>Open the <code>.env</code> file in the project root.</li>
+            <li>Add your API keys:
+              <pre><code># Recommended Primary Multimodal Model (fast, low cost)
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Alternative Multimodal Reasoning Model
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Specialized NLP / Sentiment
+HUGGINGFACE_API_KEY=your_hf_key_here</code></pre>
+            </li>
+            <li>Restart the backend or reload this page. The system will automatically detect the configured provider.</li>
+            <li><strong>Rule 10 & 11 Guarantee:</strong> If keys are absent, deterministic checks remain 100% active, and the AI features truthfully report their unconfigured state without fake percentages.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>BrandShield AI &copy; 2026 Team Dark Lord (CodeNexus India Hackathon – Inkloom AI Challenge). Built with FastAPI & lightweight AI architectures.</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

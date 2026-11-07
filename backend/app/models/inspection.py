@@ -1,0 +1,92 @@
+"""BrandShield AI - Content Inspection & Explainable Report Data Models.
+
+Defines schemas for inspection findings, evidence linking, and reports.
+Enforces strict segregation between deterministic algorithmic checks and AI inferences.
+"""
+from datetime import datetime, timezone
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, Field
+
+
+class FindingSeverity(str, Enum):
+    PASS = "PASS"
+    INFO = "INFO"
+    WARNING = "WARNING"
+    CRITICAL = "CRITICAL"
+
+
+class FindingCategory(str, Enum):
+    COLOR = "COLOR"
+    TERMINOLOGY = "TERMINOLOGY"
+    TONE = "TONE"
+    MOOD = "MOOD"
+    PERSONALITY = "PERSONALITY"
+    VISUAL_STYLE = "VISUAL_STYLE"
+    TECHNICAL = "TECHNICAL"
+
+
+class FindingSource(str, Enum):
+    DETERMINISTIC_CHECK = "DETERMINISTIC_CHECK"
+    AI_MODEL_INFERENCE = "AI_MODEL_INFERENCE"
+
+
+class InspectionVerdict(str, Enum):
+    APPROVED = "APPROVED"
+    CHANGES_REQUESTED = "CHANGES_REQUESTED"
+    REJECTED = "REJECTED"
+    REQUIRES_HUMAN_REVIEW = "REQUIRES_HUMAN_REVIEW"
+
+
+class InspectionFinding(BaseModel):
+    id: str
+    title: str
+    category: FindingCategory
+    source: FindingSource
+    severity: FindingSeverity
+    detected_value: str
+    expected_value: str
+    explanation: str
+    suggested_correction: Optional[str] = None
+    evidence_snippet: Optional[str] = None
+    confidence_score: float = 1.0
+
+
+class InspectionReport(BaseModel):
+    inspection_id: str
+    brand_id: str
+    brand_name: str
+    submission_filename: str
+    media_category: str
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+    # Overall Status & Scores
+    verdict: InspectionVerdict
+    overall_score: Optional[float] = Field(description="Blended score (0-100) or None if AI is unconfigured and score cannot be verified")
+    deterministic_score: float = Field(description="Score derived purely from objective code checks (0-100)")
+    ai_score: Optional[float] = Field(default=None, description="Score assessed by multimodal AI model or None")
+    
+    # Detailed Findings & Evidence
+    findings: List[InspectionFinding] = Field(default_factory=list)
+    matching_characteristics: List[str] = Field(default_factory=list)
+    mismatches: List[str] = Field(default_factory=list)
+    guideline_violations: List[str] = Field(default_factory=list)
+    suggested_corrections: List[str] = Field(default_factory=list)
+
+    # Human Review & Governance Workflow
+    human_review_required: bool = True
+    human_decision: str = "PENDING"  # "PENDING", "APPROVED", "CHANGES_REQUESTED"
+    reviewer_notes: Optional[str] = None
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[str] = None
+
+    # Technical Extraction Metadata
+    technical_summary: Dict[str, Any] = Field(default_factory=dict)
+
+
+class HumanReviewSubmission(BaseModel):
+    inspection_id: str
+    decision: str = Field(description="'APPROVED', 'CHANGES_REQUESTED', or 'REJECTED'")
+    reviewer_name: str = Field(description="Name or email of human reviewer")
+    reviewer_notes: Optional[str] = Field(default="")

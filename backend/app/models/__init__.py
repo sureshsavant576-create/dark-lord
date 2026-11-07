@@ -1,0 +1,1 @@
+"""BrandShield AI Data Models."""
