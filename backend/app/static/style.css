@@ -4756,6 +4756,8 @@ select option {
 
 .submission-card-wrap {
   width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
 }
 
 .stage-step-pill {
@@ -5188,6 +5190,8 @@ select option {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 .results-top-action-bar {
