@@ -79,6 +79,18 @@ async def scan_reference_image(file: UploadFile = File(...)):
         logger.exception("Failed to scan reference image: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to scan reference image due to an internal processing error.")
 
+@router.post("/upload-logo")
+async def upload_brand_logo(file: UploadFile = File(...)):
+    settings.init_directories()
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Logo image file required.")
+
+    dest_path = save_upload_safely(file, settings.GUIDELINES_DIR, prefix="logo")
+    return {
+        "logo_url": f"/storage/guidelines/{dest_path.name}",
+        "filename": file.filename
+    }
+
 @router.post("/extract-palette")
 async def extract_palette_from_image(file: UploadFile = File(...)):
     settings.init_directories()
@@ -116,6 +128,7 @@ async def create_brand_draft(
     disallowed_elements: str = Form(default="[]", description="JSON array or comma-separated terms"),
     tagline_or_mission: Optional[str] = Form(default=""),
     typography: Optional[str] = Form(default=""),
+    logo_url: Optional[str] = Form(default=""),
     reference_files: Optional[List[UploadFile]] = File(default=None),
     user: UserContext = Depends(get_current_user)
 ) -> BrandProfile:
@@ -137,6 +150,7 @@ async def create_brand_draft(
         target_audience=target_audience,
         visual_style=visual_style,
         typography=typography or "",
+        logo_url=logo_url or "",
         palette=parsed_palette,
         disallowed_elements=parsed_disallowed,
         tagline_or_mission=tagline_or_mission,

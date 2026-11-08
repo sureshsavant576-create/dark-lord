@@ -598,7 +598,13 @@ async function loadBrands() {
           return;
         }
         const prevName = document.getElementById('prev-brand-name');
-        if (prevName) prevName.textContent = b.brand_name;
+        if (prevName) {
+          if (b.logo_url) {
+            prevName.innerHTML = `<img src="${escapeHtml(b.logo_url)}" class="compact-brand-logo-img" alt="${escapeHtml(b.brand_name)} Logo"> ${escapeHtml(b.brand_name)}`;
+          } else {
+            prevName.textContent = b.brand_name;
+          }
+        }
         const prevTone = document.getElementById('prev-brand-tone');
         if (prevTone) prevTone.textContent = `Tone: ${(b.communication_tone || []).join(', ') || 'Standard'}`;
         const prevSummary = document.getElementById('prev-palette-summary');
@@ -1041,6 +1047,20 @@ function startEditingBrand(brandId) {
   setVal('ob-typography', (b.typography || []).join(', '));
   setVal('ob-avoid', (b.disallowed_elements || []).join(', '));
   setVal('ob-tagline', b.mission_statement || '');
+  setVal('ob-logo-url', b.logo_url || '');
+  if (b.logo_url) {
+    const logoImg = document.getElementById('ob-logo-preview-img');
+    const logoPlaceholder = document.getElementById('ob-logo-placeholder');
+    const btnClearLogo = document.getElementById('btn-clear-logo');
+    if (logoImg) {
+      logoImg.src = b.logo_url;
+      logoImg.classList.remove('hidden');
+    }
+    if (logoPlaceholder) logoPlaceholder.classList.add('hidden');
+    if (btnClearLogo) btnClearLogo.classList.remove('hidden');
+  } else {
+    clearBrandLogo();
+  }
   currentPalette = (b.approved_palette || []).map(hex => ({
     hex: hex.toUpperCase(),
     role: 'Approved Brand Color'
@@ -1078,6 +1098,7 @@ function resetOnboardingForm() {
   if (form) form.reset();
   currentPalette = [];
   renderPaletteManager();
+  clearBrandLogo();
   const studioContainer = document.getElementById('color-studio-container');
   if (studioContainer) studioContainer.classList.add('hidden');
   const btn = document.getElementById('btn-create-draft');
@@ -1265,6 +1286,80 @@ function initReferenceScanning() {
     });
   }
 }
+
+function initLogoUpload() {
+  const logoFile = document.getElementById('ob-logo-file');
+  const logoUrlInput = document.getElementById('ob-logo-url');
+  const logoImg = document.getElementById('ob-logo-preview-img');
+  const logoPlaceholder = document.getElementById('ob-logo-placeholder');
+  const btnClearLogo = document.getElementById('btn-clear-logo');
+
+  if (logoFile) {
+    logoFile.addEventListener('change', async () => {
+      if (!logoFile.files || logoFile.files.length === 0) return;
+      const file = logoFile.files[0];
+
+      // Instant local preview
+      if (logoImg) {
+        logoImg.src = URL.createObjectURL(file);
+        logoImg.classList.remove('hidden');
+      }
+      if (logoPlaceholder) logoPlaceholder.classList.add('hidden');
+      if (btnClearLogo) btnClearLogo.classList.remove('hidden');
+
+      // Upload to server
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch(`${API_BASE}/brands/upload-logo`, {
+          method: 'POST',
+          body: formData
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        if (logoUrlInput) logoUrlInput.value = data.logo_url;
+        toast('Brand logo uploaded successfully!', 'success');
+      } catch (err) {
+        console.warn('Logo upload notice:', err);
+      }
+    });
+  }
+
+  if (logoUrlInput) {
+    logoUrlInput.addEventListener('input', () => {
+      const val = logoUrlInput.value.trim();
+      if (val) {
+        if (logoImg) {
+          logoImg.src = val;
+          logoImg.classList.remove('hidden');
+        }
+        if (logoPlaceholder) logoPlaceholder.classList.add('hidden');
+        if (btnClearLogo) btnClearLogo.classList.remove('hidden');
+      } else {
+        clearBrandLogo();
+      }
+    });
+  }
+}
+
+function clearBrandLogo() {
+  const logoFile = document.getElementById('ob-logo-file');
+  const logoUrlInput = document.getElementById('ob-logo-url');
+  const logoImg = document.getElementById('ob-logo-preview-img');
+  const logoPlaceholder = document.getElementById('ob-logo-placeholder');
+  const btnClearLogo = document.getElementById('btn-clear-logo');
+
+  if (logoFile) logoFile.value = '';
+  if (logoUrlInput) logoUrlInput.value = '';
+  if (logoImg) {
+    logoImg.src = '';
+    logoImg.classList.add('hidden');
+  }
+  if (logoPlaceholder) logoPlaceholder.classList.remove('hidden');
+  if (btnClearLogo) btnClearLogo.classList.add('hidden');
+}
+window.clearBrandLogo = clearBrandLogo;
+
 function initOnboarding() {
   const form = document.getElementById('onboarding-form');
   const btn = document.getElementById('btn-create-draft');
@@ -1295,6 +1390,7 @@ function initOnboarding() {
           approved_palette: paletteHexArray,
           disallowed_elements: document.getElementById('ob-avoid').value.split(',').map(s => s.trim()).filter(Boolean),
           mission_statement: document.getElementById('ob-tagline').value.trim(),
+          logo_url: document.getElementById('ob-logo-url')?.value.trim() || '',
           confirmed_by: managerEmail
         };
         const confRes = await fetch(`${API_BASE}/brands/confirm`, {
@@ -1326,6 +1422,7 @@ function initOnboarding() {
       formData.append('palette', paletteHexArray.join(', '));
       formData.append('disallowed_elements', document.getElementById('ob-avoid').value);
       formData.append('tagline_or_mission', document.getElementById('ob-tagline').value);
+      formData.append('logo_url', document.getElementById('ob-logo-url')?.value.trim() || '');
       const refFilesInput = document.getElementById('ob-reference-files');
       if (refFilesInput && refFilesInput.files) {
         for (let i = 0; i < refFilesInput.files.length; i++) {
@@ -1350,6 +1447,7 @@ function initOnboarding() {
         approved_palette: paletteHexArray,
         disallowed_elements: draft.disallowed_elements,
         mission_statement: document.getElementById('ob-tagline').value.trim(),
+        logo_url: draft.logo_url || (document.getElementById('ob-logo-url')?.value.trim() || ''),
         confirmed_by: managerEmail
       };
       const confRes = await fetch(`${API_BASE}/brands/confirm`, {
@@ -2193,8 +2291,12 @@ function renderAccountPage(targetBrandId) {
   // 1. Identity & Hero Header
   const avatarBox = document.getElementById('acc-avatar-box');
   if (avatarBox) {
-    const initials = (b.brand_name || 'CO').trim().split(/\s+/).map(w => w[0]).join('').substring(0, 2).toUpperCase();
-    avatarBox.textContent = initials || 'CO';
+    if (b.logo_url) {
+      avatarBox.innerHTML = `<img src="${escapeHtml(b.logo_url)}" class="acc-hero-logo-img" alt="${escapeHtml(b.brand_name)} Logo">`;
+    } else {
+      const initials = (b.brand_name || 'CO').trim().split(/\s+/).map(w => w[0]).join('').substring(0, 2).toUpperCase();
+      avatarBox.textContent = initials || 'CO';
+    }
   }
   const heroName = document.getElementById('acc-hero-name');
   if (heroName) heroName.textContent = b.brand_name || 'Organization Brand';

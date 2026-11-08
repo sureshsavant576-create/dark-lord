@@ -151,6 +151,7 @@ class BrandService:
                 disallowed_elements=list(set(questionnaire.disallowed_elements + ai_result.disallowed_elements)),
                 key_values=ai_result.key_values,
                 mission_statement=questionnaire.tagline_or_mission or "",
+                logo_url=getattr(questionnaire, "logo_url", "") or "",
                 reference_assets=reference_assets,
                 is_human_confirmed=False,
                 ai_synthesized=True,
@@ -174,6 +175,7 @@ class BrandService:
                 disallowed_elements=questionnaire.disallowed_elements,
                 key_values=[],
                 mission_statement=questionnaire.tagline_or_mission or "",
+                logo_url=getattr(questionnaire, "logo_url", "") or "",
                 reference_assets=reference_assets,
                 is_human_confirmed=False,
                 ai_synthesized=False,
@@ -205,6 +207,8 @@ class BrandService:
 
         if request.mission_statement:
             existing.mission_statement = request.mission_statement.strip()
+        if hasattr(request, "logo_url") and request.logo_url is not None:
+            existing.logo_url = request.logo_url.strip()
 
         is_minimal = any("minimal" in s.lower() for s in (existing.visual_style + existing.personality))
         existing.brand_dna = {

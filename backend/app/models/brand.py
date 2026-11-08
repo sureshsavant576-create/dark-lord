@@ -21,6 +21,7 @@ class BrandQuestionnaire(BaseModel):
     disallowed_elements: List[str] = Field(default_factory=list, description="Explicit avoidances, forbidden words, or aesthetics")
     tagline_or_mission: Optional[str] = Field(default="", description="Core motto or brand promise")
     owner_id: Optional[str] = Field(default="default-org", description="Organization or user identity owning this brand")
+    logo_url: Optional[str] = Field(default="", description="Official brand logo image URL or path")
 
 class ReferenceAssetInfo(BaseModel):
     asset_id: str
@@ -49,6 +50,7 @@ class BrandProfile(BaseModel):
     brand_dna: Optional[Dict[str, Any]] = Field(default=None, description="Biometric brand DNA vector targets (whitespace, complexity, colors)")
     key_values: List[str] = Field(default_factory=list)
     mission_statement: str = ""
+    logo_url: Optional[str] = ""
 
     reference_assets: List[ReferenceAssetInfo] = Field(default_factory=list)
 
@@ -76,3 +78,4 @@ class BrandProfileConfirmationRequest(BaseModel):
     confirmed_by: str = Field(default="Brand Manager", description="Name or email of the approver")
     confirmation_notes: Optional[str] = Field(default="Approved after onboarding review")
     owner_id: Optional[str] = Field(default="default-org", description="Owner user or organization ID")
+    logo_url: Optional[str] = Field(default="", description="Official brand logo image URL or path")

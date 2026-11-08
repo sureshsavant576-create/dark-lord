@@ -5234,3 +5234,184 @@ select option {
   font-size: 0.95rem;
   font-weight: 600;
 }
+
+
+/* ==========================================================================
+   CLEAN VECTOR BRANDMARK & COMPANY LOGO UPLOAD COMPONENT
+   ========================================================================== */
+
+.brand-icon-shield {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.18));
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+  flex-shrink: 0;
+}
+
+.brand-brandmark-text {
+  font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.brand-brandmark-text strong {
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.brand-brandmark-text .brand-name-sub {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* Company Portal Official Logo Uploader */
+.brand-logo-upload-group {
+  margin-top: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.logo-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+@media (max-width: 640px) {
+  .logo-upload-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.logo-preview-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  border: 1.5px dashed var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.logo-placeholder-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.ob-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6px;
+  background: #ffffff;
+}
+
+.logo-upload-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex: 1;
+  width: 100%;
+}
+
+.logo-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.logo-file-label {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+.file-input-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.logo-url-input-wrap {
+  width: 100%;
+}
+
+.logo-url-input-wrap input {
+  font-size: 0.82rem;
+  padding: 0.45rem 0.75rem;
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+}
+
+.logo-url-input-wrap input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Company Account Hero Avatar Logo Display */
+.acc-avatar-circle {
+  position: relative;
+  overflow: hidden;
+}
+
+.acc-hero-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+/* Selected Brand Compact Bar with Logo */
+.compact-brand-logo-img {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  object-fit: contain;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  padding: 2px;
+  vertical-align: middle;
+}
