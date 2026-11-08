@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Company Portal — Brand DNA Onboarding & Identity Guidelines | Sanket AI</title>
   <link rel="icon" type="image/png" href="/static/emblem.png">
-  <link rel="stylesheet" href="/static/style.css?v=18.0">
+  <link rel="stylesheet" href="/static/style.css?v=19.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -573,6 +573,38 @@
     </div>
   </div>
 
+  
+  <!-- DYNAMIC SAVING & LOCKING MODAL -->
+  <div id="modal-saving-brand" class="app-modal-backdrop hidden">
+    <div class="app-modal saving-modal-card" style="max-width: 480px; text-align: center; padding: 2.25rem 2rem;">
+      <div class="saving-spinner-ring" style="margin: 0 auto 1.5rem auto; width: 64px; height: 64px; position: relative; display: flex; align-items: center; justify-content: center;">
+        <div class="saving-spinner-glow" style="position: absolute; inset: -4px; border-radius: 50%; background: conic-gradient(from 0deg, rgba(99, 102, 241, 0.1), #6366F1, #A855F7, #10B981, rgba(99, 102, 241, 0.1)); animation: spin 1.4s linear infinite; filter: blur(2px);"></div>
+        <div style="position: absolute; inset: 4px; background: var(--bg-surface, #0E1526); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+          <svg class="svg-icon" id="saving-modal-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6366F1;">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+      </div>
+      
+      <h3 id="saving-modal-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: #FFFFFF;">Saving &amp; Locking Brand Profile</h3>
+      <p id="saving-modal-step-text" style="color: var(--text-muted, #94A3B8); font-size: 0.88rem; margin-bottom: 1.5rem;">Validating approved color palette and brand guidelines...</p>
+      
+      <div class="upload-progress-container" style="margin-bottom: 1.25rem;">
+        <div class="upload-progress-bar" style="height: 7px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden;">
+          <div id="saving-modal-progress-fill" class="upload-progress-fill uploading" style="width: 15%; transition: width 0.3s ease;"></div>
+        </div>
+        <div class="upload-progress-meta" style="margin-top: 0.6rem; display: flex; justify-content: space-between; font-size: 0.78rem;">
+          <span id="saving-modal-status-text" class="progress-status-text" style="color: var(--text-secondary, #CBD5E1);">Initializing brand synthesis...</span>
+          <span id="saving-modal-percent" class="progress-percent-text" style="font-weight: 700; color: #6366F1;">15%</span>
+        </div>
+      </div>
+      
+      <div id="saving-modal-substatus" style="font-size: 0.78rem; color: var(--text-muted, #94A3B8); font-family: var(--font-mono, monospace);">
+        Connecting to BrandShield Governance Engine...
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="app-toast" class="app-toast hidden"></div>
 
@@ -625,6 +657,6 @@
     }
   </script>
 
-  <script src="/static/app.js?v=18.0"></script>
+  <script src="/static/app.js?v=19.0"></script>
 </body>
 </html>

@@ -1192,6 +1192,10 @@ function initReferenceScanning() {
         clearTimeout(obHideTimer);
         obHideTimer = null;
       }
+      if (typeof scanProgressInterval !== 'undefined' && scanProgressInterval) {
+        clearInterval(scanProgressInterval);
+        scanProgressInterval = null;
+      }
       fileInput.value = '';
       if (obPreviewInfo) {
         obPreviewInfo.style.transition = '';
@@ -1262,19 +1266,65 @@ function initReferenceScanning() {
       feedback.classList.remove('hidden');
     }
 
-    let obTimer1 = setTimeout(() => {
-      if (obProgressFill) obProgressFill.style.width = '55%';
-      if (obProgressStatus) obProgressStatus.textContent = 'Extracting CIELAB centroids & whitespace density...';
-      if (obProgressPercent) obProgressPercent.textContent = '55%';
-      if (obStatusTip) obStatusTip.textContent = 'Quantizing 8-dominant color clusters and negative space...';
-    }, 350);
+    let currentScanPct = 12;
+    if (obProgressFill) {
+      obProgressFill.className = 'upload-progress-fill uploading';
+      obProgressFill.style.transition = 'width 0.25s ease';
+      obProgressFill.style.width = `${currentScanPct}%`;
+    }
+    if (obProgressStatus) obProgressStatus.textContent = 'Uploading brand reference asset...';
+    if (obProgressPercent) obProgressPercent.textContent = `${currentScanPct}%`;
+    if (obStatusTip) obStatusTip.textContent = 'Transmitting brand reference asset to server...';
 
-    let obTimer2 = setTimeout(() => {
-      if (obProgressFill) obProgressFill.style.width = '85%';
-      if (obProgressStatus) obProgressStatus.textContent = 'Synthesizing voice guidelines & personality...';
-      if (obProgressPercent) obProgressPercent.textContent = '85%';
-      if (obStatusTip) obStatusTip.textContent = 'Detecting visual style and typography hierarchy...';
-    }, 850);
+    const getScanMeta = (p) => {
+      if (p < 30) return {
+        status: 'Uploading brand reference asset to server...',
+        tip: 'Transmitting reference imagery and calculating checksums...'
+      };
+      if (p < 50) return {
+        status: 'Extracting CIELAB color centroids & whitespace...',
+        tip: 'Quantizing 8-dominant color clusters and negative space...'
+      };
+      if (p < 70) return {
+        status: 'Analyzing typography hierarchy & layout density...',
+        tip: 'Detecting font legibility, weights, and spatial balance...'
+      };
+      if (p < 85) return {
+        status: 'Synthesizing voice guidelines & brand personality...',
+        tip: 'Determining communication tone, mood, and audience alignment...'
+      };
+      if (p < 95) return {
+        status: 'Assembling brand guidelines & color studio data...',
+        tip: 'Correlating extracted palette vectors with brand identity...'
+      };
+      return {
+        status: 'Finalizing brand standards synthesis...',
+        tip: 'Preparing interactive eyedropper and studio preview...'
+      };
+    };
+
+    let scanProgressInterval = setInterval(() => {
+      if (currentScanPct < 45) {
+        currentScanPct += 2.2 + Math.random() * 2.5;
+      } else if (currentScanPct < 70) {
+        currentScanPct += 1.3 + Math.random() * 1.5;
+      } else if (currentScanPct < 85) {
+        currentScanPct += 0.8 + Math.random() * 0.9;
+      } else if (currentScanPct < 93) {
+        currentScanPct += 0.35 + Math.random() * 0.4;
+      } else if (currentScanPct < 98) {
+        currentScanPct += 0.1 + Math.random() * 0.12;
+      }
+      if (currentScanPct > 98) currentScanPct = 98;
+
+      const rounded = Math.floor(currentScanPct);
+      if (obProgressFill) obProgressFill.style.width = `${rounded}%`;
+      if (obProgressPercent) obProgressPercent.textContent = `${rounded}%`;
+
+      const meta = getScanMeta(rounded);
+      if (obProgressStatus) obProgressStatus.textContent = meta.status;
+      if (obStatusTip) obStatusTip.textContent = meta.tip;
+    }, 150);
 
     const formData = new FormData();
     formData.append('file', file);
@@ -1283,8 +1333,7 @@ function initReferenceScanning() {
         method: 'POST',
         body: formData
       });
-      clearTimeout(obTimer1);
-      clearTimeout(obTimer2);
+      clearInterval(scanProgressInterval);
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       const previewUrl = data.image_url || URL.createObjectURL(file);
@@ -1293,6 +1342,7 @@ function initReferenceScanning() {
 
       if (obProgressFill) {
         obProgressFill.className = 'upload-progress-fill done';
+        obProgressFill.style.transition = 'width 0.25s cubic-bezier(0.1, 0.9, 0.2, 1)';
         obProgressFill.style.width = '100%';
       }
       if (obProgressStatus) obProgressStatus.textContent = '✓ DNA Centroids Extracted & Loaded to Studio';
@@ -1390,6 +1440,7 @@ function initReferenceScanning() {
         feedback.innerHTML = `✨ <strong>Reference Analyzed!</strong> Extracted ${(data.extracted_palette || []).length} colors, typography (${data.suggested_typography || 'Modern Sans'}), whitespace (${data.whitespace_ratio}) and aesthetic mood.`;
       }
     } catch (err) {
+      if (typeof scanProgressInterval !== 'undefined' && scanProgressInterval) clearInterval(scanProgressInterval);
       if (feedback) {
         feedback.className = 'ob-scan-feedback error';
         feedback.textContent = `Scan notice: ${err.message}. You can still pick custom colors below.`;
@@ -1552,22 +1603,132 @@ function clearBrandLogo() {
 }
 window.clearBrandLogo = clearBrandLogo;
 
+
+function showSavingBrandModal(brandName, isUpdating) {
+  const modal = document.getElementById('modal-saving-brand');
+  if (!modal) return null;
+  const title = document.getElementById('saving-modal-title');
+  const stepText = document.getElementById('saving-modal-step-text');
+  const statusText = document.getElementById('saving-modal-status-text');
+  const percentText = document.getElementById('saving-modal-percent');
+  const progressFill = document.getElementById('saving-modal-progress-fill');
+  const substatus = document.getElementById('saving-modal-substatus');
+  const icon = document.getElementById('saving-modal-icon');
+
+  if (title) title.textContent = isUpdating ? `Updating '${brandName}'` : `Saving & Locking '${brandName}'`;
+  if (stepText) stepText.textContent = 'Validating approved color palette and brand guidelines...';
+  if (statusText) statusText.textContent = 'Initializing brand standards synthesis...';
+  if (percentText) percentText.textContent = '15%';
+  if (substatus) substatus.textContent = 'Connecting to BrandShield Governance Engine...';
+  if (progressFill) {
+    progressFill.className = 'upload-progress-fill uploading';
+    progressFill.style.transition = 'width 0.25s ease';
+    progressFill.style.width = '15%';
+  }
+  if (icon) {
+    icon.innerHTML = '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>';
+    icon.style.color = '#6366F1';
+  }
+
+  modal.classList.remove('hidden');
+
+  let currentSavePct = 15;
+  const getSaveMeta = (p) => {
+    if (p < 35) return {
+      step: 'Validating approved color palette & reference guidelines...',
+      status: 'Extracting CIELAB gamut centroids & compliance constraints...',
+      sub: 'Verifying color harmony & WCAG contrast thresholds...'
+    };
+    if (p < 65) return {
+      step: 'Synthesizing voice guidelines & personality vectors with AI...',
+      status: 'Generating semantic brand identity tensors...',
+      sub: 'Correlating tone, audience, and aesthetic mood...'
+    };
+    if (p < 85) return {
+      step: 'Locking brand guidelines & compliance rules...',
+      status: 'Encoding policy lexicon, forbidden claims & avoidances...',
+      sub: 'Building biometric DNA vector for asset audits...'
+    };
+    return {
+      step: 'Registering verified brand identity in company storage...',
+      status: 'Writing immutable brand standard profile...',
+      sub: 'Finalizing governance record & certification...'
+    };
+  };
+
+  const timer = setInterval(() => {
+    if (currentSavePct < 45) {
+      currentSavePct += 2.0 + Math.random() * 2.5;
+    } else if (currentSavePct < 75) {
+      currentSavePct += 1.2 + Math.random() * 1.5;
+    } else if (currentSavePct < 90) {
+      currentSavePct += 0.6 + Math.random() * 0.8;
+    } else if (currentSavePct < 97) {
+      currentSavePct += 0.15 + Math.random() * 0.2;
+    }
+    if (currentSavePct > 97) currentSavePct = 97;
+
+    const rounded = Math.floor(currentSavePct);
+    if (progressFill) progressFill.style.width = `${rounded}%`;
+    if (percentText) percentText.textContent = `${rounded}%`;
+
+    const meta = getSaveMeta(rounded);
+    if (stepText) stepText.textContent = meta.step;
+    if (statusText) statusText.textContent = meta.status;
+    if (substatus) substatus.textContent = meta.sub;
+  }, 160);
+
+  return {
+    finish: (successName) => {
+      clearInterval(timer);
+      if (progressFill) {
+        progressFill.className = 'upload-progress-fill done';
+        progressFill.style.transition = 'width 0.25s cubic-bezier(0.1, 0.9, 0.2, 1)';
+        progressFill.style.width = '100%';
+      }
+      if (percentText) percentText.textContent = '100%';
+      if (stepText) stepText.textContent = `✓ Brand profile for '${successName}' certified & locked!`;
+      if (statusText) statusText.textContent = 'Status: CONFIRMED • Standards active';
+      if (substatus) substatus.textContent = 'Ready for creative developer inspections & audits';
+      if (icon) {
+        icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+        icon.style.color = '#10B981';
+      }
+      return new Promise(resolve => setTimeout(() => {
+        modal.classList.add('hidden');
+        resolve();
+      }, 700));
+    },
+    fail: (errMsg) => {
+      clearInterval(timer);
+      if (stepText) stepText.textContent = `Save notice: ${errMsg}`;
+      if (statusText) statusText.textContent = 'Operation halted';
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 1500);
+    }
+  };
+}
+
 function initOnboarding() {
   const form = document.getElementById('onboarding-form');
   const btn = document.getElementById('btn-create-draft');
   if (!form || !btn) return;
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    btn.disabled = true;
-    btn.innerHTML = '<span>Saving & Locking Company Vibes...</span>';
     const editingId = document.getElementById('ob-editing-brand-id')?.value;
+    const brandName = document.getElementById('ob-brand-name')?.value?.trim() || 'Brand Profile';
     const paletteHexArray = currentPalette.map(c => c.hex);
     if (paletteHexArray.length === 0) {
       toast('Please add at least one approved brand color in the Palette Manager.', 'warning');
-      btn.disabled = false;
-      btn.innerHTML = editingId ? '<span>Update Brand Profile</span>' : '<span>Save Brand Profile</span>';
       return;
     }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span>Saving & Locking Company Vibes...</span>';
+
+    // Show progressive saving modal with live feedback
+    const saveController = showSavingBrandModal(brandName, !!editingId);
     try {
       if (editingId) {
         const managerEmail = document.getElementById('ob-manager-email')?.value || 'brand@company.com';
@@ -1592,14 +1753,21 @@ function initOnboarding() {
         });
         if (!confRes.ok) throw new Error(await confRes.text());
         const confirmed = await confRes.json();
+        if (saveController) await saveController.finish(confirmed.brand_name || brandName);
         await loadBrands();
         toast(`Brand profile for '${confirmed.brand_name}' updated successfully.`, 'success');
         resetOnboardingForm();
-        switchDashboardTab('tab-inspect');
-        const brandSelect = document.getElementById('inspect-brand-select');
-        if (brandSelect) {
-          brandSelect.value = confirmed.brand_id;
-          brandSelect.dispatchEvent(new Event('change'));
+        if (document.getElementById('tab-inspect')) {
+          switchDashboardTab('tab-inspect');
+          const brandSelect = document.getElementById('inspect-brand-select');
+          if (brandSelect) {
+            brandSelect.value = confirmed.brand_id;
+            brandSelect.dispatchEvent(new Event('change'));
+          }
+        } else {
+          setTimeout(() => {
+            window.location.href = '/account';
+          }, 400);
         }
         return;
       }
@@ -1649,16 +1817,24 @@ function initOnboarding() {
       });
       if (!confRes.ok) throw new Error(await confRes.text());
       const confirmed = await confRes.json();
+      if (saveController) await saveController.finish(confirmed.brand_name || brandName);
       await loadBrands();
       toast(`Brand profile for '${confirmed.brand_name}' created successfully.`, 'success');
       resetOnboardingForm();
-      switchDashboardTab('tab-inspect');
-      const brandSelect = document.getElementById('inspect-brand-select');
-      if (brandSelect) {
-        brandSelect.value = confirmed.brand_id;
-        brandSelect.dispatchEvent(new Event('change'));
+      if (document.getElementById('tab-inspect')) {
+        switchDashboardTab('tab-inspect');
+        const brandSelect = document.getElementById('inspect-brand-select');
+        if (brandSelect) {
+          brandSelect.value = confirmed.brand_id;
+          brandSelect.dispatchEvent(new Event('change'));
+        }
+      } else {
+        setTimeout(() => {
+          window.location.href = '/account';
+        }, 400);
       }
     } catch (err) {
+      if (saveController) saveController.fail(err.message);
       toast(`Error saving brand profile: ${err.message}`, 'error');
     } finally {
       btn.disabled = false;
