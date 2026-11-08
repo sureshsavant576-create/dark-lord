@@ -4868,7 +4868,9 @@ body.landing-view-active #btn-topbar-sidebar-toggle {
 /* NewsCatcher Staged Grid Layout */
 .staged-loading-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: 1fr;
+  max-width: 760px;
+  margin: 0 auto;
   gap: 1.5rem;
   align-items: stretch;
 }
