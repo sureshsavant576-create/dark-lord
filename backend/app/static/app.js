@@ -139,17 +139,25 @@ async function copyToClipboard(text, successMsg = 'Copied to clipboard!') {
   }
 }
 document.addEventListener('DOMContentLoaded', () => {
-  initTabs();
-  initDropZone();
-  initOnboarding();
-  initReferenceScanning();
-  initPaletteManagerControls();
-  initColorStudio();
-  initInspection();
-  initSidebarState();
-  loadProvidersStatus();
-  loadBrands();
-  loadRecentReport();
+  const safeRun = (fn, name) => {
+    try {
+      if (typeof fn === 'function') fn();
+    } catch (err) {
+      console.debug(`Module ${name} init:`, err);
+    }
+  };
+  safeRun(initTabs, 'tabs');
+  safeRun(initDropZone, 'dropZone');
+  safeRun(initOnboarding, 'onboarding');
+  safeRun(initReferenceScanning, 'referenceScanning');
+  safeRun(initPaletteManagerControls, 'paletteControls');
+  safeRun(initColorStudio, 'colorStudio');
+  safeRun(initInspection, 'inspection');
+  safeRun(initLogoUpload, 'logoUpload');
+  safeRun(initSidebarState, 'sidebarState');
+  safeRun(loadProvidersStatus, 'providersStatus');
+  safeRun(loadBrands, 'brands');
+  safeRun(loadRecentReport, 'recentReport');
 });
 function switchMainView(view) {
   if (view === 'landing') {
@@ -293,10 +301,27 @@ function initDropZone() {
       dropZone.classList.remove('dragover');
     });
   });
+  dropZone.addEventListener('click', (e) => {
+    if (e.target !== fileInput) {
+      fileInput.click();
+    }
+  });
   dropZone.addEventListener('drop', (e) => {
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      fileInput.files = e.dataTransfer.files;
-      updateFilePreview(fileInput.files[0]);
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const files = e.dataTransfer ? e.dataTransfer.files : null;
+    if (files && files.length > 0) {
+      try {
+        fileInput.files = files;
+      } catch (err) {
+        try {
+          const dt = new DataTransfer();
+          for (let i = 0; i < files.length; i++) dt.items.add(files[i]);
+          fileInput.files = dt.files;
+        } catch (e2) {}
+      }
+      setInputMode('file');
+      updateFilePreview(files[0]);
     }
   });
   fileInput.addEventListener('change', () => {
@@ -2489,14 +2514,7 @@ window.editCurrentAccountBrand = editCurrentAccountBrand;
 
 function inspectCurrentAccountBrand() {
   if (!currentAccountBrandId) return;
-  const b = brandsMap[currentAccountBrandId];
-  const select = document.getElementById('inspect-brand-select');
-  if (select) {
-    select.value = currentAccountBrandId;
-    select.dispatchEvent(new Event('change'));
-  }
-  switchDashboardTab('tab-inspect');
-  toast(`Selected '${b ? b.brand_name : currentAccountBrandId}' for verification in Check Vibe.`);
+  window.location.href = `/check-vibe?brand=${encodeURIComponent(currentAccountBrandId)}`;
 }
 window.inspectCurrentAccountBrand = inspectCurrentAccountBrand;
 

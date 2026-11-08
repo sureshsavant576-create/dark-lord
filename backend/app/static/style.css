@@ -1192,6 +1192,7 @@ body.landing-view-active #btn-topbar-sidebar-toggle {
   height: 100%;
   opacity: 0;
   cursor: pointer;
+  z-index: 10;
 }
 
 .drop-zone-content {
