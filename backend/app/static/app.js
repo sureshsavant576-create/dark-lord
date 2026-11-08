@@ -50,7 +50,14 @@ function filterFindings(filterSeverity) {
 }
 window.filterFindings = filterFindings;
 
-const API_BASE = '/api/v1';
+const API_BASE = (() => {
+  if (typeof window !== 'undefined' && window.location) {
+    if (window.location.protocol === 'file:' || !window.location.host) {
+      return 'http://127.0.0.1:8000/api/v1';
+    }
+  }
+  return '/api/v1';
+})();
 let brandsMap = {};
 let activeInputMode = 'text';
 let currentPalette = [];
@@ -546,6 +553,17 @@ async function triggerDeveloperColorPreFilter(file) {
     }
   } catch (err) {
     console.warn('Pre-filter notice:', err);
+    if (scoreBadge) {
+      scoreBadge.className = 'prefilter-score-badge status-warn';
+      scoreBadge.textContent = 'Ready for Inspection';
+    }
+    if (uploadBadge && uploadBadgeText) {
+      uploadBadge.className = 'upload-badge badge-staged';
+      uploadBadgeText.textContent = '✓ Ready for Inspection';
+    }
+    if (statusTip) {
+      statusTip.textContent = 'Asset loaded. Click "Run Brand Inspection" below to audit compliance.';
+    }
   }
 }
 async function loadProvidersStatus() {
@@ -2012,7 +2030,7 @@ function initInspection() {
     }, 2300);
 
     try {
-      const res = await fetch(`${API_BASE}/inspect/${brandId}`, {
+      const res = await fetch(`${API_BASE}/inspect/${encodeURIComponent(brandId)}`, {
         method: 'POST',
         body: formData
       });
@@ -2062,13 +2080,18 @@ function initInspection() {
 
       switchInspectStage('input');
 
+      const isNetworkErr = err.message && (err.message.includes('NetworkError') || err.message.includes('Failed to fetch'));
+      const friendlyMsg = isNetworkErr
+        ? 'Could not connect to the inspection server. Please ensure the server is running on http://127.0.0.1:8000.'
+        : `Inspection Error: ${err.message}`;
+
       if (inlineStatus) {
         inlineStatus.className = 'inspect-inline-status status-error';
-        if (inlineText) inlineText.textContent = `Inspection Error: ${err.message}`;
+        if (inlineText) inlineText.textContent = friendlyMsg;
         inlineStatus.classList.remove('hidden');
       }
 
-      toast(`Inspection Error: ${err.message}`, 'error');
+      toast(friendlyMsg, 'error');
     } finally {
       clearTimeout(stepTimer1);
       clearTimeout(stepTimer2);
@@ -2518,63 +2541,25 @@ window.confirmDeleteEditingBrand = confirmDeleteEditingBrand;
 
 function toggleSidebar() {
   const layout = document.getElementById('dashboard-layout');
-  const floatBtn = document.getElementById('floating-sidebar-trigger');
   if (!layout) return;
-
-  const isHidden = layout.classList.toggle('sidebar-hidden');
-  if (floatBtn) {
-    if (isHidden) {
-      floatBtn.classList.remove('hidden');
-    } else {
-      floatBtn.classList.add('hidden');
-    }
-  }
-
-  try {
-    localStorage.setItem('sanket_sidebar_hidden', isHidden ? 'true' : 'false');
-  } catch (e) {}
-
-  toast(isHidden ? 'Side content hidden — Distraction-free workspace' : 'Side content expanded');
+  layout.classList.toggle('sidebar-hidden');
 }
 window.toggleSidebar = toggleSidebar;
 
 function toggleActivityPanel() {
   const layout = document.getElementById('dashboard-layout');
-  const floatBtn = document.getElementById('floating-activity-trigger');
   if (!layout) return;
-
-  const isHidden = layout.classList.toggle('activity-hidden');
-  if (floatBtn) {
-    if (isHidden) {
-      floatBtn.classList.remove('hidden');
-    } else {
-      floatBtn.classList.add('hidden');
-    }
-  }
-
-  try {
-    localStorage.setItem('sanket_activity_hidden', isHidden ? 'true' : 'false');
-  } catch (e) {}
-
-  toast(isHidden ? 'Tracked reports hidden — Expanded workspace' : 'Tracked reports expanded');
+  layout.classList.toggle('activity-hidden');
 }
 window.toggleActivityPanel = toggleActivityPanel;
 
 function initSidebarState() {
   try {
-    const savedSidebar = localStorage.getItem('sanket_sidebar_hidden');
-    if (savedSidebar === 'true') {
-      const layout = document.getElementById('dashboard-layout');
-      const floatBtn = document.getElementById('floating-sidebar-trigger');
-      if (layout) layout.classList.add('sidebar-hidden');
-      if (floatBtn) floatBtn.classList.remove('hidden');
-    }
-    const savedActivity = localStorage.getItem('sanket_activity_hidden');
-    if (savedActivity === 'true') {
-      const layout = document.getElementById('dashboard-layout');
-      const floatActBtn = document.getElementById('floating-activity-trigger');
-      if (layout) layout.classList.add('activity-hidden');
-      if (floatActBtn) floatActBtn.classList.remove('hidden');
+    localStorage.removeItem('sanket_sidebar_hidden');
+    localStorage.removeItem('sanket_activity_hidden');
+    const layout = document.getElementById('dashboard-layout');
+    if (layout) {
+      layout.classList.remove('sidebar-hidden');
     }
   } catch (e) {}
 }

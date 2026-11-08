@@ -3855,8 +3855,16 @@ body.landing-view-active #btn-topbar-sidebar-toggle {
   border-color: var(--primary-border);
 }
 
-/* Floating 3-Dots Trigger where side content hides */
-.floating-sidebar-trigger {
+/* Floating triggers disabled */
+.floating-sidebar-trigger,
+.floating-activity-trigger {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
+.floating-sidebar-trigger-disabled {
   position: fixed;
   left: 0;
   top: 96px;

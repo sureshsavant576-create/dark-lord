@@ -25,12 +25,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "microphone=(), payment=(), usb=()"
         )
         response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline'; "
+            "default-src 'self' 'unsafe-inline' data: blob:; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com data:; "
-            "img-src 'self' data: blob: /storage/; "
-            "connect-src 'self'; "
+            "img-src 'self' data: blob: /storage/ http: https:; "
+            "connect-src 'self' http: https: ws: wss:; "
             "frame-ancestors 'none';"
         )
         return response
@@ -50,7 +50,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
