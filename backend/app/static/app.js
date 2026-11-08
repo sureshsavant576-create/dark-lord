@@ -315,6 +315,7 @@ function initDropZone() {
 
   function updateFilePreview(file) {
     if (!previewName || !previewSize || !previewInfo) return;
+    setInputMode('file');
     previewName.textContent = file.name;
     const mb = (file.size / (1024 * 1024)).toFixed(2);
     previewSize.textContent = `(${mb} MB)`;
@@ -610,6 +611,16 @@ async function loadBrands() {
         }
         preview.classList.remove('hidden');
       };
+      if (brands.length > 0) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlBrand = urlParams.get('brand');
+        if (urlBrand && brandsMap[urlBrand]) {
+          select.value = urlBrand;
+        } else if (!select.value) {
+          select.value = brands[0].brand_id;
+        }
+        select.onchange();
+      }
     }
   } catch (err) {
     console.error('Failed to load brands:', err);
@@ -1553,21 +1564,33 @@ function initInspection() {
     const formData = new FormData();
     let submissionTitle = '';
 
+    const textVal = copyTextarea ? copyTextarea.value.trim() : '';
+    const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+
     if (activeInputMode === 'text') {
-      const textVal = copyTextarea ? copyTextarea.value.trim() : '';
-      if (!textVal) {
-        toast('Please enter advertising copy or text to inspect.', 'warning');
+      if (textVal) {
+        formData.append('copy_text', textVal);
+        submissionTitle = textVal.length > 36 ? textVal.substring(0, 36) + '...' : textVal;
+      } else if (hasFile) {
+        setInputMode('file');
+        formData.append('file', fileInput.files[0]);
+        submissionTitle = fileInput.files[0].name;
+      } else {
+        toast('Please enter advertising copy or choose an asset to inspect.', 'warning');
         return;
       }
-      formData.append('copy_text', textVal);
-      submissionTitle = textVal.length > 36 ? textVal.substring(0, 36) + '...' : textVal;
     } else {
-      if (!fileInput.files || fileInput.files.length === 0) {
+      if (hasFile) {
+        formData.append('file', fileInput.files[0]);
+        submissionTitle = fileInput.files[0].name;
+      } else if (textVal) {
+        setInputMode('text');
+        formData.append('copy_text', textVal);
+        submissionTitle = textVal.length > 36 ? textVal.substring(0, 36) + '...' : textVal;
+      } else {
         toast('Please select or drop a poster or graphic asset to inspect.', 'warning');
         return;
       }
-      formData.append('file', fileInput.files[0]);
-      submissionTitle = fileInput.files[0].name;
     }
 
     // Populate NewsCatcher Loading Telemetry & Config Sidecar
@@ -2535,7 +2558,5 @@ function viewSelectedBrandInAccount() {
   } else {
     window.location.href = '/account';
   }
-}
-  switchDashboardTab('tab-account');
 }
 window.viewSelectedBrandInAccount = viewSelectedBrandInAccount;
