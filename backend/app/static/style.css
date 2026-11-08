@@ -5422,3 +5422,12 @@ body.landing-view-active #btn-topbar-sidebar-toggle {
   padding: 2px;
   vertical-align: middle;
 }
+
+/* Clean multi-page links */
+a.sidebar-nav-item,
+a.mobile-nav-link,
+a.footer-link,
+a.btn-hero-primary,
+a.btn-hero-secondary {
+  text-decoration: none;
+}

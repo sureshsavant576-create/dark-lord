@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Account — Registered Brand Profiles & Active Standards | Sanket AI</title>
+  <link rel="icon" type="image/png" href="/static/emblem.png">
+  <link rel="stylesheet" href="/static/style.css?v=12.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="workspace-view-active">
+
+  <!-- Top Navigation Bar -->
+  <header class="app-topbar">
+    <div class="topbar-container">
+      <div class="topbar-left-group">
+        <button type="button" class="btn-topbar-sidebar-toggle" id="btn-topbar-sidebar-toggle" onclick="toggleSidebar()" title="Toggle side content" aria-label="Toggle side content">
+          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="5" cy="12" r="2.2"/>
+            <circle cx="12" cy="12" r="2.2"/>
+            <circle cx="19" cy="12" r="2.2"/>
+          </svg>
+        </button>
+        <a href="/" class="brand-brandmark" title="Sanket AI Home">
+          <div class="brand-icon-shield">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <span class="brand-brandmark-text"><strong>Sanket</strong> <span class="brand-name-sub">AI</span></span>
+        </a>
+      </div>
+
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-sm btn-ghost" onclick="toggleRoleModal()" data-tooltip="Switch Enterprise Persona">
+          <svg class="svg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="active-role-display">Brand Lead</span>
+        </button>
+
+        <button type="button" class="btn btn-sm btn-ghost" onclick="toggleSettingsModal()" data-tooltip="Governance & API Settings">
+          <svg class="svg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0 2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+
+        <button type="button" class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle navigation drawer">
+          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <!-- Mobile Navigation Drawer -->
+  <div id="mobile-nav-drawer" class="mobile-nav-drawer hidden">
+    <a href="/" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <span>Overview</span>
+    </a>
+    <a href="/check-vibe" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Check Vibe</span>
+    </a>
+    <a href="/company-portal" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/></svg>
+      <span>Company Portal</span>
+    </a>
+    <a href="/account" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Company Account</span>
+    </a>
+    <div class="mobile-nav-link" onclick="toggleRoleModal(); toggleMobileNav();">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Switch Persona Role</span>
+    </div>
+  </div>
+
+  <section id="view-dashboard" class="dashboard-view">
+    <!-- Floating 3-Dots Button positioned where the left side content hides -->
+    <button type="button" class="floating-sidebar-trigger hidden" id="floating-sidebar-trigger" onclick="toggleSidebar()" title="Show side content (Expand sidebar)" aria-label="Expand sidebar">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="2.2"/>
+        <circle cx="12" cy="12" r="2.2"/>
+        <circle cx="19" cy="12" r="2.2"/>
+      </svg>
+      <span class="floating-trigger-tip">Sidebar</span>
+    </button>
+    <!-- Floating 3-Dots Button positioned where the right side content hides -->
+    <button type="button" class="floating-activity-trigger hidden" id="floating-activity-trigger" onclick="toggleActivityPanel()" title="Show Tracked Inspections" aria-label="Show Tracked Inspections">
+      <span class="floating-trigger-tip">Reports</span>
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="2.2"/>
+        <circle cx="12" cy="12" r="2.2"/>
+        <circle cx="19" cy="12" r="2.2"/>
+      </svg>
+    </button>
+
+    <div class="dashboard-layout" id="dashboard-layout">
+      <!-- Dashboard Sidebar -->
+      <aside class="dashboard-sidebar" id="dashboard-sidebar">
+        <div class="sidebar-header-row">
+          <span class="sidebar-header-label">Workspace Nav</span>
+          <button type="button" class="btn-sidebar-collapse" id="btn-sidebar-collapse" onclick="toggleSidebar()" title="Hide side content" aria-label="Hide side content">
+            <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2.2"/>
+              <circle cx="12" cy="12" r="2.2"/>
+              <circle cx="19" cy="12" r="2.2"/>
+            </svg>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Sidebar Navigation">
+          <a href="/check-vibe" class="sidebar-nav-item " id="side-tab-inspect">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Check Vibe</span>
+          </a>
+          <a href="/company-portal" class="sidebar-nav-item " id="side-tab-onboard">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/></svg>
+            <span>Company Portal</span>
+          </a>
+          <a href="/account" class="sidebar-nav-item active" id="side-tab-account">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Company Account</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-user-card" onclick="toggleRoleModal()" role="button" tabindex="0" title="Click to switch role or view credentials">
+            <div class="user-avatar-initials" id="sidebar-user-avatar">BL</div>
+            <div class="user-meta">
+              <span class="user-name" id="sidebar-user-name">Brand Operations</span>
+              <span class="user-role" id="sidebar-user-role">Compliance Reviewer</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="dashboard-main-area">
+<div id="tab-account" class="dashboard-tab-pane active">
+          <div class="account-page-container">
+
+            <!-- Account Top Bar / Company Switcher -->
+            <div class="account-top-bar">
+              <div class="account-top-left">
+                <div class="account-title-badge">
+                  <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <span>Verified Organization Account</span>
+                </div>
+                <h2 class="account-page-title">Company Account &amp; Brand Standards</h2>
+                <p class="account-page-subtitle">Master record of approved brand guidelines, perceptual color systems, voice guidelines, and safety policies configured in the Company Portal.</p>
+              </div>
+
+              <div class="account-top-right">
+                <div class="account-select-group">
+                  <label for="acc-brand-select">Active Organization:</label>
+                  <select id="acc-brand-select" class="acc-brand-select" onchange="onAccountBrandSelectChange(this.value)">
+                    <!-- Populated dynamically by app.js -->
+                  </select>
+                </div>
+                <button type="button" class="btn btn-sm btn-primary" onclick="switchDashboardTab('tab-onboard'); resetOnboardingForm();">
+                  <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span>New Brand</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Empty State (When no brand registered) -->
+            <div id="account-empty-state" class="card account-empty-card hidden">
+              <div class="empty-icon-circle">
+                <svg class="svg-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/></svg>
+              </div>
+              <h3>No Company Details Registered Yet</h3>
+              <p>You haven't registered any company standards in the Company Portal. Create your organization's brand profile to unlock automated compliance verification.</p>
+              <button type="button" class="btn btn-primary" onclick="switchDashboardTab('tab-onboard')">
+                <span>Go to Company Portal &amp; Register</span>
+              </button>
+            </div>
+
+            <!-- Main Account Content (Rendered when a brand exists) -->
+            <div id="account-main-content" class="account-main-content">
+
+              <!-- Hero Overview Card -->
+              <div class="card account-hero-card">
+                <div class="acc-hero-top">
+                  <div class="acc-brand-identity">
+                    <div class="acc-avatar-circle" id="acc-avatar-box">AC</div>
+                    <div class="acc-identity-meta">
+                      <div class="acc-name-row">
+                        <h1 id="acc-hero-name" class="acc-hero-name">Acme Corporation</h1>
+                        <span id="acc-hero-status" class="tag-badge tag-PASS">CONFIRMED</span>
+                        <span id="acc-hero-id" class="id-badge">ID: acme-corp</span>
+                      </div>
+                      <p id="acc-hero-tagline" class="acc-hero-tagline">"Engineering clarity through intelligent design"</p>
+                    </div>
+                  </div>
+
+                  <div class="acc-hero-actions">
+                    <button type="button" class="btn btn-sm btn-primary" id="acc-btn-edit" onclick="editCurrentAccountBrand()">
+                      <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                      <span>Edit in Company Portal</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="acc-btn-inspect" onclick="inspectCurrentAccountBrand()">
+                      <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                      <span>Run Inspection</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-ghost" id="acc-btn-export" onclick="exportCurrentAccountBrand()">
+                      <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      <span>Export Spec</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger-outline" id="acc-btn-delete" onclick="deleteCurrentAccountBrand()">
+                      <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Meta Pills Strip -->
+                <div class="acc-meta-strip">
+                  <div class="acc-meta-item">
+                    <span class="acc-meta-label">Brand Lead Email</span>
+                    <strong class="acc-meta-val" id="acc-meta-email">lead@company.com</strong>
+                  </div>
+                  <div class="acc-meta-item">
+                    <span class="acc-meta-label">Organization Owner</span>
+                    <strong class="acc-meta-val" id="acc-meta-owner">default-org</strong>
+                  </div>
+                  <div class="acc-meta-item">
+                    <span class="acc-meta-label">Registered Standards</span>
+                    <strong class="acc-meta-val" id="acc-meta-created">Recently</strong>
+                  </div>
+                  <div class="acc-meta-item">
+                    <span class="acc-meta-label">Color Science</span>
+                    <strong class="acc-meta-val text-accent">CIELAB &Delta;E &lt; 15.0</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Two-Column Grid for All Company Portal Details -->
+              <div class="acc-grid">
+
+                <!-- Left Column -->
+                <div class="acc-col">
+
+                  <!-- 1. Approved Brand Color Palette -->
+                  <div class="card acc-section-card">
+                    <div class="card-header">
+                      <div class="acc-section-title-wrap">
+                        <div class="acc-section-icon icon-palette">
+                          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                        </div>
+                        <div>
+                          <h3 class="card-title">Approved Brand Color Palette</h3>
+                          <p class="card-subtitle">Official mathematical centroids extracted &amp; approved in Company Portal</p>
+                        </div>
+                      </div>
+                      <span class="id-badge" id="acc-palette-count">0 Colors</span>
+                    </div>
+
+                    <div id="acc-palette-cards-grid" class="acc-palette-cards-grid">
+                      <!-- Rendered by app.js -->
+                    </div>
+
+                    <div class="acc-palette-footer-actions">
+                      <button type="button" class="btn-text-sm" onclick="copyAllAccountColors()">
+                        <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copy All HEX Codes</span>
+                      </button>
+                      <button type="button" class="btn-text-sm" onclick="exportAccountCssVars()">
+                        <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        <span>Export as CSS Variables</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 2. Visual Guidelines & Typography Standards -->
+                  <div class="card acc-section-card">
+                    <div class="card-header">
+                      <div class="acc-section-title-wrap">
+                        <div class="acc-section-icon icon-design">
+                          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                        </div>
+                        <div>
+                          <h3 class="card-title">Visual Aesthetic &amp; Typography</h3>
+                          <p class="card-subtitle">Design system rules, spatial composition, and font hierarchy</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="acc-detail-block">
+                      <label class="acc-field-label">Visual Aesthetic Guidelines:</label>
+                      <div class="acc-text-box" id="acc-visual-style-box">
+                        <p id="acc-visual-style-text">Minimalist, modern, balanced whitespace ratio.</p>
+                      </div>
+                    </div>
+
+                    <div class="acc-detail-block">
+                      <label class="acc-field-label">Typography &amp; Hierarchy Guidelines:</label>
+                      <div class="acc-text-box" id="acc-typography-box">
+                        <p id="acc-typography-text">Modern Sans-Serif, high readability, disciplined scale.</p>
+                      </div>
+                    </div>
+
+                    <div class="acc-detail-block" id="acc-key-values-wrap">
+                      <label class="acc-field-label">Core Brand Values &amp; Pillars:</label>
+                      <div id="acc-key-values-chips" class="tag-chips-wrap"></div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Right Column -->
+                <div class="acc-col">
+
+                  <!-- 3. Voice, Mood & Persona Identity -->
+                  <div class="card acc-section-card">
+                    <div class="card-header">
+                      <div class="acc-section-title-wrap">
+                        <div class="acc-section-icon icon-voice">
+                          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                        <div>
+                          <h3 class="card-title">Brand Voice, Mood &amp; Persona</h3>
+                          <p class="card-subtitle">Tone of voice and target emotional resonance defined in portal</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="acc-detail-block">
+                      <label class="acc-field-label">Personality Attributes:</label>
+                      <div id="acc-personality-chips" class="tag-chips-wrap">
+                        <!-- Chips -->
+                      </div>
+                    </div>
+
+                    <div class="acc-detail-block">
+                      <label class="acc-field-label">Target Emotional Mood:</label>
+                      <div id="acc-mood-chips" class="tag-chips-wrap">
+                        <!-- Chips -->
+                      </div>
+                    </div>
+
+                    <div class="acc-detail-block">
+                      <label class="acc-field-label">Communication Tone:</label>
+                      <div id="acc-tone-chips" class="tag-chips-wrap">
+                        <!-- Chips -->
+                      </div>
+                    </div>
+
+                    <div class="acc-detail-block">
+                      <label class="acc-field-label">Target Audience:</label>
+                      <div class="acc-text-box">
+                        <p id="acc-audience-text">Enterprise clients &amp; creative teams</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 4. Prohibited Lexical Safeguards -->
+                  <div class="card acc-section-card">
+                    <div class="card-header">
+                      <div class="acc-section-title-wrap">
+                        <div class="acc-section-icon icon-shield">
+                          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div>
+                          <h3 class="card-title">Prohibited Terms &amp; Blacklist Safeguards</h3>
+                          <p class="card-subtitle">Strict avoidances flagged deterministically during inspection</p>
+                        </div>
+                      </div>
+                      <span class="id-badge badge-warning" id="acc-avoid-count">0 Terms</span>
+                    </div>
+
+                    <p class="acc-guard-notice">Any marketing copy containing these exact terms is immediately flagged as a high-severity violation before cloud AI reasoning.</p>
+
+                    <div id="acc-avoid-chips" class="avoid-chips-grid">
+                      <!-- Rendered by app.js -->
+                    </div>
+                  </div>
+
+                  <!-- 5. Registered Reference Assets -->
+                  <div class="card acc-section-card">
+                    <div class="card-header">
+                      <div class="acc-section-title-wrap">
+                        <div class="acc-section-icon icon-asset">
+                          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        </div>
+                        <div>
+                          <h3 class="card-title">Reference Visual Assets</h3>
+                          <p class="card-subtitle">Approved source creatives and brand kit reference files</p>
+                        </div>
+                      </div>
+                      <span class="id-badge" id="acc-assets-count">0 Assets</span>
+                    </div>
+
+                    <div id="acc-reference-assets-list" class="acc-assets-list">
+                      <!-- Rendered by app.js -->
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </main>
+
+<!-- Dashboard Activity Panel (Right Sidebar) -->
+      <aside class="dashboard-activity-panel" id="dashboard-activity-panel">
+        <div class="activity-header">
+          <div class="activity-title-group">
+            <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <h4>Tracked Inspections</h4>
+          </div>
+          <div class="activity-header-right">
+            <span class="activity-count" id="activity-reports-badge">0 reports</span>
+            <button type="button" class="btn-clear-history hidden" id="btn-clear-all-history" onclick="confirmClearHistory()" title="Permanently delete all inspection history">
+              <svg class="svg-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span>Purge History</span>
+            </button>
+            <button type="button" class="btn-sidebar-collapse" id="btn-activity-collapse" onclick="toggleActivityPanel()" title="Hide side content" aria-label="Hide side content">
+              <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="5" cy="12" r="2.2"/>
+                <circle cx="12" cy="12" r="2.2"/>
+                <circle cx="19" cy="12" r="2.2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="activity-subtitle">Recent creative submissions verified against active standards:</p>
+
+        <div id="recent-inspections-list" class="recent-inspections-list">
+          <div class="empty-note">No recent audits. Submit creative work on the left to inspect.</div>
+        </div>
+      </aside>
+
+    </div>
+    </div>
+  </section>
+
+<!-- ENTERPRISE ROLE SWITCHER MODAL -->
+  <div id="modal-role-switcher" class="app-modal-backdrop hidden" onclick="if(event.target===this) toggleRoleModal()">
+    <div class="app-modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Enterprise Role &amp; Identity</h3>
+          <p>Switch your active persona to test governance and submission permissions</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="toggleRoleModal()" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="role-selector-grid">
+          <div class="role-card-option active" id="role-option-lead" onclick="selectRole('Brand Lead', 'Brand Operations', 'BL', 'Full Governance')">
+            <div class="role-icon-box">
+              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <div class="role-meta">
+              <div class="role-meta-top">
+                <span class="role-name">Brand Operations Lead</span>
+                <span class="role-badge">RBAC: ADMIN</span>
+              </div>
+              <p class="role-desc">Can register brand standards, edit guidelines, approve palettes, and certify releases.</p>
+            </div>
+          </div>
+
+          <div class="role-card-option" id="role-option-dev" onclick="selectRole('Creative Developer', 'Developer Suite', 'CD', 'Submit & Inspect')">
+            <div class="role-icon-box">
+              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <div class="role-meta">
+              <div class="role-meta-top">
+                <span class="role-name">Creative Developer</span>
+                <span class="role-badge">RBAC: SUBMITTER</span>
+              </div>
+              <p class="role-desc">Submits marketing copy and visual posters against active company guidelines.</p>
+            </div>
+          </div>
+
+          <div class="role-card-option" id="role-option-auditor" onclick="selectRole('Security Auditor', 'Compliance Dept', 'SA', 'Read & Audit')">
+            <div class="role-icon-box">
+              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="role-meta">
+              <div class="role-meta-top">
+                <span class="role-name">Independent Security Auditor</span>
+                <span class="role-badge">RBAC: AUDITOR</span>
+              </div>
+              <p class="role-desc">Inspects cryptographic audit trail, reports, and tamper-resistant log history.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-surface-elevated); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: 0.78rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+            <span style="color: var(--text-muted);">Session ID:</span>
+            <span style="color: var(--accent-cyan);">sk_live_09f82d1c8e9b</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Auth Scheme:</span>
+            <span style="color: var(--success);">Enterprise HMAC-SHA256</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="toggleRoleModal()">Apply Persona</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTERPRISE SETTINGS MODAL -->
+  <div id="modal-settings" class="app-modal-backdrop hidden" onclick="if(event.target===this) toggleSettingsModal()">
+    <div class="app-modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Governance Settings &amp; API Configuration</h3>
+          <p>Fine-tune perceptual tolerances and multimodal inference parameters</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="toggleSettingsModal()" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>CIELAB &Delta;E Max Tolerance Threshold:</label>
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <input type="range" min="5" max="30" value="15" id="setting-delta-range" style="flex: 1; accent-color: var(--primary);" oninput="document.getElementById('setting-delta-val').textContent = this.value">
+            <span id="setting-delta-val" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-cyan);">15</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">&Delta;E</span>
+          </div>
+          <span class="field-hint">Values &le; 15.0 guarantee imperceptible brand color drift according to CIE international standards.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Primary AI Multimodal Model:</label>
+          <select style="width: 100%;">
+            <option selected>Gemini 2.5 Flash (Deterministic &amp; Fast, &lt;300ms)</option>
+            <option>Gemini 1.5 Pro (Deep Multimodal Reasoning)</option>
+            <option>Deterministic Local Heuristics Only (Offline Safe)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Automated Webhook Destination:</label>
+          <input type="text" placeholder="https://api.yourcompany.com/webhooks/brandshield" value="https://hooks.sanket.internal/v1/audits">
+          <span class="field-hint">Real-time JSON audit payload dispatched immediately upon inspection completion.</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="toggleSettingsModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Preferences</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DANGER / PERMANENT DELETION CONFIRMATION MODAL -->
+  <div id="modal-confirm-delete" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeConfirmDeleteModal()">
+    <div class="app-modal modal-danger-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 id="delete-modal-title">Confirm Permanent Deletion</h3>
+          <p id="delete-modal-subtitle">This operation cannot be reversed.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeConfirmDeleteModal()" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="delete-warning-box">
+          <div class="warning-icon-badge">
+            <svg class="svg-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="warning-text-content">
+            <strong id="delete-modal-target-name">Item Name</strong>
+            <p id="delete-modal-message">Are you sure you want to permanently delete this item? All associated compliance data and uploaded files will be permanently erased.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeConfirmDeleteModal()">Cancel</button>
+        <button type="button" id="delete-modal-confirm-btn" class="btn btn-danger">
+          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span id="delete-modal-confirm-btn-text">Permanently Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="app-toast" class="app-toast hidden"></div>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>Sanket AI &copy; 2026. Enterprise Brand Governance &amp; Creative Verification Platform. All rights reserved.</p>
+      <div class="footer-links">
+        <span onclick="switchMainView('landing')" role="button" tabindex="0">Overview</span> &bull;
+        <span onclick="switchMainView('developer')" role="button" tabindex="0">Check Vibe</span> &bull;
+        <span onclick="switchMainView('company')" role="button" tabindex="0">Company Portal</span> &bull;
+        <span onclick="switchMainView('account')" role="button" tabindex="0">Company Account</span> &bull;
+        <span onclick="toggleRoleModal()" role="button" tabindex="0">Role Switcher</span> &bull;
+        <span onclick="toggleSettingsModal()" role="button" tabindex="0">API Settings</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal and Interaction Helper Scripts -->
+  <script>
+    function toggleMobileNav() {
+      const drawer = document.getElementById('mobile-nav-drawer');
+      if (drawer) drawer.classList.toggle('hidden');
+    }
+    function toggleRoleModal() {
+      const modal = document.getElementById('modal-role-switcher');
+      if (modal) modal.classList.toggle('hidden');
+    }
+    function toggleSettingsModal() {
+      const modal = document.getElementById('modal-settings');
+      if (modal) modal.classList.toggle('hidden');
+    }
+    function selectRole(roleTitle, dept, initials, rbac) {
+      document.querySelectorAll('.role-card-option').forEach(el => el.classList.remove('active'));
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+      const roleDisplay = document.getElementById('active-role-display');
+      if (roleDisplay) roleDisplay.textContent = roleTitle;
+      const sideName = document.getElementById('sidebar-user-name');
+      if (sideName) sideName.textContent = dept;
+      const sideRole = document.getElementById('sidebar-user-role');
+      if (sideRole) sideRole.textContent = roleTitle;
+      const sideAvatar = document.getElementById('sidebar-user-avatar');
+      if (sideAvatar) sideAvatar.textContent = initials;
+      if (typeof toast === 'function') toast('Active role switched to ' + roleTitle);
+      toggleRoleModal();
+    }
+    function saveSettings() {
+      toggleSettingsModal();
+      if (typeof toast === 'function') toast('Governance preferences saved');
+    }
+  </script>
+
+  <script src="/static/app.js?v=11.0"></script>
+</body>
+</html>

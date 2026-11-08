@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Check Vibe — Multimodal Creative Inspection & Verification | Sanket AI</title>
+  <link rel="icon" type="image/png" href="/static/emblem.png">
+  <link rel="stylesheet" href="/static/style.css?v=12.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="workspace-view-active">
+
+  <!-- Top Navigation Bar -->
+  <header class="app-topbar">
+    <div class="topbar-container">
+      <div class="topbar-left-group">
+        <button type="button" class="btn-topbar-sidebar-toggle" id="btn-topbar-sidebar-toggle" onclick="toggleSidebar()" title="Toggle side content" aria-label="Toggle side content">
+          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="5" cy="12" r="2.2"/>
+            <circle cx="12" cy="12" r="2.2"/>
+            <circle cx="19" cy="12" r="2.2"/>
+          </svg>
+        </button>
+        <a href="/" class="brand-brandmark" title="Sanket AI Home">
+          <div class="brand-icon-shield">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <span class="brand-brandmark-text"><strong>Sanket</strong> <span class="brand-name-sub">AI</span></span>
+        </a>
+      </div>
+
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-sm btn-ghost" onclick="toggleRoleModal()" data-tooltip="Switch Enterprise Persona">
+          <svg class="svg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="active-role-display">Brand Lead</span>
+        </button>
+
+        <button type="button" class="btn btn-sm btn-ghost" onclick="toggleSettingsModal()" data-tooltip="Governance & API Settings">
+          <svg class="svg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0 2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+
+        <button type="button" class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle navigation drawer">
+          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <!-- Mobile Navigation Drawer -->
+  <div id="mobile-nav-drawer" class="mobile-nav-drawer hidden">
+    <a href="/" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <span>Overview</span>
+    </a>
+    <a href="/check-vibe" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Check Vibe</span>
+    </a>
+    <a href="/company-portal" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/></svg>
+      <span>Company Portal</span>
+    </a>
+    <a href="/account" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Company Account</span>
+    </a>
+    <div class="mobile-nav-link" onclick="toggleRoleModal(); toggleMobileNav();">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Switch Persona Role</span>
+    </div>
+  </div>
+
+  <section id="view-dashboard" class="dashboard-view">
+    <!-- Floating 3-Dots Button positioned where the left side content hides -->
+    <button type="button" class="floating-sidebar-trigger hidden" id="floating-sidebar-trigger" onclick="toggleSidebar()" title="Show side content (Expand sidebar)" aria-label="Expand sidebar">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="2.2"/>
+        <circle cx="12" cy="12" r="2.2"/>
+        <circle cx="19" cy="12" r="2.2"/>
+      </svg>
+      <span class="floating-trigger-tip">Sidebar</span>
+    </button>
+    <!-- Floating 3-Dots Button positioned where the right side content hides -->
+    <button type="button" class="floating-activity-trigger hidden" id="floating-activity-trigger" onclick="toggleActivityPanel()" title="Show Tracked Inspections" aria-label="Show Tracked Inspections">
+      <span class="floating-trigger-tip">Reports</span>
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="2.2"/>
+        <circle cx="12" cy="12" r="2.2"/>
+        <circle cx="19" cy="12" r="2.2"/>
+      </svg>
+    </button>
+
+    <div class="dashboard-layout" id="dashboard-layout">
+      <!-- Dashboard Sidebar -->
+      <aside class="dashboard-sidebar" id="dashboard-sidebar">
+        <div class="sidebar-header-row">
+          <span class="sidebar-header-label">Workspace Nav</span>
+          <button type="button" class="btn-sidebar-collapse" id="btn-sidebar-collapse" onclick="toggleSidebar()" title="Hide side content" aria-label="Hide side content">
+            <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2.2"/>
+              <circle cx="12" cy="12" r="2.2"/>
+              <circle cx="19" cy="12" r="2.2"/>
+            </svg>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Sidebar Navigation">
+          <a href="/check-vibe" class="sidebar-nav-item active" id="side-tab-inspect">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Check Vibe</span>
+          </a>
+          <a href="/company-portal" class="sidebar-nav-item " id="side-tab-onboard">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/></svg>
+            <span>Company Portal</span>
+          </a>
+          <a href="/account" class="sidebar-nav-item " id="side-tab-account">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Company Account</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-user-card" onclick="toggleRoleModal()" role="button" tabindex="0" title="Click to switch role or view credentials">
+            <div class="user-avatar-initials" id="sidebar-user-avatar">BL</div>
+            <div class="user-meta">
+              <span class="user-name" id="sidebar-user-name">Brand Operations</span>
+              <span class="user-role" id="sidebar-user-role">Compliance Reviewer</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="dashboard-main-area">
+<div id="tab-inspect" class="dashboard-tab-pane active">
+
+          <!-- STAGE 1: CREATIVE SUBMISSION & SETUP -->
+          <div id="inspect-stage-input" class="inspect-stage-container">
+            <div class="submission-card-wrap">
+              <div class="card submission-card">
+                <div class="card-header">
+                  <div class="stage-header-title">
+                    <span class="stage-step-pill">Stage 1 of 3 &bull; Configuration</span>
+                    <h3 class="card-title">Check Vibe &bull; Creative Submission</h3>
+                    <p class="card-subtitle">Verify advertising copy or upload posters/banners against brand guidelines.</p>
+                  </div>
+                </div>
+
+                <form id="inspection-form" class="app-form">
+                  <!-- Target Brand Standard Selector -->
+                  <div class="form-group">
+                    <label for="inspect-brand-select">Target Brand Standard:</label>
+                    <select id="inspect-brand-select" required>
+                      <option value="">-- Select Company to Check Against --</option>
+                    </select>
+                    <div id="selected-brand-preview" class="selected-brand-compact-bar hidden">
+                      <div class="compact-bar-left">
+                        <span class="status-pulse-dot"></span>
+                        <strong id="prev-brand-name" class="compact-brand-name">Nike</strong>
+                        <span id="prev-brand-tone" class="id-badge">Tone: Direct</span>
+                        <span id="prev-palette-summary" class="compact-palette-badge">Approved Standards</span>
+                      </div>
+                      <button type="button" class="btn-text-sm" onclick="viewSelectedBrandInAccount()">
+                        <span>View Full Guidelines in Account &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Asset Modality Switcher -->
+                  <div class="form-group">
+                    <label>Creative Asset Modality:</label>
+                    <div class="input-mode-tabs">
+                      <button type="button" class="mode-tab-btn active" id="tab-mode-text" onclick="setInputMode('text')">
+                        <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        <span>Marketing Copy / Ad Text</span>
+                      </button>
+                      <button type="button" class="mode-tab-btn" id="tab-mode-file" onclick="setInputMode('file')">
+                        <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <span>Poster / Graphic Image</span>
+                      </button>
+                    </div>
+
+                    <!-- Text Modality Container -->
+                    <div id="mode-text-container">
+                      <textarea id="inspect-copy-text" rows="4" placeholder="Paste promotional copy, headline, body text, or ad slogan to inspect..."></textarea>
+                      <span class="field-hint">Scans communication tone, emotional resonance, and strictly prohibited marketing claims.</span>
+                    </div>
+
+                    <!-- File Modality Container -->
+                    <div id="mode-file-container" class="hidden">
+                      <div id="drop-zone" class="drop-zone">
+                        <input type="file" id="inspect-file" class="file-input" accept=".png,.jpg,.jpeg,.webp,.pdf,.txt,.md">
+                        <div class="drop-zone-content">
+                          <div class="upload-icon-circle">
+                            <svg class="svg-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                          </div>
+                          <p class="drop-text">Drag &amp; drop poster or graphic asset here or <span class="highlight">browse</span></p>
+                          <span class="drop-subtext">PNG, JPG, WEBP, PDF up to 30MB</span>
+                        </div>
+                      </div>
+
+                      <div id="file-preview-info" class="file-preview-card hidden">
+                        <div class="file-preview-main">
+                          <div class="file-icon-box" id="inspect-file-icon-box">
+                            <img id="preview-thumbnail" class="preview-thumbnail hidden" alt="Creative thumbnail">
+                            <svg id="preview-fallback-icon" class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                          </div>
+                          <div class="file-details">
+                            <div class="file-name-size">
+                              <strong id="preview-filename" class="preview-filename">--</strong>
+                              <span id="preview-filesize" class="preview-filesize">--</span>
+                            </div>
+                            <div class="file-status-row">
+                              <span id="preview-upload-badge" class="upload-badge badge-staged">
+                                <span class="status-pulse-dot"></span>
+                                <span id="preview-upload-badge-text">File Staged in Browser</span>
+                              </span>
+                              <span id="preview-status-tip" class="file-status-tip">Ready &mdash; Click "Run Brand Inspection" below to audit</span>
+                            </div>
+                          </div>
+                          <div class="file-actions">
+                            <button type="button" id="btn-quick-run-inspect" class="btn-quick-audit" title="Upload and inspect this file immediately">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                              <span>Inspect Now</span>
+                            </button>
+                            <button type="button" id="btn-clear-file" class="btn-clear-file" title="Remove file">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- Visual Upload / Processing Progress Bar -->
+                        <div class="upload-progress-wrap" id="upload-progress-wrap">
+                          <div class="upload-progress-bar-bg">
+                            <div id="upload-progress-fill" class="upload-progress-fill" style="width: 100%;"></div>
+                          </div>
+                          <div class="upload-progress-meta">
+                            <span id="upload-progress-status-text">Staged locally (Ready to upload)</span>
+                            <span id="upload-progress-percent">100% (Local)</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Deterministic Pre-AI Color Filter Bar -->
+                      <div id="dev-color-filter-panel" class="dev-color-filter-panel hidden">
+                        <div class="prefilter-header">
+                          <div class="prefilter-title-group">
+                            <span class="prefilter-badge">Pre-AI Color Filter</span>
+                            <h4>Deterministic Palette Adherence</h4>
+                          </div>
+                          <span id="dev-prefilter-score" class="prefilter-score-badge">--% Match</span>
+                        </div>
+                        <p class="prefilter-subtext">Evaluates color accuracy using CIELAB &Delta;E perceptual distance before cloud AI reasoning:</p>
+
+                        <div id="dev-spectrum-bar" class="color-spectrum-bar"></div>
+                        <div id="dev-color-filter-results" class="dev-filter-chips-grid"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="submit" id="btn-run-inspect" class="btn btn-primary btn-block">
+                    <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <span>Run Brand Inspection</span>
+                  </button>
+
+                  <div id="inspect-inline-status" class="inspect-inline-status hidden">
+                    <div id="inline-status-spinner" class="inline-spinner"></div>
+                    <span id="inline-status-text">Analyzing feature vectors and verifying brand compliance...</span>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- STAGE 2: STEP-BY-STEP LOADING SCREEN (NewsCatcher UI Pattern) -->
+          <div id="inspect-stage-loading" class="inspect-stage-container hidden">
+            <div class="staged-loading-box">
+
+              <!-- Stepper Header Breadcrumbs -->
+              <div class="staged-stepper-nav">
+                <div class="stepper-step active" id="load-step-pill-1">
+                  <div class="stepper-circle">1</div>
+                  <span class="stepper-label">Ingest Asset</span>
+                </div>
+                <div class="stepper-line" id="load-step-line-1"></div>
+                <div class="stepper-step" id="load-step-pill-2">
+                  <div class="stepper-circle">2</div>
+                  <span class="stepper-label">CIELAB Vectors</span>
+                </div>
+                <div class="stepper-line" id="load-step-line-2"></div>
+                <div class="stepper-step" id="load-step-pill-3">
+                  <div class="stepper-circle">3</div>
+                  <span class="stepper-label">Policy Lexicon</span>
+                </div>
+                <div class="stepper-line" id="load-step-line-3"></div>
+                <div class="stepper-step" id="load-step-pill-4">
+                  <div class="stepper-circle">4</div>
+                  <span class="stepper-label">Finishing</span>
+                </div>
+              </div>
+
+              <!-- NewsCatcher Staged Layout: Hero Card + Configuration Inspector -->
+              <div class="staged-loading-grid">
+
+                <!-- Left/Center Hero Loading Card -->
+                <div class="card staged-center-hero">
+                  <div class="staged-pulse-container">
+                    <div class="staged-pulse-ring ring-1"></div>
+                    <div class="staged-pulse-ring ring-2"></div>
+                    <div class="staged-pulse-center">
+                      <svg class="svg-icon spinner-rotating" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+                    </div>
+                  </div>
+
+                  <h2 id="staged-loading-title" class="staged-main-title">Step 1 of 4: Ingesting &amp; Staging Creative Asset...</h2>
+                  <p id="staged-loading-subtext" class="staged-subtext">Pre-processing dimensions, rasterization &amp; perceptual encoding</p>
+
+                  <div class="staged-progress-bar-wrap">
+                    <div class="staged-progress-bar-bg">
+                      <div id="staged-progress-bar-fill" class="staged-progress-bar-fill" style="width: 25%;"></div>
+                    </div>
+                    <div class="staged-progress-meta">
+                      <span id="staged-progress-target-hint">Asset: <strong id="staged-target-filename">creative.png</strong> &bull; Target: <strong id="staged-target-brand">Nike</strong></span>
+                      <span id="staged-progress-pct" class="staged-pct">25%</span>
+                    </div>
+                  </div>
+
+                  <!-- Quick Start / Status Widget -->
+                  <div class="staged-quick-start-card">
+                    <div class="quick-card-left">
+                      <div class="quick-card-icon">
+                        <span class="status-pulse-dot"></span>
+                      </div>
+                      <div class="quick-card-text">
+                        <strong>Audit in progress</strong>
+                        <span id="staged-quick-status-note">We'll mark this done when it finishes</span>
+                      </div>
+                    </div>
+                    <div class="quick-card-right">
+                      <span class="quick-badge-credits">Automated Telemetry</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Configuration & Validators Panel -->
+                <div class="card staged-config-panel">
+                  <div class="config-panel-header">
+                    <div class="config-title-wrap">
+                      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      <h4>Configuration</h4>
+                    </div>
+                    <span class="config-badge-active">ACTIVE AUDIT</span>
+                  </div>
+
+                  <div class="config-section">
+                    <span class="config-section-title">AUDIT MODE &bull; ENGINE</span>
+                    <div class="config-toggle-pills">
+                      <span class="config-pill active">Perceptual CIELAB</span>
+                      <span class="config-pill active">Multimodal AI</span>
+                    </div>
+                    <span class="config-sub-info">Zero-latency deterministic math + multimodal vibe reasoning.</span>
+                  </div>
+
+                  <div class="config-section">
+                    <span class="config-section-title">ACTIVE VALIDATORS</span>
+                    <div class="validators-list">
+                      <div class="validator-item">
+                        <div class="val-name">is_cielab_adherent</div>
+                        <div class="val-desc">true if color centroid &Delta;E distance is within target threshold (&lt; 15.0).</div>
+                      </div>
+                      <div class="validator-item">
+                        <div class="val-name">is_lexicon_clean</div>
+                        <div class="val-desc">true if zero banned terms, false promises or prohibited claims detected.</div>
+                      </div>
+                      <div class="validator-item">
+                        <div class="val-name">vibe_emotional_alignment</div>
+                        <div class="val-desc">evaluates tone, mood, and aesthetic resonance against brand baseline.</div>
+                      </div>
+                      <div class="validator-item">
+                        <div class="val-name">whitespace_density_valid</div>
+                        <div class="val-desc">true if negative space ratio and layout balance conform to specification.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="config-section">
+                    <span class="config-section-title">ACTIVE BRAND TARGET</span>
+                    <div class="config-brand-box">
+                      <strong id="staged-config-brand-name">Nike</strong>
+                      <span id="staged-config-brand-role" class="id-badge">CONFIRMED STANDARD</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- STAGE 3: INSPECTION & VERIFICATION AUDIT RESULTS (Dedicated View) -->
+          <div id="inspect-stage-results" class="inspect-stage-container hidden">
+            <div class="results-stage-box">
+
+              <!-- Top Action Bar -->
+              <div class="results-top-action-bar">
+                <button type="button" class="btn btn-secondary btn-back-step" onclick="resetToInspectInput()">
+                  <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                  <span>&larr; Inspect Another Creative</span>
+                </button>
+                <div class="results-top-right-actions">
+                  <span id="report-id-badge" class="id-badge">Report: --</span>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="viewSelectedBrandInAccount()">
+                    <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span>View Brand Account</span>
+                  </button>
+                  <button type="button" class="btn btn-primary btn-sm" onclick="exportActiveAuditSpec()">
+                    <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Export Audit Spec</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Main Results Card -->
+              <div id="report-panel" class="card report-card">
+                <div class="card-header">
+                  <div>
+                    <h3 class="card-title">Inspection &amp; Verification Audit</h3>
+                    <p class="card-subtitle">Feature vector analysis and multimodal brand alignment report.</p>
+                  </div>
+                </div>
+
+                <!-- Empty State (Fallback) -->
+                <div id="inspection-empty-state" class="empty-state hidden">
+                  <div class="empty-icon-circle">
+                    <svg class="svg-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  </div>
+                  <h3>No Active Inspection</h3>
+                  <p>Submit marketing copy or visual assets to execute an automated audit.</p>
+                </div>
+
+                <!-- Loading State (Fallback for legacy bindings) -->
+                <div id="inspection-loading-state" class="empty-state hidden">
+                  <div class="spinner"></div>
+                  <h3>Extracting Feature Vectors &amp; Checking Guidelines...</h3>
+                  <p id="loading-stage-text">Step 1: Extracting CIELAB color centroids and whitespace layout vectors...</p>
+                </div>
+
+                <!-- Results View -->
+                <div id="inspection-results-view" class="results-view">
+
+                  <!-- Verdict Banner -->
+                  <div id="verdict-banner" class="verdict-banner verdict-APPROVED">
+                    <div class="verdict-header">
+                      <span class="verdict-label">AUDIT VERDICT:</span>
+                      <span id="verdict-title" class="verdict-title">APPROVED</span>
+                    </div>
+                    <p id="verdict-summary" class="verdict-summary">Creative content meets company brand guidelines across objective color/layout rules and aesthetic vibe alignment.</p>
+                  </div>
+
+                  <!-- 3 Metric Cards (Matching user screenshot media_1794112212659_b6c476cb.png) -->
+                  <div class="score-grid">
+                    <div class="score-card">
+                      <span class="score-title">Overall Compliance</span>
+                      <span id="score-overall" class="score-number">100%</span>
+                      <span class="score-sub">Composite Score</span>
+                    </div>
+                    <div class="score-card">
+                      <span class="score-title">Deterministic Rules</span>
+                      <span id="score-deterministic" class="score-number">100%</span>
+                      <span class="score-sub">Palette &amp; Prohibited Terms</span>
+                    </div>
+                    <div class="score-card">
+                      <span class="score-title">Aesthetic Alignment</span>
+                      <span id="score-ai" class="score-number">100%</span>
+                      <span class="score-sub">Tone, Mood &amp; Style</span>
+                    </div>
+                  </div>
+
+                  <!-- Gemini AI Hero Card -->
+                  <div id="gemini-ai-hero-card" class="gemini-ai-hero-card">
+                    <div class="ai-hero-header">
+                      <div class="ai-hero-title">
+                        <span class="ai-chip-gemini">Vibe Intelligence</span>
+                        <span class="ai-hero-subtitle">Aesthetic &amp; Communication Tone Analysis</span>
+                      </div>
+                      <span id="ai-hero-score-badge" class="ai-score-pill">100% Vibe Alignment</span>
+                    </div>
+                    <div class="ai-hero-body">
+                      <div class="ai-quote-container">
+                        <div class="ai-quote-icon">
+                          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                        <p id="ai-hero-explanation" class="ai-hero-explanation">Creative piece analyzed against company brand guidelines.</p>
+                      </div>
+                      <div class="ai-attributes-grid">
+                        <div class="ai-attr-pill">
+                          <span class="attr-lbl">Detected Mood:</span>
+                          <strong id="ai-hero-mood">Inspiring &bull; Dynamic</strong>
+                        </div>
+                        <div class="ai-attr-pill">
+                          <span class="attr-lbl">Brand Personality:</span>
+                          <strong id="ai-hero-personality">Athletic &bull; Bold</strong>
+                        </div>
+                        <div class="ai-attr-pill">
+                          <span class="attr-lbl">Communication Tone:</span>
+                          <strong id="ai-hero-tone">Direct &bull; Empowering</strong>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Biometric DNA / Feature Vector Alignment -->
+                  <div class="section-block biometric-dna-card">
+                    <div class="biometric-dna-header">
+                      <h4>Feature Vector Alignment</h4>
+                      <span id="biometric-composite-badge" class="biometric-badge">100% Match</span>
+                    </div>
+                    <p class="biometric-desc">Mathematical similarity against approved brand baseline vector:</p>
+
+                    <div class="biometric-metrics-grid">
+                      <div class="biometric-metric-box">
+                        <div class="metric-top">
+                          <span class="metric-name">Color Palette Harmony</span>
+                          <span id="bio-color-score" class="metric-val">100%</span>
+                        </div>
+                        <div class="progress-bar-bg"><div id="bio-color-bar" class="progress-bar-fill" style="width: 100%"></div></div>
+                      </div>
+
+                      <div class="biometric-metric-box">
+                        <div class="metric-top">
+                          <span class="metric-name">Negative Space &amp; Whitespace</span>
+                          <span id="bio-whitespace-score" class="metric-val">100%</span>
+                        </div>
+                        <div class="progress-bar-bg"><div id="bio-whitespace-bar" class="progress-bar-fill" style="width: 100%"></div></div>
+                      </div>
+
+                      <div class="biometric-metric-box">
+                        <div class="metric-top">
+                          <span class="metric-name">Visual Clutter &amp; Density</span>
+                          <span id="bio-complexity-score" class="metric-val">100%</span>
+                        </div>
+                        <div class="progress-bar-bg"><div id="bio-complexity-bar" class="progress-bar-fill" style="width: 100%"></div></div>
+                      </div>
+
+                      <div class="biometric-metric-box">
+                        <div class="metric-top">
+                          <span class="metric-name">Lexical Tone &amp; Vocabulary</span>
+                          <span id="bio-copy-score" class="metric-val">100%</span>
+                        </div>
+                        <div class="progress-bar-bg"><div id="bio-copy-bar" class="progress-bar-fill" style="width: 100%"></div></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Color Palette Alignment Section -->
+                  <div class="section-block">
+                    <h4>Color Palette Alignment</h4>
+                    <div class="palette-comparison-container">
+                      <div class="palette-group">
+                        <span class="group-label">Detected from Submission:</span>
+                        <div id="detected-palette-row" class="palette-row"></div>
+                      </div>
+                      <div class="palette-group">
+                        <span class="group-label">Official Approved Colors:</span>
+                        <div id="approved-palette-row" class="palette-row"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Audit Evidence & Remediation -->
+                  <div class="section-block">
+                    <h4>Audit Evidence &amp; Remediation</h4>
+                    <div id="findings-table-container" class="findings-list"></div>
+                  </div>
+
+                  <!-- Signoff Summary -->
+                  <div class="section-block signoff-summary-box">
+                    <div class="signoff-summary-header">
+                      <span class="signoff-lbl">Review Status:</span>
+                      <span id="human-decision-text" class="tag-badge tag-PASS">COMPLIANCE CERTIFIED</span>
+                    </div>
+                    <p class="signoff-sub">Reports are permanently logged and accessible via the Tracked Reports activity feed.</p>
+                  </div>
+
+                  <!-- Footer Actions -->
+                  <div class="results-footer-actions">
+                    <button type="button" class="btn btn-primary btn-large" onclick="resetToInspectInput()">
+                      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                      <span>Inspect Another Creative</span>
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+</div>
+      </main>
+
+<!-- Dashboard Activity Panel (Right Sidebar) -->
+      <aside class="dashboard-activity-panel" id="dashboard-activity-panel">
+        <div class="activity-header">
+          <div class="activity-title-group">
+            <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <h4>Tracked Inspections</h4>
+          </div>
+          <div class="activity-header-right">
+            <span class="activity-count" id="activity-reports-badge">0 reports</span>
+            <button type="button" class="btn-clear-history hidden" id="btn-clear-all-history" onclick="confirmClearHistory()" title="Permanently delete all inspection history">
+              <svg class="svg-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span>Purge History</span>
+            </button>
+            <button type="button" class="btn-sidebar-collapse" id="btn-activity-collapse" onclick="toggleActivityPanel()" title="Hide side content" aria-label="Hide side content">
+              <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="5" cy="12" r="2.2"/>
+                <circle cx="12" cy="12" r="2.2"/>
+                <circle cx="19" cy="12" r="2.2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="activity-subtitle">Recent creative submissions verified against active standards:</p>
+
+        <div id="recent-inspections-list" class="recent-inspections-list">
+          <div class="empty-note">No recent audits. Submit creative work on the left to inspect.</div>
+        </div>
+      </aside>
+
+    </div>
+    </div>
+  </section>
+
+<!-- ENTERPRISE ROLE SWITCHER MODAL -->
+  <div id="modal-role-switcher" class="app-modal-backdrop hidden" onclick="if(event.target===this) toggleRoleModal()">
+    <div class="app-modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Enterprise Role &amp; Identity</h3>
+          <p>Switch your active persona to test governance and submission permissions</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="toggleRoleModal()" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="role-selector-grid">
+          <div class="role-card-option active" id="role-option-lead" onclick="selectRole('Brand Lead', 'Brand Operations', 'BL', 'Full Governance')">
+            <div class="role-icon-box">
+              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <div class="role-meta">
+              <div class="role-meta-top">
+                <span class="role-name">Brand Operations Lead</span>
+                <span class="role-badge">RBAC: ADMIN</span>
+              </div>
+              <p class="role-desc">Can register brand standards, edit guidelines, approve palettes, and certify releases.</p>
+            </div>
+          </div>
+
+          <div class="role-card-option" id="role-option-dev" onclick="selectRole('Creative Developer', 'Developer Suite', 'CD', 'Submit & Inspect')">
+            <div class="role-icon-box">
+              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <div class="role-meta">
+              <div class="role-meta-top">
+                <span class="role-name">Creative Developer</span>
+                <span class="role-badge">RBAC: SUBMITTER</span>
+              </div>
+              <p class="role-desc">Submits marketing copy and visual posters against active company guidelines.</p>
+            </div>
+          </div>
+
+          <div class="role-card-option" id="role-option-auditor" onclick="selectRole('Security Auditor', 'Compliance Dept', 'SA', 'Read & Audit')">
+            <div class="role-icon-box">
+              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="role-meta">
+              <div class="role-meta-top">
+                <span class="role-name">Independent Security Auditor</span>
+                <span class="role-badge">RBAC: AUDITOR</span>
+              </div>
+              <p class="role-desc">Inspects cryptographic audit trail, reports, and tamper-resistant log history.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-surface-elevated); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: 0.78rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+            <span style="color: var(--text-muted);">Session ID:</span>
+            <span style="color: var(--accent-cyan);">sk_live_09f82d1c8e9b</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Auth Scheme:</span>
+            <span style="color: var(--success);">Enterprise HMAC-SHA256</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="toggleRoleModal()">Apply Persona</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTERPRISE SETTINGS MODAL -->
+  <div id="modal-settings" class="app-modal-backdrop hidden" onclick="if(event.target===this) toggleSettingsModal()">
+    <div class="app-modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Governance Settings &amp; API Configuration</h3>
+          <p>Fine-tune perceptual tolerances and multimodal inference parameters</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="toggleSettingsModal()" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>CIELAB &Delta;E Max Tolerance Threshold:</label>
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <input type="range" min="5" max="30" value="15" id="setting-delta-range" style="flex: 1; accent-color: var(--primary);" oninput="document.getElementById('setting-delta-val').textContent = this.value">
+            <span id="setting-delta-val" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-cyan);">15</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">&Delta;E</span>
+          </div>
+          <span class="field-hint">Values &le; 15.0 guarantee imperceptible brand color drift according to CIE international standards.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Primary AI Multimodal Model:</label>
+          <select style="width: 100%;">
+            <option selected>Gemini 2.5 Flash (Deterministic &amp; Fast, &lt;300ms)</option>
+            <option>Gemini 1.5 Pro (Deep Multimodal Reasoning)</option>
+            <option>Deterministic Local Heuristics Only (Offline Safe)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Automated Webhook Destination:</label>
+          <input type="text" placeholder="https://api.yourcompany.com/webhooks/brandshield" value="https://hooks.sanket.internal/v1/audits">
+          <span class="field-hint">Real-time JSON audit payload dispatched immediately upon inspection completion.</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="toggleSettingsModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Preferences</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DANGER / PERMANENT DELETION CONFIRMATION MODAL -->
+  <div id="modal-confirm-delete" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeConfirmDeleteModal()">
+    <div class="app-modal modal-danger-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 id="delete-modal-title">Confirm Permanent Deletion</h3>
+          <p id="delete-modal-subtitle">This operation cannot be reversed.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeConfirmDeleteModal()" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="delete-warning-box">
+          <div class="warning-icon-badge">
+            <svg class="svg-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="warning-text-content">
+            <strong id="delete-modal-target-name">Item Name</strong>
+            <p id="delete-modal-message">Are you sure you want to permanently delete this item? All associated compliance data and uploaded files will be permanently erased.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeConfirmDeleteModal()">Cancel</button>
+        <button type="button" id="delete-modal-confirm-btn" class="btn btn-danger">
+          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span id="delete-modal-confirm-btn-text">Permanently Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="app-toast" class="app-toast hidden"></div>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>Sanket AI &copy; 2026. Enterprise Brand Governance &amp; Creative Verification Platform. All rights reserved.</p>
+      <div class="footer-links">
+        <span onclick="switchMainView('landing')" role="button" tabindex="0">Overview</span> &bull;
+        <span onclick="switchMainView('developer')" role="button" tabindex="0">Check Vibe</span> &bull;
+        <span onclick="switchMainView('company')" role="button" tabindex="0">Company Portal</span> &bull;
+        <span onclick="switchMainView('account')" role="button" tabindex="0">Company Account</span> &bull;
+        <span onclick="toggleRoleModal()" role="button" tabindex="0">Role Switcher</span> &bull;
+        <span onclick="toggleSettingsModal()" role="button" tabindex="0">API Settings</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal and Interaction Helper Scripts -->
+  <script>
+    function toggleMobileNav() {
+      const drawer = document.getElementById('mobile-nav-drawer');
+      if (drawer) drawer.classList.toggle('hidden');
+    }
+    function toggleRoleModal() {
+      const modal = document.getElementById('modal-role-switcher');
+      if (modal) modal.classList.toggle('hidden');
+    }
+    function toggleSettingsModal() {
+      const modal = document.getElementById('modal-settings');
+      if (modal) modal.classList.toggle('hidden');
+    }
+    function selectRole(roleTitle, dept, initials, rbac) {
+      document.querySelectorAll('.role-card-option').forEach(el => el.classList.remove('active'));
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+      const roleDisplay = document.getElementById('active-role-display');
+      if (roleDisplay) roleDisplay.textContent = roleTitle;
+      const sideName = document.getElementById('sidebar-user-name');
+      if (sideName) sideName.textContent = dept;
+      const sideRole = document.getElementById('sidebar-user-role');
+      if (sideRole) sideRole.textContent = roleTitle;
+      const sideAvatar = document.getElementById('sidebar-user-avatar');
+      if (sideAvatar) sideAvatar.textContent = initials;
+      if (typeof toast === 'function') toast('Active role switched to ' + roleTitle);
+      toggleRoleModal();
+    }
+    function saveSettings() {
+      toggleSettingsModal();
+      if (typeof toast === 'function') toast('Governance preferences saved');
+    }
+  </script>
+
+  <script src="/static/app.js?v=11.0"></script>
+</body>
+</html>

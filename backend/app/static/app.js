@@ -152,108 +152,99 @@ document.addEventListener('DOMContentLoaded', () => {
   loadRecentReport();
 });
 function switchMainView(view) {
-  const landingView = document.getElementById('view-landing');
-  const dashboardView = document.getElementById('view-dashboard');
-  const btnLanding = document.getElementById('nav-btn-landing');
-  const btnDev = document.getElementById('nav-btn-developer');
-  const btnCo = document.getElementById('nav-btn-company');
   if (view === 'landing') {
-    document.body.classList.add('landing-view-active');
-    if (landingView) landingView.classList.remove('hidden');
-    if (dashboardView) dashboardView.classList.add('hidden');
-    if (btnLanding) btnLanding.classList.add('active');
-    if (btnDev) btnDev.classList.remove('active');
-    if (btnCo) btnCo.classList.remove('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const landingView = document.getElementById('view-landing');
+    if (landingView) {
+      document.body.classList.add('landing-view-active');
+      landingView.classList.remove('hidden');
+      const dash = document.getElementById('view-dashboard');
+      if (dash) dash.classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.location.href = '/';
+    }
   } else if (view === 'developer') {
-    document.body.classList.remove('landing-view-active');
-    if (landingView) landingView.classList.add('hidden');
-    if (dashboardView) dashboardView.classList.remove('hidden');
-    if (btnLanding) btnLanding.classList.remove('active');
-    if (btnDev) btnDev.classList.add('active');
-    if (btnCo) btnCo.classList.remove('active');
-    switchDashboardTab('tab-inspect');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (document.getElementById('tab-inspect')) {
+      switchDashboardTab('tab-inspect');
+    } else {
+      window.location.href = '/check-vibe';
+    }
   } else if (view === 'company') {
-    document.body.classList.remove('landing-view-active');
-    if (landingView) landingView.classList.add('hidden');
-    if (dashboardView) dashboardView.classList.remove('hidden');
-    if (btnLanding) btnLanding.classList.remove('active');
-    if (btnDev) btnDev.classList.remove('active');
-    if (btnCo) btnCo.classList.add('active');
-    const btnAcc = document.getElementById('nav-btn-account');
-    if (btnAcc) btnAcc.classList.remove('active');
-    switchDashboardTab('tab-onboard');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (document.getElementById('tab-onboard')) {
+      switchDashboardTab('tab-onboard');
+    } else {
+      window.location.href = '/company-portal';
+    }
   } else if (view === 'account') {
-    document.body.classList.remove('landing-view-active');
-    if (landingView) landingView.classList.add('hidden');
-    if (dashboardView) dashboardView.classList.remove('hidden');
-    if (btnLanding) btnLanding.classList.remove('active');
-    if (btnDev) btnDev.classList.remove('active');
-    if (btnCo) btnCo.classList.remove('active');
-    const btnAcc = document.getElementById('nav-btn-account');
-    if (btnAcc) btnAcc.classList.add('active');
-    switchDashboardTab('tab-account');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (document.getElementById('tab-account')) {
+      switchDashboardTab('tab-account');
+    } else {
+      window.location.href = '/account';
+    }
   }
 }
 window.switchMainView = switchMainView;
 function switchDashboardTab(tabId) {
   document.body.classList.remove('landing-view-active');
+  if (tabId === 'tab-inspect') {
+    if (!document.getElementById('tab-inspect')) {
+      window.location.href = '/check-vibe';
+      return;
+    }
+  } else if (tabId === 'tab-onboard') {
+    if (!document.getElementById('tab-onboard')) {
+      window.location.href = '/company-portal';
+      return;
+    }
+  } else if (tabId === 'tab-account') {
+    if (!document.getElementById('tab-account')) {
+      window.location.href = '/account';
+      return;
+    }
+  }
+
   const landingView = document.getElementById('view-landing');
   const dashboardView = document.getElementById('view-dashboard');
   if (landingView) landingView.classList.add('hidden');
   if (dashboardView) dashboardView.classList.remove('hidden');
+
   const panes = document.querySelectorAll('.dashboard-tab-pane');
-  panes.forEach(p => p.classList.remove('active'));
-  const targetPane = document.getElementById(tabId);
-  if (targetPane) targetPane.classList.add('active');
+  panes.forEach(pane => pane.classList.remove('active'));
+  const target = document.getElementById(tabId);
+  if (target) target.classList.add('active');
 
-  const sideInspect = document.getElementById('side-tab-inspect');
-  const sideOnboard = document.getElementById('side-tab-onboard');
-  const sideAccount = document.getElementById('side-tab-account');
-  const btnDev = document.getElementById('nav-btn-developer');
-  const btnCo = document.getElementById('nav-btn-company');
-  const btnAcc = document.getElementById('nav-btn-account');
-  const btnLanding = document.getElementById('nav-btn-landing');
+  const navItems = document.querySelectorAll('.sidebar-nav-item');
+  navItems.forEach(item => item.classList.remove('active'));
 
-  if (sideInspect) sideInspect.classList.toggle('active', tabId === 'tab-inspect');
-  if (sideOnboard) sideOnboard.classList.toggle('active', tabId === 'tab-onboard');
-  if (sideAccount) sideAccount.classList.toggle('active', tabId === 'tab-account');
-
-  if (btnDev) btnDev.classList.toggle('active', tabId === 'tab-inspect');
-  if (btnCo) btnCo.classList.toggle('active', tabId === 'tab-onboard');
-  if (btnAcc) btnAcc.classList.toggle('active', tabId === 'tab-account');
-  if (btnLanding) btnLanding.classList.remove('active');
-
-  if (tabId === 'tab-account') {
+  if (tabId === 'tab-inspect') {
+    const btn = document.getElementById('side-tab-inspect');
+    if (btn) btn.classList.add('active');
+  } else if (tabId === 'tab-onboard') {
+    const btn = document.getElementById('side-tab-onboard');
+    if (btn) btn.classList.add('active');
+  } else if (tabId === 'tab-account') {
+    const btn = document.getElementById('side-tab-account');
+    if (btn) btn.classList.add('active');
     renderAccountPage(currentAccountBrandId);
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const editParam = urlParams.get('edit');
+      if (editParam && brandsMap[editParam]) {
+        startEditingBrand(editParam);
+      }
+      const brandParam = urlParams.get('brand');
+      if (brandParam && brandsMap[brandParam]) {
+        renderAccountPage(brandParam);
+        const sel = document.getElementById('inspect-brand-select');
+        if (sel) sel.value = brandParam;
+      }
+    } catch (e) {
+      console.debug('URL search params handler error:', e);
+    }
   }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 window.switchDashboardTab = switchDashboardTab;
-function scrollColorStudio() {
-  const studio = document.getElementById('color-studio-container');
-  if (studio) {
-    studio.classList.remove('hidden');
-    studio.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
-window.scrollColorStudio = scrollColorStudio;
-function scrollToTrackedReports() {
-  const layout = document.getElementById('dashboard-layout');
-  const floatBtn = document.getElementById('floating-activity-trigger');
-  if (layout && layout.classList.contains('activity-hidden')) {
-    layout.classList.remove('activity-hidden');
-    if (floatBtn) floatBtn.classList.add('hidden');
-    try { localStorage.setItem('sanket_activity_hidden', 'false'); } catch (e) {}
-  }
-  const panel = document.getElementById('dashboard-activity-panel');
-  if (panel) {
-    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
-window.scrollToTrackedReports = scrollToTrackedReports;
 function initTabs() {
   const tabs = document.querySelectorAll('.nav-tab');
   tabs.forEach(tab => {
@@ -1035,7 +1026,11 @@ function renderExtractedColorStudio(data) {
 function startEditingBrand(brandId) {
   const b = brandsMap[brandId];
   if (!b) return;
-  switchDashboardTab('tab-onboard');
+  const editIdInputCheck = document.getElementById('ob-editing-brand-id');
+  if (!editIdInputCheck) {
+    window.location.href = `/company-portal?edit=${encodeURIComponent(brandId)}`;
+    return;
+  }
   const editIdInput = document.getElementById('ob-editing-brand-id');
   if (editIdInput) editIdInput.value = b.brand_id;
   const setVal = (id, val) => {
@@ -2534,10 +2529,13 @@ window.exportAccountCssVars = exportAccountCssVars;
 
 function viewSelectedBrandInAccount() {
   const select = document.getElementById('inspect-brand-select');
-  const brandId = select ? select.value : currentAccountBrandId;
+  const brandId = select ? select.value : '';
   if (brandId) {
-    renderAccountPage(brandId);
+    window.location.href = `/account?brand=${encodeURIComponent(brandId)}`;
+  } else {
+    window.location.href = '/account';
   }
+}
   switchDashboardTab('tab-account');
 }
 window.viewSelectedBrandInAccount = viewSelectedBrandInAccount;

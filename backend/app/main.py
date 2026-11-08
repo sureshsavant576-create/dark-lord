@@ -67,9 +67,35 @@ app.mount("/storage/uploads", StaticFiles(directory=str(settings.UPLOADS_DIR)), 
 app.mount("/storage/guidelines", StaticFiles(directory=str(settings.GUIDELINES_DIR)), name="guidelines")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
+@app.get("/overview")
 @app.get("/")
 def serve_index():
     index_file = STATIC_DIR / "index.html"
     if index_file.exists():
         return FileResponse(index_file)
-    return {"message": "BrandShield AI API is operational. Visit /docs for OpenAPI specifications."}
+    return {"message": "Sanket AI API is operational. Visit /docs for OpenAPI specifications."}
+
+@app.get("/check-vibe")
+@app.get("/vibe-inspector")
+@app.get("/inspect")
+def serve_check_vibe():
+    f = STATIC_DIR / "check-vibe.html"
+    if f.exists():
+        return FileResponse(f)
+    return FileResponse(STATIC_DIR / "index.html")
+
+@app.get("/company-portal")
+@app.get("/company")
+def serve_company_portal():
+    f = STATIC_DIR / "company-portal.html"
+    if f.exists():
+        return FileResponse(f)
+    return FileResponse(STATIC_DIR / "index.html")
+
+@app.get("/account")
+@app.get("/company-account")
+def serve_account():
+    f = STATIC_DIR / "account.html"
+    if f.exists():
+        return FileResponse(f)
+    return FileResponse(STATIC_DIR / "index.html")

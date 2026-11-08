@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Portal — Brand DNA Onboarding & Identity Guidelines | Sanket AI</title>
+  <link rel="icon" type="image/png" href="/static/emblem.png">
+  <link rel="stylesheet" href="/static/style.css?v=12.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="workspace-view-active">
+
+  <!-- Top Navigation Bar -->
+  <header class="app-topbar">
+    <div class="topbar-container">
+      <div class="topbar-left-group">
+        <button type="button" class="btn-topbar-sidebar-toggle" id="btn-topbar-sidebar-toggle" onclick="toggleSidebar()" title="Toggle side content" aria-label="Toggle side content">
+          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="5" cy="12" r="2.2"/>
+            <circle cx="12" cy="12" r="2.2"/>
+            <circle cx="19" cy="12" r="2.2"/>
+          </svg>
+        </button>
+        <a href="/" class="brand-brandmark" title="Sanket AI Home">
+          <div class="brand-icon-shield">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <span class="brand-brandmark-text"><strong>Sanket</strong> <span class="brand-name-sub">AI</span></span>
+        </a>
+      </div>
+
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-sm btn-ghost" onclick="toggleRoleModal()" data-tooltip="Switch Enterprise Persona">
+          <svg class="svg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="active-role-display">Brand Lead</span>
+        </button>
+
+        <button type="button" class="btn btn-sm btn-ghost" onclick="toggleSettingsModal()" data-tooltip="Governance & API Settings">
+          <svg class="svg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0 2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+
+        <button type="button" class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle navigation drawer">
+          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <!-- Mobile Navigation Drawer -->
+  <div id="mobile-nav-drawer" class="mobile-nav-drawer hidden">
+    <a href="/" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <span>Overview</span>
+    </a>
+    <a href="/check-vibe" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Check Vibe</span>
+    </a>
+    <a href="/company-portal" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/></svg>
+      <span>Company Portal</span>
+    </a>
+    <a href="/account" class="mobile-nav-link">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Company Account</span>
+    </a>
+    <div class="mobile-nav-link" onclick="toggleRoleModal(); toggleMobileNav();">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Switch Persona Role</span>
+    </div>
+  </div>
+
+  <section id="view-dashboard" class="dashboard-view">
+    <!-- Floating 3-Dots Button positioned where the left side content hides -->
+    <button type="button" class="floating-sidebar-trigger hidden" id="floating-sidebar-trigger" onclick="toggleSidebar()" title="Show side content (Expand sidebar)" aria-label="Expand sidebar">
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="2.2"/>
+        <circle cx="12" cy="12" r="2.2"/>
+        <circle cx="19" cy="12" r="2.2"/>
+      </svg>
+      <span class="floating-trigger-tip">Sidebar</span>
+    </button>
+    <!-- Floating 3-Dots Button positioned where the right side content hides -->
+    <button type="button" class="floating-activity-trigger hidden" id="floating-activity-trigger" onclick="toggleActivityPanel()" title="Show Tracked Inspections" aria-label="Show Tracked Inspections">
+      <span class="floating-trigger-tip">Reports</span>
+      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="2.2"/>
+        <circle cx="12" cy="12" r="2.2"/>
+        <circle cx="19" cy="12" r="2.2"/>
+      </svg>
+    </button>
+
+    <div class="dashboard-layout" id="dashboard-layout">
+      <!-- Dashboard Sidebar -->
+      <aside class="dashboard-sidebar" id="dashboard-sidebar">
+        <div class="sidebar-header-row">
+          <span class="sidebar-header-label">Workspace Nav</span>
+          <button type="button" class="btn-sidebar-collapse" id="btn-sidebar-collapse" onclick="toggleSidebar()" title="Hide side content" aria-label="Hide side content">
+            <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2.2"/>
+              <circle cx="12" cy="12" r="2.2"/>
+              <circle cx="19" cy="12" r="2.2"/>
+            </svg>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Sidebar Navigation">
+          <a href="/check-vibe" class="sidebar-nav-item " id="side-tab-inspect">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Check Vibe</span>
+          </a>
+          <a href="/company-portal" class="sidebar-nav-item active" id="side-tab-onboard">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/></svg>
+            <span>Company Portal</span>
+          </a>
+          <a href="/account" class="sidebar-nav-item " id="side-tab-account">
+            <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Company Account</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-user-card" onclick="toggleRoleModal()" role="button" tabindex="0" title="Click to switch role or view credentials">
+            <div class="user-avatar-initials" id="sidebar-user-avatar">BL</div>
+            <div class="user-meta">
+              <span class="user-name" id="sidebar-user-name">Brand Operations</span>
+              <span class="user-role" id="sidebar-user-role">Compliance Reviewer</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="dashboard-main-area">
+<div id="tab-onboard" class="dashboard-tab-pane active">
+          <div class="portal-centered-container">
+
+            <!-- Brand Registration & Standards Definition Card -->
+            <div class="card company-portal-card">
+              <div class="card-header portal-header-center">
+                <div class="portal-icon-circle">
+                  <svg class="svg-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/></svg>
+                </div>
+                <h2 class="portal-title">Company Portal &amp; Brand Standards</h2>
+                <p class="portal-subtitle">Register your organization, define brand personality and communication tone, and establish approved palette standards.</p>
+              </div>
+
+              <form id="onboarding-form" class="app-form">
+                <input type="hidden" id="ob-editing-brand-id">
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="ob-brand-name">Organization / Brand Name:</label>
+                    <input type="text" id="ob-brand-name" placeholder="e.g. Acme Corporation" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="ob-manager-email">Brand Lead Contact Email:</label>
+                    <input type="email" id="ob-manager-email" placeholder="brand.lead@acme.com" required>
+                  </div>
+                </div>
+
+                <!-- Company / Brand Official Logo -->
+                <div class="form-group brand-logo-upload-group">
+                  <label>Company / Brand Logo:</label>
+                  <div class="logo-upload-container">
+                    <div class="logo-preview-avatar" id="ob-logo-preview-box">
+                      <img id="ob-logo-preview-img" class="ob-logo-img hidden" alt="Brand Logo Preview">
+                      <div id="ob-logo-placeholder" class="logo-placeholder-content">
+                        <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <span>No Logo</span>
+                      </div>
+                    </div>
+
+                    <div class="logo-upload-controls">
+                      <div class="logo-btn-row">
+                        <label for="ob-logo-file" class="btn btn-secondary btn-sm logo-file-label">
+                          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                          <span>Upload Logo Image</span>
+                        </label>
+                        <input type="file" id="ob-logo-file" class="file-input-hidden" accept=".png,.jpg,.jpeg,.svg,.webp">
+                        <button type="button" id="btn-clear-logo" class="btn btn-ghost btn-sm hidden" onclick="clearBrandLogo()">
+                          <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          <span>Remove</span>
+                        </button>
+                      </div>
+
+                      <div class="logo-url-input-wrap">
+                        <input type="url" id="ob-logo-url" placeholder="Or paste public logo URL (e.g. https://.../logo.png)">
+                      </div>
+                      <span class="field-hint">Upload company insignia or logo (PNG, SVG, JPG, WEBP). Displays across Company Account, verified audit reports, and standards.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Reference Brand Asset Auto-Extractor -->
+                <div class="form-group reference-scan-box">
+                  <label for="ob-reference-files">Reference Brand Asset (Auto-Extract Palette &amp; Layout):</label>
+                  <div class="drop-zone ob-drop-zone" id="ob-drop-zone">
+                    <input type="file" id="ob-reference-files" class="file-input" accept=".png,.jpg,.jpeg,.webp,.pdf">
+                    <div class="drop-zone-content">
+                      <div class="upload-icon-circle">
+                        <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      </div>
+                      <p class="drop-text">Drop approved poster or brand graphic to <span class="highlight">auto-extract brand attributes</span></p>
+                      <span class="drop-subtext">Automated CIELAB Color Centroids, Whitespace Ratios, and Aesthetic Style Extraction</span>
+                    </div>
+                  </div>
+                  <div id="ob-scan-feedback" class="ob-scan-feedback hidden"></div>
+
+                  <!-- Animated Brand Asset Upload Progress Card -->
+                  <div id="ob-file-preview-info" class="file-preview-card hidden">
+                    <div class="file-preview-main">
+                      <div class="file-icon-box" id="ob-file-icon-box">
+                        <img id="ob-preview-thumbnail" class="preview-thumbnail hidden" alt="Brand asset thumbnail">
+                        <svg id="ob-preview-fallback-icon" class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      </div>
+                      <div class="file-details">
+                        <div class="file-name-size">
+                          <strong id="ob-preview-filename" class="preview-filename">--</strong>
+                          <span id="ob-preview-filesize" class="preview-filesize">--</span>
+                        </div>
+                        <div class="file-status-row">
+                          <span id="ob-preview-upload-badge" class="upload-badge badge-uploading">
+                            <span class="status-pulse-dot"></span>
+                            <span id="ob-preview-upload-badge-text">Uploading &amp; Extracting DNA...</span>
+                          </span>
+                          <span id="ob-preview-status-tip" class="file-status-tip">Extracting CIELAB color centroids &amp; guidelines</span>
+                        </div>
+                      </div>
+                      <div class="file-actions">
+                        <button type="button" id="btn-clear-ob-file" class="btn-clear-file" title="Remove reference asset">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Visual Upload / Scanning Progress Bar -->
+                    <div class="upload-progress-wrap" id="ob-upload-progress-wrap">
+                      <div class="upload-progress-bar-bg">
+                        <div id="ob-upload-progress-fill" class="upload-progress-fill uploading" style="width: 15%;"></div>
+                      </div>
+                      <div class="upload-progress-meta">
+                        <span id="ob-upload-progress-status-text">Transmitting asset to server...</span>
+                        <span id="ob-upload-progress-percent">15%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Interactive Colour Intelligence Studio -->
+                  <div id="color-studio-container" class="color-studio-container hidden">
+                    <div class="studio-header">
+                      <div class="studio-title-group">
+                        <span class="studio-badge">Creative Colour Studio</span>
+                        <h3>Interactive Eyedropper &amp; Palette Extractor</h3>
+                      </div>
+                      <div class="studio-actions">
+                        <button type="button" id="btn-native-eyedropper" class="btn-studio-action hidden" title="Sample pixel anywhere on screen">
+                          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/></svg>
+                          <span>Screen Eyedropper</span>
+                        </button>
+                        <button type="button" id="btn-add-all-extracted" class="btn-studio-action">
+                          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          <span>Add All Extracted to Palette</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="studio-canvas-stage">
+                      <div class="canvas-viewport" id="canvas-viewport">
+                        <canvas id="studio-canvas"></canvas>
+                        <div id="eyedropper-loupe" class="eyedropper-loupe hidden">
+                          <div class="loupe-reticle"></div>
+                          <div class="loupe-color-preview" id="loupe-color-preview"></div>
+                        </div>
+                      </div>
+
+                      <div class="inspector-readout-bar">
+                        <div class="inspect-live-swatch" id="inspect-live-swatch" style="background: #ffffff;"></div>
+                        <div class="inspect-readout-text">
+                          <span class="inspect-label">HOVER PIXEL:</span>
+                          <strong id="inspect-live-hex">#FFFFFF</strong>
+                          <span class="inspect-rgb" id="inspect-live-rgb">RGB(255, 255, 255)</span>
+                        </div>
+                        <div class="inspect-sample-action">
+                          <span id="inspect-sample-hint">Click asset to sample pixel</span>
+                          <button type="button" id="btn-add-sampled-color" class="btn-sm btn-primary hidden">
+                            <span>Add Sampled to Palette</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="spectrum-section">
+                      <div class="spectrum-header">
+                        <span class="spectrum-label">Color Distribution Spectrum:</span>
+                        <span id="spectrum-harmony-badge" class="id-badge">Dynamic Harmony</span>
+                      </div>
+                      <div id="spectrum-distribution-bar" class="color-spectrum-bar"></div>
+                    </div>
+
+                    <div class="extracted-cards-section">
+                      <h4>Extracted Visual Centroids (<span id="extracted-count">0</span> colors identified)</h4>
+                      <div id="extracted-swatches-grid" class="extracted-swatches-grid"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="ob-personality">Brand Personality Attributes:</label>
+                    <input type="text" id="ob-personality" placeholder="e.g. Understated, Confident, Sleek, Professional" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="ob-mood">Target Emotional Mood:</label>
+                    <input type="text" id="ob-mood" placeholder="e.g. Focused, Premium, Calm, Inspiring" required>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="ob-tone">Communication Tone:</label>
+                    <input type="text" id="ob-tone" placeholder="e.g. Direct, Minimalist, Concise, Objective" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="ob-audience">Target Audience:</label>
+                    <input type="text" id="ob-audience" placeholder="e.g. Enterprise clients, developers, professional consumers" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="ob-style">Visual Aesthetic Guidelines:</label>
+                  <input type="text" id="ob-style" placeholder="e.g. Extreme Minimalism, High Negative Space, Deep Slate Contrast" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="ob-typography">Typography &amp; Hierarchy Guidelines:</label>
+                  <input type="text" id="ob-typography" placeholder="e.g. Modern Sans-Serif, Inter, Monospace accents">
+                </div>
+
+                <!-- Approved Brand Palette Manager -->
+                <div class="form-group brand-palette-manager-group">
+                  <div class="palette-manager-header">
+                    <div>
+                      <label>Approved Brand Palette Manager:</label>
+                      <span class="field-hint">Manage official organization brand colors, assign color roles, and export tokens.</span>
+                    </div>
+                    <div class="palette-quick-actions">
+                      <button type="button" id="btn-copy-palette-hex" class="btn-text-sm" title="Copy comma-separated HEX string">Copy HEX</button>
+                      <button type="button" id="btn-export-css-vars" class="btn-text-sm" title="Export CSS Variables snippet">CSS Vars</button>
+                      <button type="button" id="btn-clear-palette" class="btn-text-sm text-danger" title="Clear all colors">Clear</button>
+                    </div>
+                  </div>
+
+                  <div id="palette-manager-grid" class="palette-manager-grid">
+                    <div class="palette-empty-prompt">No colors registered. Upload reference asset above or pick custom colors below.</div>
+                  </div>
+
+                  <div class="custom-color-picker-bar">
+                    <div class="picker-swatch-wrap" title="Click to open color picker">
+                      <input type="color" id="custom-color-picker" value="#2563EB" class="native-color-input">
+                    </div>
+                    <input type="text" id="custom-hex-input" placeholder="#HEX (e.g. #0055FF)" maxlength="7" class="hex-text-input">
+                    <select id="custom-role-select" class="role-select">
+                      <option value="Primary Brand Color">Primary Brand Color</option>
+                      <option value="Secondary Accent">Secondary Accent</option>
+                      <option value="Highlight / CTA">Highlight / CTA</option>
+                      <option value="Background / Base">Background / Base</option>
+                    </select>
+                    <button type="button" id="btn-add-custom-color" class="btn btn-secondary btn-sm">
+                      <span>Add Color</span>
+                    </button>
+                  </div>
+
+                  <input type="hidden" id="ob-palette" name="palette" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="ob-avoid">Prohibited Claims &amp; Forbidden Terms (Comma-separated):</label>
+                  <input type="text" id="ob-avoid" placeholder="super cheap, bargain discount, miracle deal, clearance sale">
+                  <span class="field-hint">Deterministic token scanner will immediately flag and reject any asset containing these prohibited terms.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="ob-tagline">Organization Motto / Mission Statement:</label>
+                  <input type="text" id="ob-tagline" placeholder="e.g. Engineering clarity for modern enterprises">
+                </div>
+
+                <div class="form-actions-row">
+                  <button type="submit" id="btn-create-draft" class="btn btn-primary btn-block">
+                    <span>Save Brand Profile</span>
+                  </button>
+                  <div class="edit-actions-btn-group">
+                    <button type="button" id="btn-cancel-edit" class="btn btn-secondary hidden" style="flex: 1;">
+                      <span>Cancel Edit</span>
+                    </button>
+                    <button type="button" id="btn-delete-editing-brand" class="btn btn-danger hidden" onclick="confirmDeleteEditingBrand()" style="flex: 1;">
+                      <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                      <span>Delete Brand Permanently</span>
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+
+
+          </div>
+        </div>
+      </main>
+
+<!-- Dashboard Activity Panel (Right Sidebar) -->
+      <aside class="dashboard-activity-panel" id="dashboard-activity-panel">
+        <div class="activity-header">
+          <div class="activity-title-group">
+            <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <h4>Tracked Inspections</h4>
+          </div>
+          <div class="activity-header-right">
+            <span class="activity-count" id="activity-reports-badge">0 reports</span>
+            <button type="button" class="btn-clear-history hidden" id="btn-clear-all-history" onclick="confirmClearHistory()" title="Permanently delete all inspection history">
+              <svg class="svg-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span>Purge History</span>
+            </button>
+            <button type="button" class="btn-sidebar-collapse" id="btn-activity-collapse" onclick="toggleActivityPanel()" title="Hide side content" aria-label="Hide side content">
+              <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="5" cy="12" r="2.2"/>
+                <circle cx="12" cy="12" r="2.2"/>
+                <circle cx="19" cy="12" r="2.2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="activity-subtitle">Recent creative submissions verified against active standards:</p>
+
+        <div id="recent-inspections-list" class="recent-inspections-list">
+          <div class="empty-note">No recent audits. Submit creative work on the left to inspect.</div>
+        </div>
+      </aside>
+
+    </div>
+    </div>
+  </section>
+
+<!-- ENTERPRISE ROLE SWITCHER MODAL -->
+  <div id="modal-role-switcher" class="app-modal-backdrop hidden" onclick="if(event.target===this) toggleRoleModal()">
+    <div class="app-modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Enterprise Role &amp; Identity</h3>
+          <p>Switch your active persona to test governance and submission permissions</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="toggleRoleModal()" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="role-selector-grid">
+          <div class="role-card-option active" id="role-option-lead" onclick="selectRole('Brand Lead', 'Brand Operations', 'BL', 'Full Governance')">
+            <div class="role-icon-box">
+              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <div class="role-meta">
+              <div class="role-meta-top">
+                <span class="role-name">Brand Operations Lead</span>
+                <span class="role-badge">RBAC: ADMIN</span>
+              </div>
+              <p class="role-desc">Can register brand standards, edit guidelines, approve palettes, and certify releases.</p>
+            </div>
+          </div>
+
+          <div class="role-card-option" id="role-option-dev" onclick="selectRole('Creative Developer', 'Developer Suite', 'CD', 'Submit & Inspect')">
+            <div class="role-icon-box">
+              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <div class="role-meta">
+              <div class="role-meta-top">
+                <span class="role-name">Creative Developer</span>
+                <span class="role-badge">RBAC: SUBMITTER</span>
+              </div>
+              <p class="role-desc">Submits marketing copy and visual posters against active company guidelines.</p>
+            </div>
+          </div>
+
+          <div class="role-card-option" id="role-option-auditor" onclick="selectRole('Security Auditor', 'Compliance Dept', 'SA', 'Read & Audit')">
+            <div class="role-icon-box">
+              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="role-meta">
+              <div class="role-meta-top">
+                <span class="role-name">Independent Security Auditor</span>
+                <span class="role-badge">RBAC: AUDITOR</span>
+              </div>
+              <p class="role-desc">Inspects cryptographic audit trail, reports, and tamper-resistant log history.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-surface-elevated); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: 0.78rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+            <span style="color: var(--text-muted);">Session ID:</span>
+            <span style="color: var(--accent-cyan);">sk_live_09f82d1c8e9b</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Auth Scheme:</span>
+            <span style="color: var(--success);">Enterprise HMAC-SHA256</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="toggleRoleModal()">Apply Persona</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTERPRISE SETTINGS MODAL -->
+  <div id="modal-settings" class="app-modal-backdrop hidden" onclick="if(event.target===this) toggleSettingsModal()">
+    <div class="app-modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Governance Settings &amp; API Configuration</h3>
+          <p>Fine-tune perceptual tolerances and multimodal inference parameters</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="toggleSettingsModal()" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>CIELAB &Delta;E Max Tolerance Threshold:</label>
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <input type="range" min="5" max="30" value="15" id="setting-delta-range" style="flex: 1; accent-color: var(--primary);" oninput="document.getElementById('setting-delta-val').textContent = this.value">
+            <span id="setting-delta-val" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-cyan);">15</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">&Delta;E</span>
+          </div>
+          <span class="field-hint">Values &le; 15.0 guarantee imperceptible brand color drift according to CIE international standards.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Primary AI Multimodal Model:</label>
+          <select style="width: 100%;">
+            <option selected>Gemini 2.5 Flash (Deterministic &amp; Fast, &lt;300ms)</option>
+            <option>Gemini 1.5 Pro (Deep Multimodal Reasoning)</option>
+            <option>Deterministic Local Heuristics Only (Offline Safe)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Automated Webhook Destination:</label>
+          <input type="text" placeholder="https://api.yourcompany.com/webhooks/brandshield" value="https://hooks.sanket.internal/v1/audits">
+          <span class="field-hint">Real-time JSON audit payload dispatched immediately upon inspection completion.</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="toggleSettingsModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Preferences</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DANGER / PERMANENT DELETION CONFIRMATION MODAL -->
+  <div id="modal-confirm-delete" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeConfirmDeleteModal()">
+    <div class="app-modal modal-danger-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 id="delete-modal-title">Confirm Permanent Deletion</h3>
+          <p id="delete-modal-subtitle">This operation cannot be reversed.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeConfirmDeleteModal()" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="delete-warning-box">
+          <div class="warning-icon-badge">
+            <svg class="svg-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="warning-text-content">
+            <strong id="delete-modal-target-name">Item Name</strong>
+            <p id="delete-modal-message">Are you sure you want to permanently delete this item? All associated compliance data and uploaded files will be permanently erased.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeConfirmDeleteModal()">Cancel</button>
+        <button type="button" id="delete-modal-confirm-btn" class="btn btn-danger">
+          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span id="delete-modal-confirm-btn-text">Permanently Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="app-toast" class="app-toast hidden"></div>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>Sanket AI &copy; 2026. Enterprise Brand Governance &amp; Creative Verification Platform. All rights reserved.</p>
+      <div class="footer-links">
+        <span onclick="switchMainView('landing')" role="button" tabindex="0">Overview</span> &bull;
+        <span onclick="switchMainView('developer')" role="button" tabindex="0">Check Vibe</span> &bull;
+        <span onclick="switchMainView('company')" role="button" tabindex="0">Company Portal</span> &bull;
+        <span onclick="switchMainView('account')" role="button" tabindex="0">Company Account</span> &bull;
+        <span onclick="toggleRoleModal()" role="button" tabindex="0">Role Switcher</span> &bull;
+        <span onclick="toggleSettingsModal()" role="button" tabindex="0">API Settings</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal and Interaction Helper Scripts -->
+  <script>
+    function toggleMobileNav() {
+      const drawer = document.getElementById('mobile-nav-drawer');
+      if (drawer) drawer.classList.toggle('hidden');
+    }
+    function toggleRoleModal() {
+      const modal = document.getElementById('modal-role-switcher');
+      if (modal) modal.classList.toggle('hidden');
+    }
+    function toggleSettingsModal() {
+      const modal = document.getElementById('modal-settings');
+      if (modal) modal.classList.toggle('hidden');
+    }
+    function selectRole(roleTitle, dept, initials, rbac) {
+      document.querySelectorAll('.role-card-option').forEach(el => el.classList.remove('active'));
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+      const roleDisplay = document.getElementById('active-role-display');
+      if (roleDisplay) roleDisplay.textContent = roleTitle;
+      const sideName = document.getElementById('sidebar-user-name');
+      if (sideName) sideName.textContent = dept;
+      const sideRole = document.getElementById('sidebar-user-role');
+      if (sideRole) sideRole.textContent = roleTitle;
+      const sideAvatar = document.getElementById('sidebar-user-avatar');
+      if (sideAvatar) sideAvatar.textContent = initials;
+      if (typeof toast === 'function') toast('Active role switched to ' + roleTitle);
+      toggleRoleModal();
+    }
+    function saveSettings() {
+      toggleSettingsModal();
+      if (typeof toast === 'function') toast('Governance preferences saved');
+    }
+  </script>
+
+  <script src="/static/app.js?v=11.0"></script>
+</body>
+</html>
