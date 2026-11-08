@@ -266,6 +266,7 @@ function initDropZone() {
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('inspect-file');
   const previewInfo = document.getElementById('file-preview-info');
+  let stageProgressTimer = null;
   const previewName = document.getElementById('preview-filename');
   const previewSize = document.getElementById('preview-filesize');
   const btnClear = document.getElementById('btn-clear-file');
@@ -375,6 +376,25 @@ function initDropZone() {
       progressPercent.textContent = '100% (Local)';
     }
 
+    const progressContainer = previewInfo.querySelector('.upload-progress-container');
+    if (progressContainer) {
+      progressContainer.style.transition = '';
+      progressContainer.style.opacity = '';
+      progressContainer.style.maxHeight = '';
+      progressContainer.style.marginTop = '';
+      progressContainer.style.marginBottom = '';
+      progressContainer.style.overflow = '';
+      progressContainer.style.display = '';
+      if (stageProgressTimer) clearTimeout(stageProgressTimer);
+      stageProgressTimer = setTimeout(() => {
+        progressContainer.style.transition = 'opacity 0.4s ease, max-height 0.4s ease, margin 0.4s ease';
+        progressContainer.style.opacity = '0';
+        progressContainer.style.maxHeight = '0px';
+        progressContainer.style.marginBottom = '0px';
+        progressContainer.style.overflow = 'hidden';
+      }, 2500);
+    }
+
     if (uploadBadge && uploadBadgeText) {
       if (hasBrand) {
         uploadBadge.className = 'upload-badge badge-staged';
@@ -404,6 +424,7 @@ function initDropZone() {
 
   if (btnClear) {
     btnClear.addEventListener('click', () => {
+      if (stageProgressTimer) { clearTimeout(stageProgressTimer); stageProgressTimer = null; }
       fileInput.value = '';
       const thumb = document.getElementById('preview-thumbnail');
       const fallbackIcon = document.getElementById('preview-fallback-icon');
@@ -1152,6 +1173,7 @@ function initReferenceScanning() {
   const feedback = document.getElementById('ob-scan-feedback');
   if (!fileInput) return;
   const obPreviewInfo = document.getElementById('ob-file-preview-info');
+  let obHideTimer = null;
   const obThumb = document.getElementById('ob-preview-thumbnail');
   const obFallback = document.getElementById('ob-preview-fallback-icon');
   const obFilename = document.getElementById('ob-preview-filename');
@@ -1166,8 +1188,23 @@ function initReferenceScanning() {
 
   if (btnClearOb) {
     btnClearOb.addEventListener('click', () => {
+      if (obHideTimer) {
+        clearTimeout(obHideTimer);
+        obHideTimer = null;
+      }
       fileInput.value = '';
-      if (obPreviewInfo) obPreviewInfo.classList.add('hidden');
+      if (obPreviewInfo) {
+        obPreviewInfo.style.transition = '';
+        obPreviewInfo.style.opacity = '';
+        obPreviewInfo.style.transform = '';
+        obPreviewInfo.style.maxHeight = '';
+        obPreviewInfo.style.marginTop = '';
+        obPreviewInfo.style.marginBottom = '';
+        obPreviewInfo.style.paddingTop = '';
+        obPreviewInfo.style.paddingBottom = '';
+        obPreviewInfo.style.overflow = '';
+        obPreviewInfo.classList.add('hidden');
+      }
       if (feedback) feedback.classList.add('hidden');
       const studio = document.getElementById('color-studio-container');
       if (studio) studio.classList.add('hidden');
@@ -1177,7 +1214,21 @@ function initReferenceScanning() {
   const handleScan = async (file) => {
     if (!file) return;
 
+    if (obHideTimer) {
+      clearTimeout(obHideTimer);
+      obHideTimer = null;
+    }
+
     if (obPreviewInfo) {
+      obPreviewInfo.style.transition = '';
+      obPreviewInfo.style.opacity = '';
+      obPreviewInfo.style.transform = '';
+      obPreviewInfo.style.maxHeight = '';
+      obPreviewInfo.style.marginTop = '';
+      obPreviewInfo.style.marginBottom = '';
+      obPreviewInfo.style.paddingTop = '';
+      obPreviewInfo.style.paddingBottom = '';
+      obPreviewInfo.style.overflow = '';
       obPreviewInfo.classList.remove('hidden');
       if (obFilename) obFilename.textContent = file.name;
       const mb = (file.size / (1024 * 1024)).toFixed(2);
@@ -1251,6 +1302,55 @@ function initReferenceScanning() {
         obBadgeText.textContent = '✓ DNA Extracted';
       }
       if (obStatusTip) obStatusTip.textContent = `Extracted ${(data.extracted_palette || []).length} colors & brand guidelines. Ready to lock standards.`;
+
+      // Auto-hide the upload progress card after showing 100% for a brief duration
+      if (obHideTimer) clearTimeout(obHideTimer);
+      obHideTimer = setTimeout(() => {
+        if (obPreviewInfo) {
+          obPreviewInfo.style.transition = 'opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease, margin 0.4s ease, padding 0.4s ease';
+          obPreviewInfo.style.opacity = '0';
+          obPreviewInfo.style.transform = 'translateY(-6px)';
+          obPreviewInfo.style.maxHeight = '0px';
+          obPreviewInfo.style.marginTop = '0px';
+          obPreviewInfo.style.marginBottom = '0px';
+          obPreviewInfo.style.paddingTop = '0px';
+          obPreviewInfo.style.paddingBottom = '0px';
+          obPreviewInfo.style.overflow = 'hidden';
+          setTimeout(() => {
+            obPreviewInfo.classList.add('hidden');
+            obPreviewInfo.style.transition = '';
+            obPreviewInfo.style.opacity = '';
+            obPreviewInfo.style.transform = '';
+            obPreviewInfo.style.maxHeight = '';
+            obPreviewInfo.style.marginTop = '';
+            obPreviewInfo.style.marginBottom = '';
+            obPreviewInfo.style.paddingTop = '';
+            obPreviewInfo.style.paddingBottom = '';
+            obPreviewInfo.style.overflow = '';
+          }, 450);
+        }
+        if (feedback) {
+          feedback.style.transition = 'opacity 0.4s ease, max-height 0.4s ease, margin 0.4s ease, padding 0.4s ease';
+          feedback.style.opacity = '0';
+          feedback.style.maxHeight = '0px';
+          feedback.style.marginTop = '0px';
+          feedback.style.marginBottom = '0px';
+          feedback.style.paddingTop = '0px';
+          feedback.style.paddingBottom = '0px';
+          feedback.style.overflow = 'hidden';
+          setTimeout(() => {
+            feedback.classList.add('hidden');
+            feedback.style.transition = '';
+            feedback.style.opacity = '';
+            feedback.style.maxHeight = '';
+            feedback.style.marginTop = '';
+            feedback.style.marginBottom = '';
+            feedback.style.paddingTop = '';
+            feedback.style.paddingBottom = '';
+            feedback.style.overflow = '';
+          }, 450);
+        }
+      }, 2500);
       if (data.palette && data.palette.length > 0) {
         currentPalette = data.palette.map(p => ({
           hex: p.hex_code || p.hex,
