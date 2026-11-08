@@ -365,6 +365,13 @@ select option {
   text-transform: uppercase;
 }
 
+
+/* Clean Home View: Hide top navigation pills and sidebar toggle on landing screen */
+body.landing-view-active .topbar-nav,
+body.landing-view-active #btn-topbar-sidebar-toggle {
+  display: none !important;
+}
+
 .topbar-nav {
   display: flex;
   align-items: center;

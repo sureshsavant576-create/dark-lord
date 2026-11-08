@@ -158,6 +158,7 @@ function switchMainView(view) {
   const btnDev = document.getElementById('nav-btn-developer');
   const btnCo = document.getElementById('nav-btn-company');
   if (view === 'landing') {
+    document.body.classList.add('landing-view-active');
     if (landingView) landingView.classList.remove('hidden');
     if (dashboardView) dashboardView.classList.add('hidden');
     if (btnLanding) btnLanding.classList.add('active');
@@ -165,6 +166,7 @@ function switchMainView(view) {
     if (btnCo) btnCo.classList.remove('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (view === 'developer') {
+    document.body.classList.remove('landing-view-active');
     if (landingView) landingView.classList.add('hidden');
     if (dashboardView) dashboardView.classList.remove('hidden');
     if (btnLanding) btnLanding.classList.remove('active');
@@ -173,6 +175,7 @@ function switchMainView(view) {
     switchDashboardTab('tab-inspect');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (view === 'company') {
+    document.body.classList.remove('landing-view-active');
     if (landingView) landingView.classList.add('hidden');
     if (dashboardView) dashboardView.classList.remove('hidden');
     if (btnLanding) btnLanding.classList.remove('active');
@@ -183,6 +186,7 @@ function switchMainView(view) {
     switchDashboardTab('tab-onboard');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (view === 'account') {
+    document.body.classList.remove('landing-view-active');
     if (landingView) landingView.classList.add('hidden');
     if (dashboardView) dashboardView.classList.remove('hidden');
     if (btnLanding) btnLanding.classList.remove('active');
@@ -196,6 +200,7 @@ function switchMainView(view) {
 }
 window.switchMainView = switchMainView;
 function switchDashboardTab(tabId) {
+  document.body.classList.remove('landing-view-active');
   const landingView = document.getElementById('view-landing');
   const dashboardView = document.getElementById('view-dashboard');
   if (landingView) landingView.classList.add('hidden');
