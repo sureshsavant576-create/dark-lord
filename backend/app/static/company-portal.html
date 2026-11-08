@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Company Portal — Brand DNA Onboarding & Identity Guidelines | Sanket AI</title>
   <link rel="icon" type="image/png" href="/static/emblem.png">
-  <link rel="stylesheet" href="/static/style.css?v=19.0">
+  <link rel="stylesheet" href="/static/style.css?v=20.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -134,7 +134,7 @@
                 <p class="portal-subtitle">Register your organization, define brand personality and communication tone, and establish approved palette standards.</p>
               </div>
 
-              <form id="onboarding-form" class="app-form">
+              <form id="onboarding-form" class="app-form" novalidate>
                 <input type="hidden" id="ob-editing-brand-id">
 
                 <div class="form-row">
@@ -174,7 +174,7 @@
                       </div>
 
                       <div class="logo-url-input-wrap">
-                        <input type="url" id="ob-logo-url" placeholder="Or paste public logo URL (e.g. https://.../logo.png)">
+                        <input type="text" id="ob-logo-url" placeholder="Or paste public logo URL (e.g. https://.../logo.png)">
                       </div>
                       <span class="field-hint">Upload company insignia or logo (PNG, SVG, JPG, WEBP). Displays across Company Account, verified audit reports, and standards.</span>
                     </div>
@@ -657,6 +657,6 @@
     }
   </script>
 
-  <script src="/static/app.js?v=19.0"></script>
+  <script src="/static/app.js?v=20.0"></script>
 </body>
 </html>
