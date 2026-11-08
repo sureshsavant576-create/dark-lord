@@ -2541,8 +2541,21 @@ window.confirmDeleteEditingBrand = confirmDeleteEditingBrand;
 
 function toggleSidebar() {
   const layout = document.getElementById('dashboard-layout');
+  const floatBtn = document.getElementById('floating-sidebar-trigger');
   if (!layout) return;
-  layout.classList.toggle('sidebar-hidden');
+
+  const isHidden = layout.classList.toggle('sidebar-hidden');
+  if (floatBtn) {
+    if (isHidden) {
+      floatBtn.classList.remove('hidden');
+    } else {
+      floatBtn.classList.add('hidden');
+    }
+  }
+
+  try {
+    localStorage.setItem('sanket_sidebar_hidden', isHidden ? 'true' : 'false');
+  } catch (e) {}
 }
 window.toggleSidebar = toggleSidebar;
 
@@ -2555,11 +2568,15 @@ window.toggleActivityPanel = toggleActivityPanel;
 
 function initSidebarState() {
   try {
-    localStorage.removeItem('sanket_sidebar_hidden');
-    localStorage.removeItem('sanket_activity_hidden');
+    const savedSidebar = localStorage.getItem('sanket_sidebar_hidden');
     const layout = document.getElementById('dashboard-layout');
-    if (layout) {
-      layout.classList.remove('sidebar-hidden');
+    const floatBtn = document.getElementById('floating-sidebar-trigger');
+    if (savedSidebar === 'true') {
+      if (layout) layout.classList.add('sidebar-hidden');
+      if (floatBtn) floatBtn.classList.remove('hidden');
+    } else {
+      if (layout) layout.classList.remove('sidebar-hidden');
+      if (floatBtn) floatBtn.classList.add('hidden');
     }
   } catch (e) {}
 }
