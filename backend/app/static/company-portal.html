@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Company Portal — Brand DNA Onboarding & Identity Guidelines | Sanket AI</title>
   <link rel="icon" type="image/png" href="/static/emblem.png">
-  <link rel="stylesheet" href="/static/style.css?v=16.0">
+  <link rel="stylesheet" href="/static/style.css?v=17.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -152,7 +152,7 @@
                 <div class="form-group brand-logo-upload-group">
                   <label>Company / Brand Logo:</label>
                   <div class="logo-upload-container">
-                    <div class="logo-preview-avatar" id="ob-logo-preview-box">
+                    <div class="logo-preview-avatar" id="ob-logo-preview-box" title="Click or drop logo image here" onclick="document.getElementById('ob-logo-file').click()" style="cursor: pointer;">
                       <img id="ob-logo-preview-img" class="ob-logo-img hidden" alt="Brand Logo Preview">
                       <div id="ob-logo-placeholder" class="logo-placeholder-content">
                         <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -162,11 +162,11 @@
 
                     <div class="logo-upload-controls">
                       <div class="logo-btn-row">
-                        <label for="ob-logo-file" class="btn btn-secondary btn-sm logo-file-label">
+                        <button type="button" id="btn-browse-logo" class="btn btn-secondary btn-sm logo-file-label" onclick="document.getElementById('ob-logo-file').click()">
                           <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                           <span>Upload Logo Image</span>
-                        </label>
-                        <input type="file" id="ob-logo-file" class="file-input-hidden" accept=".png,.jpg,.jpeg,.svg,.webp">
+                        </button>
+                        <input type="file" id="ob-logo-file" class="file-input-hidden" accept="image/*,.png,.jpg,.jpeg,.svg,.webp" style="display: none;">
                         <button type="button" id="btn-clear-logo" class="btn btn-ghost btn-sm hidden" onclick="clearBrandLogo()">
                           <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                           <span>Remove</span>
@@ -625,6 +625,6 @@
     }
   </script>
 
-  <script src="/static/app.js?v=16.0"></script>
+  <script src="/static/app.js?v=17.0"></script>
 </body>
 </html>

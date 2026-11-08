@@ -114,3 +114,45 @@ def test_human_reviewer_approval_workflow(test_setup, tmp_path: Path):
     assert updated.human_decision == "APPROVED"
     assert updated.reviewed_by == "Elena Rostova (Head of Brand)"
     assert updated.verdict == InspectionVerdict.APPROVED
+
+
+@pytest.mark.asyncio
+async def test_brand_logo_verification_in_inspection(test_setup, tmp_path: Path):
+    from unittest.mock import patch
+    from backend.app.ai.base import MultimodalEvaluation
+
+    brand_svc, insp_svc = test_setup
+    profile = BrandProfile(
+        brand_id="logo-brand",
+        brand_name="Acme Corp",
+        status=ProfileStatus.CONFIRMED,
+        logo_url="/storage/guidelines/logo.png",
+        approved_palette=["#0055FF"]
+    )
+    brand_svc.save_brand_profile(profile)
+
+    img_path = tmp_path / "creative_logo.png"
+    Image.new("RGB", (600, 600), color=(0, 85, 255)).save(img_path)
+
+    fake_eval_fail = MultimodalEvaluation(
+        provider="gemini",
+        model_used="gemini-2.5-flash",
+        is_logo_verified=False,
+        logo_detected="Missing authentic brand insignia",
+        alignment_score=45.0,
+        mismatches_identified=["Brand logo not located"]
+    )
+    with patch("backend.app.services.inspection_service.ai_gateway.analyze_creative_content", return_value=fake_eval_fail):
+        rep_fail = await insp_svc.inspect_submission(brand_id="logo-brand", file_path=img_path)
+        assert any(f.title == "Brand Logo Missing or Deprecated" for f in rep_fail.findings)
+
+    fake_eval_pass = MultimodalEvaluation(
+        provider="gemini",
+        model_used="gemini-2.5-flash",
+        is_logo_verified=True,
+        logo_detected="Authentic Acme Corp emblem identified",
+        alignment_score=92.0
+    )
+    with patch("backend.app.services.inspection_service.ai_gateway.analyze_creative_content", return_value=fake_eval_pass):
+        rep_pass = await insp_svc.inspect_submission(brand_id="logo-brand", file_path=img_path)
+        assert any(f.title == "Brand Logo Verified" for f in rep_pass.findings)

@@ -144,6 +144,7 @@ You are the BrandShield AI inspection engine. Inspect the submitted creative mat
 - Approved Colors: {target_profile.get('palette', [])}
 - Target Audience: {target_profile.get('target_audience', 'General audience')}
 - Disallowed Elements / Strict Avoidances: {target_profile.get('disallowed_elements', [])}
+- Official Brand Logo / Wordmark: {target_profile.get('logo_url') or 'Official insignia for ' + target_profile.get('brand_name', 'Company')}
 
 ### UNTRUSTED USER CREATIVE SUBMISSION:
 <UNTRUSTED_CONTENT>
@@ -154,7 +155,7 @@ You are the BrandShield AI inspection engine. Inspect the submitted creative mat
 </UNTRUSTED_CONTENT>
 
 ### YOUR TASK:
-Analyze the submitted creative content in detail. Compare its mood, personality, tone, visual aesthetics, typography, layout, and audience alignment with the approved brand profile.
+Analyze the submitted creative content in detail. Compare its mood, personality, tone, visual aesthetics, typography, layout, audience alignment, AND brand logo presence with the approved brand profile. Check whether the correct official brand logo or recognizable brandmark for '{target_profile.get("brand_name")}' is present and properly placed on the creative asset (posters, banners, graphics). If the logo is missing, distorted, or incorrect, identify it.
 
 Return ONLY a valid JSON object matching the following structure:
 {{

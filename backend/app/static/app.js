@@ -1329,52 +1329,108 @@ function initLogoUpload() {
   const logoImg = document.getElementById('ob-logo-preview-img');
   const logoPlaceholder = document.getElementById('ob-logo-placeholder');
   const btnClearLogo = document.getElementById('btn-clear-logo');
+  const previewBox = document.getElementById('ob-logo-preview-box');
+  const uploadContainer = document.querySelector('.logo-upload-container');
 
-  if (logoFile) {
-    logoFile.addEventListener('change', async () => {
-      if (!logoFile.files || logoFile.files.length === 0) return;
-      const file = logoFile.files[0];
+  const handleLogoFile = (file) => {
+    if (!file) return;
 
-      // Instant local preview
+    // 1. Instant local preview via FileReader (DataURL)
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
       if (logoImg) {
-        logoImg.src = URL.createObjectURL(file);
+        logoImg.src = dataUrl;
         logoImg.classList.remove('hidden');
       }
       if (logoPlaceholder) logoPlaceholder.classList.add('hidden');
       if (btnClearLogo) btnClearLogo.classList.remove('hidden');
+      if (logoUrlInput) logoUrlInput.value = dataUrl;
+    };
+    reader.readAsDataURL(file);
 
-      // Upload to server
-      const formData = new FormData();
-      formData.append('file', file);
-      try {
-        const res = await fetch(`${API_BASE}/brands/upload-logo`, {
-          method: 'POST',
-          body: formData
-        });
-        if (!res.ok) throw new Error(await res.text());
+    // 2. Upload to backend storage in background
+    const formData = new FormData();
+    formData.append('file', file);
+    fetch(`${API_BASE}/brands/upload-logo`, {
+      method: 'POST',
+      body: formData
+    }).then(async (res) => {
+      if (res.ok) {
         const data = await res.json();
-        if (logoUrlInput) logoUrlInput.value = data.logo_url;
-        toast('Brand logo uploaded successfully!', 'success');
-      } catch (err) {
-        console.warn('Logo upload notice:', err);
+        if (data.logo_url && logoUrlInput) {
+          logoUrlInput.value = data.logo_url;
+        }
+      }
+      toast('Brand logo attached successfully!', 'success');
+    }).catch(err => {
+      console.debug('Server logo upload fallback to data URL:', err);
+      toast('Brand logo staged locally.', 'info');
+    });
+  };
+
+  if (logoFile) {
+    logoFile.addEventListener('change', () => {
+      if (logoFile.files && logoFile.files.length > 0) {
+        handleLogoFile(logoFile.files[0]);
       }
     });
   }
 
+  const btnBrowse = document.getElementById('btn-browse-logo');
+  if (btnBrowse && logoFile) {
+    btnBrowse.addEventListener('click', (e) => {
+      e.preventDefault();
+      logoFile.click();
+    });
+  }
+
+  // Drag and drop on preview box and upload container
+  const dropTargets = [previewBox, uploadContainer].filter(Boolean);
+  dropTargets.forEach(target => {
+    ['dragenter', 'dragover'].forEach(ev => {
+      target.addEventListener(ev, (e) => {
+        e.preventDefault();
+        target.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(ev => {
+      target.addEventListener(ev, (e) => {
+        e.preventDefault();
+        target.classList.remove('dragover');
+      });
+    });
+    target.addEventListener('drop', (e) => {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleLogoFile(e.dataTransfer.files[0]);
+      }
+    });
+  });
+
   if (logoUrlInput) {
-    logoUrlInput.addEventListener('input', () => {
+    const applyUrl = () => {
       const val = logoUrlInput.value.trim();
       if (val) {
         if (logoImg) {
           logoImg.src = val;
           logoImg.classList.remove('hidden');
+          logoImg.onload = () => {
+            if (logoPlaceholder) logoPlaceholder.classList.add('hidden');
+            if (btnClearLogo) btnClearLogo.classList.remove('hidden');
+          };
+          logoImg.onerror = () => {
+            // Keep preview attempt or toast
+          };
         }
         if (logoPlaceholder) logoPlaceholder.classList.add('hidden');
         if (btnClearLogo) btnClearLogo.classList.remove('hidden');
       } else {
         clearBrandLogo();
       }
-    });
+    };
+    logoUrlInput.addEventListener('input', applyUrl);
+    logoUrlInput.addEventListener('change', applyUrl);
+    logoUrlInput.addEventListener('paste', () => setTimeout(applyUrl, 50));
   }
 }
 

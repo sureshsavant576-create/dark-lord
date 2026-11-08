@@ -338,7 +338,8 @@ class InspectionService:
             "visual_style": ", ".join(brand.visual_style),
             "palette": brand.approved_palette,
             "target_audience": brand.target_audience,
-            "disallowed_elements": brand.disallowed_elements
+            "disallowed_elements": brand.disallowed_elements,
+            "logo_url": getattr(brand, "logo_url", "") or ""
         }
 
         ai_req = ContentAnalysisRequest(
@@ -411,6 +412,53 @@ class InspectionService:
                     explanation=f"Detected spatial layout and composition density: {ai_eval.layout_detected}",
                     confidence_score=ai_eval.confidence_score
                 ))
+
+            
+            if ai_eval.is_logo_verified is not None:
+                if ai_eval.is_logo_verified:
+                    matching_chars.append(f"Official {brand.brand_name} brand logo verified on creative.")
+                    findings.append(InspectionFinding(
+                        id=f"f-{uuid.uuid4().hex[:6]}",
+                        title="Brand Logo Verified",
+                        category=FindingCategory.VISUAL_STYLE,
+                        source=FindingSource.AI_MODEL_INFERENCE,
+                        severity=FindingSeverity.PASS,
+                        detected_value=ai_eval.logo_detected or "Official brand logo present",
+                        expected_value=f"{brand.brand_name} official logo",
+                        explanation=f"The creative correctly incorporates the authentic {brand.brand_name} logo.",
+                        confidence_score=ai_eval.confidence_score
+                    ))
+                else:
+                    det_score -= 20.0
+                    mismatches.append(f"Logo departure: {ai_eval.logo_detected or 'No brand logo detected'}")
+                    violations.append(f"Missing or incorrect {brand.brand_name} brand logo")
+                    corrections.append(f"Include the authentic, un-distorted {brand.brand_name} logo on the creative asset.")
+                    findings.append(InspectionFinding(
+                        id=f"f-{uuid.uuid4().hex[:6]}",
+                        title="Brand Logo Missing or Deprecated",
+                        category=FindingCategory.VISUAL_STYLE,
+                        source=FindingSource.AI_MODEL_INFERENCE,
+                        severity=FindingSeverity.WARNING,
+                        detected_value=ai_eval.logo_detected or "No brand logo detected",
+                        expected_value=f"{brand.brand_name} approved logo",
+                        explanation=f"Brand compliance requires official {brand.brand_name} insignia on promotional media. {ai_eval.logo_detected or ''}".strip(),
+                        suggested_correction=f"Add the official {brand.brand_name} logo in accordance with brand guidelines.",
+                        confidence_score=ai_eval.confidence_score
+                    ))
+            elif getattr(brand, "logo_url", None) and preprocessed.is_visual_media:
+                has_name = brand.brand_name.lower() in text_content.lower()
+                if has_name:
+                    matching_chars.append(f"Brand wordmark '{brand.brand_name}' detected on creative.")
+                    findings.append(InspectionFinding(
+                        id=f"f-{uuid.uuid4().hex[:6]}",
+                        title="Brand Mark Identified",
+                        category=FindingCategory.VISUAL_STYLE,
+                        source=FindingSource.AI_MODEL_INFERENCE,
+                        severity=FindingSeverity.PASS,
+                        detected_value=f"Wordmark '{brand.brand_name}'",
+                        expected_value=f"{brand.brand_name} logo",
+                        explanation=f"Brand reference text '{brand.brand_name}' identified on submitted asset."
+                    ))
 
             for m in ai_eval.mismatches_identified:
                 mismatches.append(f"[Observation] {m}")

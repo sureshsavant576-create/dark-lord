@@ -33,6 +33,8 @@ class MultimodalEvaluation(BaseModel):
 
     detailed_analysis: str = Field(default="", description="Explainable analysis of creative alignment")
     mismatches_identified: List[str] = Field(default_factory=list, description="Specific off-brand elements detected")
+    logo_detected: Optional[str] = Field(default=None, description="Assessment of brand logo presence, accuracy, and placement")
+    is_logo_verified: Optional[bool] = Field(default=None, description="Whether the authentic brand logo was verified")
     alignment_score: Optional[float] = Field(default=None, description="Model-assessed subjective alignment score (0-100) or None if unconfigured")
     confidence_score: float = Field(default=0.0, description="Model confidence indicator (0.0 - 1.0)")
     
