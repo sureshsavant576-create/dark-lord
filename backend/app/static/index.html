@@ -107,98 +107,12 @@
       <div class="hero-cta-group">
         <button type="button" class="btn btn-hero-primary" onclick="switchMainView('developer')">
           <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span>Launch Vibe Dashboard</span>
+          <span>Launch Check Vibe</span>
         </button>
         <button type="button" class="btn btn-hero-secondary" onclick="switchMainView('company')">
           <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/></svg>
           <span>Register Brand Standard</span>
         </button>
-      </div>
-
-      <!-- Live Interactive Governance Terminal Simulation -->
-      <div class="hero-interactive-demo">
-        <div class="terminal-titlebar">
-          <div class="terminal-dots">
-            <span class="terminal-dot dot-red"></span>
-            <span class="terminal-dot dot-amber"></span>
-            <span class="terminal-dot dot-green"></span>
-          </div>
-          <div class="terminal-tabs">
-            <button type="button" class="terminal-tab-btn active" id="term-tab-1" onclick="switchTerminalTab(1)">CIELAB Color Engine</button>
-            <button type="button" class="terminal-tab-btn" id="term-tab-2" onclick="switchTerminalTab(2)">Policy Lexicon</button>
-            <button type="button" class="terminal-tab-btn" id="term-tab-3" onclick="switchTerminalTab(3)">Multimodal Reasoning</button>
-          </div>
-          <span class="tag-badge tag-PASS" style="font-size: 0.65rem;">ZERO LATENCY</span>
-        </div>
-
-        <div class="terminal-body" id="terminal-body-content">
-          <div class="terminal-code-col" id="terminal-code-pane">
-            <p><span class="t-cm">// Step 1: CIELAB Perceptual Color Extraction</span></p>
-            <p><span class="t-kw">const</span> centroids = <span class="t-fn">extractCentroids</span>(asset, { k: <span class="t-val">8</span> });</p>
-            <p><span class="t-kw">const</span> deltaE = <span class="t-fn">cielabDistance</span>(centroids, approvedPalette);</p>
-            <p><span class="t-cm">// &Delta;E = 3.42 (Within strict threshold &lt; 15.0)</span></p>
-            <p><span class="t-cm">// Step 2: Deterministic Policy Lexicon Scanner</span></p>
-            <p><span class="t-kw">const</span> violations = <span class="t-fn">scanProhibitedClaims</span>(copy, avoidances);</p>
-            <p><span class="t-cm">// Step 3: Multimodal Aesthetic Synthesis</span></p>
-            <p><span class="t-kw">const</span> verdict = <span class="t-fn">verifyCompliance</span>({ deltaE, whitespace: <span class="t-val">0.38</span> });</p>
-            <p><span class="t-str">&gt;&gt; AUDIT PASSED: 98.4% Brand Alignment Certified</span></p>
-          </div>
-
-          <div class="terminal-preview-col" id="terminal-preview-pane">
-            <div class="terminal-preview-header">
-              <span class="t-preview-title" id="t-preview-title">Verification Telemetry</span>
-              <span class="t-tag-approved" id="t-preview-badge">VERIFIED</span>
-            </div>
-
-            <div class="t-metric-row">
-              <span id="t-row1-label">Color Fidelity (&Delta;E &lt; 15)</span>
-              <div class="t-metric-bar"><div class="t-bar-fill" id="t-bar-1" style="width: 98%"></div></div>
-              <strong id="t-val-1">98.2%</strong>
-            </div>
-
-            <div class="t-metric-row">
-              <span id="t-row2-label">Whitespace Density</span>
-              <div class="t-metric-bar"><div class="t-bar-fill" id="t-bar-2" style="width: 94%"></div></div>
-              <strong id="t-val-2">94.0%</strong>
-            </div>
-
-            <div class="t-metric-row">
-              <span id="t-row3-label">Prohibited Terms</span>
-              <div class="t-metric-bar"><div class="t-bar-fill" id="t-bar-3" style="width: 100%"></div></div>
-              <strong id="t-val-3">0 Violations</strong>
-            </div>
-
-            <div class="t-metric-row">
-              <span id="t-row4-label">Multimodal Resonance</span>
-              <div class="t-metric-bar"><div class="t-bar-fill" id="t-bar-4" style="width: 96%"></div></div>
-              <strong id="t-val-4">96.5%</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Enterprise Performance Metrics Strip -->
-      <div class="hero-metrics-strip">
-        <div class="metric-stat-item">
-          <span class="metric-stat-val" id="metric-counter-1">99.4%</span>
-          <span class="metric-stat-label">Color Precision</span>
-          <span class="metric-stat-sub">CIELAB &Delta;E Perceptual Math</span>
-        </div>
-        <div class="metric-stat-item">
-          <span class="metric-stat-val" id="metric-counter-2">&lt;120ms</span>
-          <span class="metric-stat-label">Extraction Latency</span>
-          <span class="metric-stat-sub">8-Centroid Quantization</span>
-        </div>
-        <div class="metric-stat-item">
-          <span class="metric-stat-val" id="metric-counter-3">0%</span>
-          <span class="metric-stat-label">Unaudited Leaks</span>
-          <span class="metric-stat-sub">Zero False Approvals</span>
-        </div>
-        <div class="metric-stat-item">
-          <span class="metric-stat-val" id="metric-counter-4">100%</span>
-          <span class="metric-stat-label">Deterministic Rules</span>
-          <span class="metric-stat-sub">Policy Token Enforcement</span>
-        </div>
       </div>
     </div>
   </section>
@@ -1470,9 +1384,10 @@
     <div class="footer-container">
       <p>Sanket AI &copy; 2026. Enterprise Brand Governance &amp; Creative Verification Platform. All rights reserved.</p>
       <div class="footer-links">
-        <span onclick="switchMainView('landing')" role="button" tabindex="0">Platform Overview</span> &bull;
-        <span onclick="switchMainView('developer')" role="button" tabindex="0">Vibe Dashboard</span> &bull;
+        <span onclick="switchMainView('landing')" role="button" tabindex="0">Overview</span> &bull;
+        <span onclick="switchMainView('developer')" role="button" tabindex="0">Check Vibe</span> &bull;
         <span onclick="switchMainView('company')" role="button" tabindex="0">Company Portal</span> &bull;
+        <span onclick="switchMainView('account')" role="button" tabindex="0">Company Account</span> &bull;
         <span onclick="toggleRoleModal()" role="button" tabindex="0">Role Switcher</span> &bull;
         <span onclick="toggleSettingsModal()" role="button" tabindex="0">API Settings</span>
       </div>
@@ -1510,83 +1425,6 @@
     function saveSettings() {
       toggleSettingsModal();
       if (typeof toast === 'function') toast('Governance preferences saved');
-    }
-
-    // Terminal interactive tabs simulation
-    function switchTerminalTab(tab) {
-      const tab1 = document.getElementById('term-tab-1');
-      const tab2 = document.getElementById('term-tab-2');
-      const tab3 = document.getElementById('term-tab-3');
-      const codePane = document.getElementById('terminal-code-pane');
-      const title = document.getElementById('t-preview-title');
-      const badge = document.getElementById('t-preview-badge');
-      
-      [tab1, tab2, tab3].forEach(t => t && t.classList.remove('active'));
-      const activeBtn = document.getElementById('term-tab-' + tab);
-      if (activeBtn) activeBtn.classList.add('active');
-
-      if (tab === 1) {
-        if (codePane) {
-          codePane.innerHTML = `
-            <p><span class="t-cm">// Step 1: CIELAB Perceptual Color Extraction</span></p>
-            <p><span class="t-kw">const</span> centroids = <span class="t-fn">extractCentroids</span>(asset, { k: <span class="t-val">8</span> });</p>
-            <p><span class="t-kw">const</span> deltaE = <span class="t-fn">cielabDistance</span>(centroids, approvedPalette);</p>
-            <p><span class="t-cm">// &Delta;E = 3.42 (Within strict threshold &lt; 15.0)</span></p>
-            <p><span class="t-cm">// Deterministic palette compliance calculated</span></p>
-            <p><span class="t-kw">const</span> status = deltaE &lt; <span class="t-val">15.0</span> ? <span class="t-str">'PASS'</span> : <span class="t-str">'FAIL'</span>;</p>
-            <p><span class="t-str">&gt;&gt; CIELAB ADHERENCE: 98.2% Accurate Match</span></p>
-          `;
-        }
-        if (title) title.textContent = 'CIELAB Color Telemetry';
-        if (badge) { badge.textContent = 'COLOR VERIFIED'; badge.className = 't-tag-approved'; }
-        updateBar('t-bar-1', '98%', 't-val-1', '98.2%');
-        updateBar('t-bar-2', '94%', 't-val-2', '94.0%');
-        updateBar('t-bar-3', '100%', 't-val-3', '0 Violations');
-        updateBar('t-bar-4', '96%', 't-val-4', '96.5%');
-      } else if (tab === 2) {
-        if (codePane) {
-          codePane.innerHTML = `
-            <p><span class="t-cm">// Step 2: Policy Lexicon & Forbidden Claims</span></p>
-            <p><span class="t-kw">const</span> prohibited = [<span class="t-str">'cheap'</span>, <span class="t-str">'clearance'</span>, <span class="t-str">'bargain'</span>];</p>
-            <p><span class="t-kw">const</span> tokens = <span class="t-fn">tokenizeCopy</span>(marketingCopy);</p>
-            <p><span class="t-cm">// Regex boundary scan against disallowed terms</span></p>
-            <p><span class="t-kw">const</span> hits = tokens.<span class="t-fn">filter</span>(t =&gt; prohibited.<span class="t-fn">includes</span>(t));</p>
-            <p><span class="t-cm">// Zero disallowed tokens found</span></p>
-            <p><span class="t-str">&gt;&gt; POLICY SCAN: 100% Deterministic Policy Enforced</span></p>
-          `;
-        }
-        if (title) title.textContent = 'Lexicon Audit Stream';
-        if (badge) { badge.textContent = '0 VIOLATIONS'; badge.className = 't-tag-approved'; }
-        updateBar('t-bar-1', '100%', 't-val-1', '0 Prohibited');
-        updateBar('t-bar-2', '95%', 't-val-2', 'Direct Tone');
-        updateBar('t-bar-3', '100%', 't-val-3', 'Compliant Claims');
-        updateBar('t-bar-4', '98%', 't-val-4', 'Enterprise Tone');
-      } else if (tab === 3) {
-        if (codePane) {
-          codePane.innerHTML = `
-            <p><span class="t-cm">// Step 3: Multimodal Aesthetic Synthesis</span></p>
-            <p><span class="t-kw">const</span> vision = <span class="t-fn">callGeminiMultimodal</span>({ image, brandDNA });</p>
-            <p><span class="t-cm">// Mood: Focused, Sleek & Minimalist</span></p>
-            <p><span class="t-cm">// Personality: Confident & Understated</span></p>
-            <p><span class="t-kw">const</span> alignment = vision.vibeScore; <span class="t-cm">// 96.5%</span></p>
-            <p><span class="t-kw">const</span> release = <span class="t-fn">certifyRelease</span>({ vision, rules });</p>
-            <p><span class="t-str">&gt;&gt; VIBE VERDICT: 98.4% Release Ready</span></p>
-          `;
-        }
-        if (title) title.textContent = 'Multimodal Synthesis';
-        if (badge) { badge.textContent = 'AI CERTIFIED'; badge.className = 't-tag-approved'; }
-        updateBar('t-bar-1', '96%', 't-val-1', '96.5% Mood');
-        updateBar('t-bar-2', '97%', 't-val-2', 'Minimalist');
-        updateBar('t-bar-3', '95%', 't-val-3', 'Confident');
-        updateBar('t-bar-4', '99%', 't-val-4', 'Certified');
-      }
-    }
-
-    function updateBar(barId, width, valId, valText) {
-      const bar = document.getElementById(barId);
-      const val = document.getElementById(valId);
-      if (bar) bar.style.width = width;
-      if (val) val.textContent = valText;
     }
   </script>
 
