@@ -5247,6 +5247,43 @@ body.landing-view-active #btn-topbar-sidebar-toggle {
    CLEAN VECTOR BRANDMARK & COMPANY LOGO UPLOAD COMPONENT
    ========================================================================== */
 
+
+.brand-logo-img {
+  height: 32px;
+  width: auto;
+  max-width: 145px;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.brand-brandmark:hover .brand-logo-img {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.hero-brand-logo-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.hero-brand-logo {
+  height: 64px;
+  width: auto;
+  max-width: 85vw;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 30px rgba(99, 102, 241, 0.28));
+  user-select: none;
+  transition: transform 0.3s ease;
+}
+
+.hero-brand-logo:hover {
+  transform: scale(1.02);
+}
+
 .brand-icon-shield {
   width: 30px;
   height: 30px;
@@ -5722,6 +5759,14 @@ html, body {
 
 /* Extra small phone screens (<= 480px, e.g. iPhone SE, compact Androids) */
 @media (max-width: 480px) {
+  .brand-logo-img {
+    height: 24px !important;
+    max-width: 110px !important;
+  }
+  .hero-brand-logo {
+    height: 38px !important;
+    max-width: 75vw !important;
+  }
   .app-topbar {
     padding: 0 0.75rem;
   }
