@@ -1377,6 +1377,50 @@ function initOnboarding() {
     }
   });
 }
+
+let currentInspectStage = 'input';
+let lastCompletedReport = null;
+
+function switchInspectStage(stage) {
+  const stageInput = document.getElementById('inspect-stage-input');
+  const stageLoading = document.getElementById('inspect-stage-loading');
+  const stageResults = document.getElementById('inspect-stage-results');
+
+  if (stageInput) stageInput.classList.toggle('hidden', stage !== 'input');
+  if (stageLoading) stageLoading.classList.toggle('hidden', stage !== 'loading');
+  if (stageResults) stageResults.classList.toggle('hidden', stage !== 'results');
+
+  currentInspectStage = stage;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.switchInspectStage = switchInspectStage;
+
+function resetToInspectInput() {
+  switchInspectStage('input');
+  const form = document.getElementById('inspection-form');
+  if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+window.resetToInspectInput = resetToInspectInput;
+
+function exportActiveAuditSpec() {
+  if (!lastCompletedReport) {
+    toast('No inspection report active to export.', 'warning');
+    return;
+  }
+  const jsonStr = JSON.stringify(lastCompletedReport, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sanket_audit_${lastCompletedReport.inspection_id || 'spec'}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast(`Exported Audit Spec JSON (${lastCompletedReport.inspection_id})`, 'success');
+}
+window.exportActiveAuditSpec = exportActiveAuditSpec;
+
 function initInspection() {
   const form = document.getElementById('inspection-form');
   const btn = document.getElementById('btn-run-inspect');
@@ -1385,23 +1429,32 @@ function initInspection() {
   const resultsView = document.getElementById('inspection-results-view');
   const inlineStatus = document.getElementById('inspect-inline-status');
   const inlineText = document.getElementById('inline-status-text');
-  const reportPanel = document.getElementById('report-panel');
+
   if (!form) return;
+
   const tabModeText = document.getElementById('tab-mode-text');
   const tabModeFile = document.getElementById('tab-mode-file');
   if (tabModeText) tabModeText.addEventListener('click', () => setInputMode('text'));
   if (tabModeFile) tabModeFile.addEventListener('click', () => setInputMode('file'));
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const brandSelect = document.getElementById('inspect-brand-select');
     const brandId = brandSelect ? brandSelect.value : '';
     const fileInput = document.getElementById('inspect-file');
     const copyTextarea = document.getElementById('inspect-copy-text');
+
     if (!brandId) {
       toast('Please select a target brand standard profile first.', 'warning');
       return;
     }
+
+    const brandData = brandsMap[brandId] || {};
+    const brandDisplayName = brandData.brand_name || brandId;
+
     const formData = new FormData();
+    let submissionTitle = '';
+
     if (activeInputMode === 'text') {
       const textVal = copyTextarea ? copyTextarea.value.trim() : '';
       if (!textVal) {
@@ -1409,139 +1462,139 @@ function initInspection() {
         return;
       }
       formData.append('copy_text', textVal);
+      submissionTitle = textVal.length > 36 ? textVal.substring(0, 36) + '...' : textVal;
     } else {
       if (!fileInput.files || fileInput.files.length === 0) {
         toast('Please select or drop a poster or graphic asset to inspect.', 'warning');
         return;
       }
       formData.append('file', fileInput.files[0]);
+      submissionTitle = fileInput.files[0].name;
     }
-    const uploadBadge = document.getElementById('preview-upload-badge');
-    const uploadBadgeText = document.getElementById('preview-upload-badge-text');
-    const statusTip = document.getElementById('preview-status-tip');
-    const progressFill = document.getElementById('upload-progress-fill');
-    const progressStatusText = document.getElementById('upload-progress-status-text');
-    const progressPercent = document.getElementById('upload-progress-percent');
 
-    if (emptyState) emptyState.classList.add('hidden');
-    if (resultsView) resultsView.classList.add('hidden');
-    if (loadingState) loadingState.classList.remove('hidden');
+    // Populate NewsCatcher Loading Telemetry & Config Sidecar
+    const stagedTargetBrand = document.getElementById('staged-target-brand');
+    const stagedConfigBrand = document.getElementById('staged-config-brand-name');
+    const stagedTargetFilename = document.getElementById('staged-target-filename');
+    const stagedMainTitle = document.getElementById('staged-loading-title');
+    const stagedSubtext = document.getElementById('staged-loading-subtext');
+    const stagedProgressFill = document.getElementById('staged-progress-bar-fill');
+    const stagedProgressPct = document.getElementById('staged-progress-pct');
+    const stagedQuickStatus = document.getElementById('staged-quick-status-note');
+
+    if (stagedTargetBrand) stagedTargetBrand.textContent = brandDisplayName;
+    if (stagedConfigBrand) stagedConfigBrand.textContent = brandDisplayName;
+    if (stagedTargetFilename) stagedTargetFilename.textContent = submissionTitle;
+
+    // Reset Stepper Pills
+    const setStepper = (activeStep, pct, title, subtitle, quickNote) => {
+      for (let i = 1; i <= 4; i++) {
+        const p = document.getElementById(`load-step-pill-${i}`);
+        if (p) {
+          if (i < activeStep) p.className = 'stepper-step done';
+          else if (i === activeStep) p.className = 'stepper-step active';
+          else p.className = 'stepper-step';
+        }
+        if (i <= 3) {
+          const l = document.getElementById(`load-step-line-${i}`);
+          if (l) l.className = i < activeStep ? 'stepper-line done' : 'stepper-line';
+        }
+      }
+      if (stagedMainTitle) stagedMainTitle.innerHTML = title;
+      if (stagedSubtext) stagedSubtext.textContent = subtitle;
+      if (stagedProgressFill) stagedProgressFill.style.width = `${pct}%`;
+      if (stagedProgressPct) stagedProgressPct.textContent = `${pct}%`;
+      if (stagedQuickStatus) stagedQuickStatus.textContent = quickNote;
+    };
+
+    // Step 1: Initial Ingest
+    setStepper(1, 25, 'Step 1 of 4: Ingesting &amp; Staging Creative Asset...', 'Pre-processing dimensions, rasterization &amp; perceptual encoding', 'Staging asset and computing baseline perceptual tensors');
+
+    // Switch view to dedicated NewsCatcher loading stage!
+    switchInspectStage('loading');
+
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span class="inline-spinner"></span> <span>Uploading &amp; Inspecting...</span>';
+      btn.innerHTML = '<span class="inline-spinner"></span> <span>Inspecting...</span>';
     }
 
-    if (uploadBadge && uploadBadgeText) {
-      uploadBadge.className = 'upload-badge badge-uploading';
-      uploadBadgeText.textContent = 'Uploading & Analyzing...';
-    }
-    if (statusTip) {
-      statusTip.textContent = 'Transmitting creative payload to server and executing multimodal inspection...';
-    }
-    if (progressFill) {
-      progressFill.className = 'upload-progress-fill uploading';
-      progressFill.style.width = '20%';
-    }
-    if (progressStatusText) progressStatusText.textContent = 'Transmitting creative payload to server...';
-    if (progressPercent) progressPercent.textContent = '20%';
+    const startTime = Date.now();
 
-    if (inlineStatus) {
-      inlineStatus.className = 'inspect-inline-status status-running';
-      if (inlineText) inlineText.textContent = 'Analyzing feature vectors and verifying brand compliance...';
-      inlineStatus.classList.remove('hidden');
-    }
-    let stepTimer1 = null, stepTimer2 = null;
-    const p1 = document.getElementById('step-pill-1');
-    const p2 = document.getElementById('step-pill-2');
-    const p3 = document.getElementById('step-pill-3');
-    const stageTxt = document.getElementById('loading-stage-text');
-    if (p1) p1.className = 'step-pill active';
-    if (p2) p2.className = 'step-pill';
-    if (p3) p3.className = 'step-pill';
-    if (stageTxt) stageTxt.textContent = 'Step 1: Extracting CIELAB color centroids & layout density vectors...';
-    stepTimer1 = setTimeout(() => {
-      if (p1) p1.className = 'step-pill done';
-      if (p2) p2.className = 'step-pill active';
-      if (stageTxt) stageTxt.textContent = 'Step 2: Scanning communication vocabulary & prohibited claims...';
-      if (progressFill) progressFill.style.width = '70%';
-      if (progressStatusText) progressStatusText.textContent = 'Scanning vocabulary & feature vectors...';
-      if (progressPercent) progressPercent.textContent = '70%';
-    }, 600);
-    stepTimer2 = setTimeout(() => {
-      if (p2) p2.className = 'step-pill done';
-      if (p3) p3.className = 'step-pill active';
-      if (stageTxt) stageTxt.textContent = 'Step 3: Synthesizing multimodal aesthetic brand alignment...';
-      if (progressFill) progressFill.style.width = '90%';
-      if (progressStatusText) progressStatusText.textContent = 'Multimodal Gemini AI analysis running...';
-      if (progressPercent) progressPercent.textContent = '90%';
-    }, 1400);
+    // Timed progressive transitions matching the user's NewsCatcher screen
+    const stepTimer1 = setTimeout(() => {
+      setStepper(2, 55, 'Step 2 of 4: Quantizing CIELAB Centroids &amp; Layout Vectors...', 'Calculating perceptual color distances (&Delta;E) and spatial negative space', 'Comparing color clusters against official brand palette');
+    }, 700);
+
+    const stepTimer2 = setTimeout(() => {
+      setStepper(3, 80, 'Step 3 of 4: Scanning Prohibited Terms &amp; Regulatory Lexicon...', 'Verifying regulatory avoidances, blacklist terms and brand tone rules', 'Evaluating communication tone and strictly banned claims');
+    }, 1500);
+
+    const stepTimer3 = setTimeout(() => {
+      setStepper(4, 95, 'Step 4 of 4: Finishing...', 'Completing final checks and preparing records', 'Synthesizing multimodal alignment verdict');
+    }, 2300);
+
     try {
       const res = await fetch(`${API_BASE}/inspect/${brandId}`, {
         method: 'POST',
         body: formData
       });
+
       if (!res.ok) {
         const errDetail = await res.text();
         throw new Error(errDetail);
       }
+
       const report = await res.json();
+      lastCompletedReport = report;
+
+      // Ensure minimum elapsed time (2.6s) so user clearly experiences the staged verification sequence
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 2600) {
+        await new Promise(resolve => setTimeout(resolve, 2600 - elapsed));
+      }
+
+      // Mark Step 4 100% complete
+      for (let i = 1; i <= 4; i++) {
+        const p = document.getElementById(`load-step-pill-${i}`);
+        if (p) p.className = 'stepper-step done';
+        if (i <= 3) {
+          const l = document.getElementById(`load-step-line-${i}`);
+          if (l) l.className = 'stepper-line done';
+        }
+      }
+      if (stagedMainTitle) stagedMainTitle.innerHTML = 'Step 4 of 4: Audit Verified &bull; Complete!';
+      if (stagedSubtext) stagedSubtext.textContent = 'Generating comprehensive compliance certificate and telemetry report';
+      if (stagedProgressFill) stagedProgressFill.style.width = '100%';
+      if (stagedProgressPct) stagedProgressPct.textContent = '100%';
+      if (stagedQuickStatus) stagedQuickStatus.textContent = 'Audit complete — Loading results stage';
+
       renderInspectionReport(report);
       loadRecentReport();
 
-      if (progressFill) {
-        progressFill.className = 'upload-progress-fill';
-        progressFill.style.width = '100%';
-      }
-      if (progressStatusText) progressStatusText.textContent = 'Inspection complete — Logged to Tracked Inspections';
-      if (progressPercent) progressPercent.textContent = '100%';
-      if (uploadBadge && uploadBadgeText) {
-        uploadBadge.className = 'upload-badge badge-success';
-        uploadBadgeText.textContent = '✓ Inspected & Verified';
-      }
-      if (statusTip) {
-        statusTip.textContent = `Audit complete (${report.verdict}). Logged to Tracked Inspections on the right.`;
-      }
+      // Smoothly transition into Stage 3 (Dedicated Results View)
+      await new Promise(resolve => setTimeout(resolve, 450));
+      switchInspectStage('results');
 
-      if (inlineStatus) {
-        inlineStatus.className = 'inspect-inline-status status-success';
-        const matchPct = report.overall_score !== null && report.overall_score !== undefined ? report.overall_score : report.deterministic_score;
-        if (inlineText) inlineText.innerHTML = `Audit complete: <strong>${matchPct}% Match (${report.verdict})</strong> — Logged to Tracked Inspections`;
-      }
-      if (typeof toggleActivityPanel === 'function') {
-        const actPanel = document.getElementById('dashboard-activity-panel');
-        if (actPanel && actPanel.classList.contains('collapsed')) {
-          toggleActivityPanel(false);
-        }
-      }
+      toast(`Audit complete: ${report.verdict} (${report.overall_score !== null ? report.overall_score : report.deterministic_score}% match)`, 'success');
+
     } catch (err) {
-      if (progressFill) {
-        progressFill.className = 'upload-progress-fill';
-        progressFill.style.width = '100%';
-      }
-      if (progressStatusText) progressStatusText.textContent = 'Inspection failed';
-      if (progressPercent) progressPercent.textContent = 'Error';
-      if (uploadBadge && uploadBadgeText) {
-        uploadBadge.className = 'upload-badge badge-error';
-        uploadBadgeText.textContent = '⚠️ Inspection Failed';
-      }
-      if (statusTip) {
-        statusTip.textContent = `Error: ${err.message}`;
-      }
+      clearTimeout(stepTimer1);
+      clearTimeout(stepTimer2);
+      clearTimeout(stepTimer3);
+
+      switchInspectStage('input');
 
       if (inlineStatus) {
         inlineStatus.className = 'inspect-inline-status status-error';
-        if (inlineText) inlineText.textContent = `⚠️ Inspection Error: ${err.message}`;
-      } else {
-        alert(`Inspection Error: ${err.message}`);
+        if (inlineText) inlineText.textContent = `Inspection Error: ${err.message}`;
+        inlineStatus.classList.remove('hidden');
       }
-      if (emptyState) emptyState.classList.remove('hidden');
+
+      toast(`Inspection Error: ${err.message}`, 'error');
     } finally {
       clearTimeout(stepTimer1);
       clearTimeout(stepTimer2);
-      if (p1) p1.className = 'step-pill done';
-      if (p2) p2.className = 'step-pill done';
-      if (p3) p3.className = 'step-pill done';
-      if (loadingState) loadingState.classList.add('hidden');
+      clearTimeout(stepTimer3);
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = '<svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Run Brand Inspection</span>';
@@ -1549,7 +1602,9 @@ function initInspection() {
     }
   });
 }
+
 function renderInspectionReport(report) {
+  lastCompletedReport = report;
   const resultsView = document.getElementById('inspection-results-view');
   const emptyState = document.getElementById('inspection-empty-state');
   const loadingState = document.getElementById('inspection-loading-state');
@@ -1767,6 +1822,8 @@ async function loadRecentReport() {
           item.onclick = (e) => {
             if (e.target.closest('.btn-delete-item')) return;
             switchDashboardTab('tab-inspect');
+            renderInspectionReport(rep);
+            switchInspectStage('results');
             const inlineStatus = document.getElementById('inspect-inline-status');
             const inlineText = document.getElementById('inline-status-text');
             if (inlineStatus && inlineText) {
