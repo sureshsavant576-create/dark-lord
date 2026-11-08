@@ -226,3 +226,22 @@ def verify_can_access_report(user: UserContext, report_org_id: str, report_submi
         status_code=403,
         detail=f"Forbidden: User '{user.user_id}' cannot access this inspection report."
     )
+
+def verify_can_delete_report(user: UserContext, report_org_id: str, report_submitted_by: str) -> None:
+    if user.role in (UserRole.ADMIN, UserRole.COMPLIANCE_LEAD):
+        return
+    if user.role == UserRole.DEVELOPER:
+        if report_submitted_by in (user.user_id, "default-dev") or report_org_id in (user.org_id, "default-org"):
+            return
+    raise HTTPException(
+        status_code=403,
+        detail=f"Forbidden: User '{user.user_id}' with role '{user.role}' cannot delete this inspection report."
+    )
+
+def verify_can_clear_reports(user: UserContext) -> None:
+    if user.role in (UserRole.ADMIN, UserRole.COMPLIANCE_LEAD):
+        return
+    raise HTTPException(
+        status_code=403,
+        detail=f"Forbidden: User '{user.user_id}' with role '{user.role}' cannot clear audit reports. Admin or Compliance Lead required."
+    )

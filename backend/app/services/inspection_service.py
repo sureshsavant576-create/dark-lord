@@ -73,10 +73,76 @@ class InspectionService:
         return sorted(reports, key=lambda r: r.created_at, reverse=True)
 
     def save_report(self, report: InspectionReport) -> InspectionReport:
-        data = self._load_all()
-        data[report.inspection_id] = report.model_dump()
-        self._save_all(data)
-        return report
+        with self._lock:
+            data = self._load_all()
+            data[report.inspection_id] = report.model_dump()
+            self._save_all(data)
+            return report
+
+    def delete_report(self, inspection_id: str, delete_files: bool = True) -> bool:
+        with self._lock:
+            data = self._load_all()
+            if inspection_id in data:
+                raw = data[inspection_id]
+                if delete_files:
+                    sub_path = raw.get("submission_file_path")
+                    if sub_path:
+                        try:
+                            p = Path(sub_path)
+                            if p.exists() and p.is_file():
+                                p.unlink(missing_ok=True)
+                        except Exception as e:
+                            logger.warning("Failed to remove submission file %s: %s", sub_path, e)
+
+                    annotated_path = raw.get("annotated_preview_path")
+                    if annotated_path:
+                        try:
+                            ap = Path(annotated_path)
+                            if ap.exists() and ap.is_file():
+                                ap.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+
+                    filename = raw.get("submission_filename")
+                    if filename:
+                        try:
+                            for candidate in settings.UPLOADS_DIR.glob(f"*{filename}*"):
+                                if candidate.is_file():
+                                    candidate.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+
+                del data[inspection_id]
+                self._save_all(data)
+                return True
+            return False
+
+    def delete_reports_for_brand(self, brand_id: str, delete_files: bool = True) -> int:
+        with self._lock:
+            data = self._load_all()
+            targets = [k for k, v in data.items() if v.get("brand_id") == brand_id]
+            count = 0
+            for tid in targets:
+                if self.delete_report(tid, delete_files=delete_files):
+                    count += 1
+            return count
+
+    def clear_all_reports(self, brand_id: Optional[str] = None, org_id: Optional[str] = None, delete_files: bool = True) -> int:
+        with self._lock:
+            data = self._load_all()
+            targets = []
+            for k, v in data.items():
+                if brand_id and v.get("brand_id") != brand_id:
+                    continue
+                if org_id and v.get("org_id") not in (org_id, "default-org"):
+                    continue
+                targets.append(k)
+
+            count = 0
+            for tid in targets:
+                if self.delete_report(tid, delete_files=delete_files):
+                    count += 1
+            return count
 
     async def inspect_submission(
         self,
@@ -319,6 +385,33 @@ class InspectionService:
                 confidence_score=ai_eval.confidence_score
             ))
 
+            if ai_eval.typography_detected and ai_eval.typography_detected.lower() not in ("unspecified", "unknown", "none"):
+                expected_typo = ", ".join(brand.typography) if hasattr(brand, "typography") and brand.typography else "Harmonious typographic hierarchy"
+                findings.append(InspectionFinding(
+                    id=f"f-{uuid.uuid4().hex[:6]}",
+                    title="Typography & Text Hierarchy",
+                    category=FindingCategory.TYPOGRAPHY,
+                    source=FindingSource.AI_MODEL_INFERENCE,
+                    severity=FindingSeverity.PASS,
+                    detected_value=ai_eval.typography_detected,
+                    expected_value=expected_typo,
+                    explanation=f"Detected font choices, weights and readability: {ai_eval.typography_detected}",
+                    confidence_score=ai_eval.confidence_score
+                ))
+
+            if ai_eval.layout_detected and ai_eval.layout_detected.lower() not in ("unspecified", "unknown", "none"):
+                findings.append(InspectionFinding(
+                    id=f"f-{uuid.uuid4().hex[:6]}",
+                    title="Layout Composition & Whitespace",
+                    category=FindingCategory.LAYOUT,
+                    source=FindingSource.AI_MODEL_INFERENCE,
+                    severity=FindingSeverity.PASS,
+                    detected_value=ai_eval.layout_detected,
+                    expected_value=f"Align with {', '.join(brand.visual_style)}",
+                    explanation=f"Detected spatial layout and composition density: {ai_eval.layout_detected}",
+                    confidence_score=ai_eval.confidence_score
+                ))
+
             for m in ai_eval.mismatches_identified:
                 mismatches.append(f"[Observation] {m}")
                 findings.append(InspectionFinding(
@@ -352,9 +445,9 @@ class InspectionService:
         has_critical = any(f.severity == FindingSeverity.CRITICAL for f in findings)
         effective_score = overall_score if overall_score is not None else det_score
 
-        if has_critical or effective_score < 50.0:
-            verdict = InspectionVerdict.REJECTED if effective_score < 40.0 else InspectionVerdict.CHANGES_REQUESTED
-        elif effective_score >= settings.MIN_OVERALL_PASS_SCORE:
+        if has_critical or (violations and effective_score < 50.0) or effective_score < 30.0:
+            verdict = InspectionVerdict.REJECTED if (effective_score < 35.0 and violations) else InspectionVerdict.CHANGES_REQUESTED
+        elif effective_score >= settings.MIN_OVERALL_PASS_SCORE and not violations:
             verdict = InspectionVerdict.APPROVED
         else:
             verdict = InspectionVerdict.REQUIRES_HUMAN_REVIEW
@@ -375,6 +468,8 @@ class InspectionService:
             ai_mood_detected=ai_eval.mood_detected if (ai_eval.status == ProviderStatus.OPERATIONAL and ai_eval.is_ai_generated) else None,
             ai_personality_detected=ai_eval.personality_detected if (ai_eval.status == ProviderStatus.OPERATIONAL and ai_eval.is_ai_generated) else None,
             ai_tone_detected=ai_eval.tone_detected if (ai_eval.status == ProviderStatus.OPERATIONAL and ai_eval.is_ai_generated) else None,
+            ai_typography_detected=ai_eval.typography_detected if (ai_eval.status == ProviderStatus.OPERATIONAL and ai_eval.is_ai_generated and ai_eval.typography_detected.lower() not in ("unspecified", "none")) else None,
+            ai_layout_detected=ai_eval.layout_detected if (ai_eval.status == ProviderStatus.OPERATIONAL and ai_eval.is_ai_generated and ai_eval.layout_detected.lower() not in ("unspecified", "none")) else None,
             biometric_match={
                 "composite_score": bio_result.composite_biometric_score,
                 "color_dna_score": bio_result.color_dna_score,
@@ -390,6 +485,7 @@ class InspectionService:
             suggested_corrections=corrections,
             human_review_required=True,
             human_decision="PENDING",
+            submission_file_path=str(file_path.resolve()) if file_path else None,
             technical_summary={
                 "sha256": preprocessed.validation.sha256_hash,
                 "file_size_bytes": preprocessed.validation.file_size_bytes,
@@ -416,10 +512,13 @@ class InspectionService:
 
         if submission.decision.upper() == "APPROVED":
             report.verdict = InspectionVerdict.APPROVED
+            report.human_review_required = False
         elif submission.decision.upper() == "CHANGES_REQUESTED":
             report.verdict = InspectionVerdict.CHANGES_REQUESTED
+            report.human_review_required = True
         elif submission.decision.upper() == "REJECTED":
             report.verdict = InspectionVerdict.REJECTED
+            report.human_review_required = False
 
         return self.save_report(report)
 

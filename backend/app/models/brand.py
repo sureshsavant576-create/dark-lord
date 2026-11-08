@@ -16,6 +16,7 @@ class BrandQuestionnaire(BaseModel):
     communication_tone: str = Field(description="e.g. Friendly, Formal, Playful, Direct")
     target_audience: str = Field(description="e.g. Tech-savvy professionals, Gen-Z students")
     visual_style: str = Field(description="e.g. Minimalist, Modern, High-contrast, Retro")
+    typography: Optional[str] = Field(default="", description="e.g. Modern Sans-Serif, Inter, Playfair Display")
     palette: List[str] = Field(default_factory=list, description="Approved brand HEX colors, e.g. ['#0055FF', '#FFCC00']")
     disallowed_elements: List[str] = Field(default_factory=list, description="Explicit avoidances, forbidden words, or aesthetics")
     tagline_or_mission: Optional[str] = Field(default="", description="Core motto or brand promise")
@@ -41,6 +42,7 @@ class BrandProfile(BaseModel):
     mood: List[str] = Field(default_factory=list)
     communication_tone: List[str] = Field(default_factory=list)
     visual_style: List[str] = Field(default_factory=list)
+    typography: List[str] = Field(default_factory=list, description="Approved typography styles or detected font families")
     target_audience: str = ""
     approved_palette: List[str] = Field(default_factory=list, description="Validated uppercase HEX colors")
     disallowed_elements: List[str] = Field(default_factory=list, description="Strict avoidances & forbidden terms")
@@ -65,6 +67,7 @@ class BrandProfileConfirmationRequest(BaseModel):
     mood: List[str]
     communication_tone: List[str]
     visual_style: List[str]
+    typography: Optional[List[str]] = Field(default_factory=list)
     target_audience: str
     approved_palette: List[str]
     disallowed_elements: List[str]

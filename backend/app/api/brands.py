@@ -14,6 +14,7 @@ from backend.app.models.brand import (
 )
 from backend.app.preprocessing.validator import save_upload_safely
 from backend.app.services.brand_service import brand_service
+from backend.app.services.inspection_service import inspection_service
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ def get_brand(brand_id: str) -> BrandProfile:
 @router.delete("/{brand_id}")
 def delete_brand(
     brand_id: str,
+    cascade_reports: bool = True,
     user: UserContext = Depends(get_current_user)
 ):
     profile = brand_service.get_brand_profile(brand_id)
@@ -41,10 +43,23 @@ def delete_brand(
 
     verify_can_manage_brand(user, profile.owner_id)
 
-    deleted = brand_service.delete_brand_profile(brand_id)
+    deleted = brand_service.delete_brand_profile(brand_id, delete_files=True)
     if not deleted:
         raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found.")
-    return {"status": "success", "message": f"Brand '{brand_id}' deleted successfully."}
+
+    reports_purged = 0
+    if cascade_reports:
+        try:
+            reports_purged = inspection_service.delete_reports_for_brand(brand_id, delete_files=True)
+        except Exception as exc:
+            logger.warning("Failed to cascade delete reports for brand %s: %s", brand_id, exc)
+
+    return {
+        "status": "success",
+        "message": f"Brand '{brand_id}' and all associated guidelines and audit history permanently deleted.",
+        "brand_id": brand_id,
+        "cascade_reports_deleted": reports_purged
+    }
 
 @router.post("/scan-reference")
 async def scan_reference_image(file: UploadFile = File(...)):
@@ -100,6 +115,7 @@ async def create_brand_draft(
     palette: str = Form(default="[]", description="JSON array or comma-separated hex strings"),
     disallowed_elements: str = Form(default="[]", description="JSON array or comma-separated terms"),
     tagline_or_mission: Optional[str] = Form(default=""),
+    typography: Optional[str] = Form(default=""),
     reference_files: Optional[List[UploadFile]] = File(default=None),
     user: UserContext = Depends(get_current_user)
 ) -> BrandProfile:
@@ -120,6 +136,7 @@ async def create_brand_draft(
         communication_tone=communication_tone,
         target_audience=target_audience,
         visual_style=visual_style,
+        typography=typography or "",
         palette=parsed_palette,
         disallowed_elements=parsed_disallowed,
         tagline_or_mission=tagline_or_mission,

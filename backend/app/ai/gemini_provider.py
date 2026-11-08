@@ -24,9 +24,45 @@ def sanitize_for_prompt(text: Optional[str], max_len: int = 8000) -> str:
     clean = clean.replace("```json", "").replace("```", "")
     return clean.strip()[:max_len]
 
+def extract_json_from_llm(raw_text: str) -> Dict[str, Any]:
+    if not raw_text or not raw_text.strip():
+        return {}
+    clean = raw_text.strip()
+    if clean.startswith("```json"):
+        clean = clean[7:]
+    elif clean.startswith("```"):
+        clean = clean[3:]
+    if clean.endswith("```"):
+        clean = clean[:-3]
+    clean = clean.strip()
+    try:
+        return json.loads(clean)
+    except Exception:
+        pass
+
+    first_brace = clean.find("{")
+    last_brace = clean.rfind("}")
+    if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+        candidate = clean[first_brace:last_brace + 1]
+        try:
+            return json.loads(candidate)
+        except Exception:
+            candidate_cleaned = re.sub(r",\s*([}\]])", r"\1", candidate)
+            try:
+                return json.loads(candidate_cleaned)
+            except Exception:
+                pass
+    return {}
+
 class GeminiProvider(AIProviderBase):
 
-    FALLBACK_MODELS = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash"]
+    FALLBACK_MODELS = [
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash-lite",
+        "gemini-3.5-flash",
+        "gemini-3.8-flash",
+        "gemini-3.7-flash",
+    ]
 
     def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None):
         raw_key = api_key if api_key is not None else settings.GEMINI_API_KEY
@@ -118,14 +154,16 @@ You are the BrandShield AI inspection engine. Inspect the submitted creative mat
 </UNTRUSTED_CONTENT>
 
 ### YOUR TASK:
-Analyze the submitted creative content in detail. Compare its mood, personality, tone, visual aesthetics, and audience alignment with the approved brand profile.
+Analyze the submitted creative content in detail. Compare its mood, personality, tone, visual aesthetics, typography, layout, and audience alignment with the approved brand profile.
 
 Return ONLY a valid JSON object matching the following structure:
 {{
   "mood_detected": "<detected mood>",
   "personality_detected": "<detected personality>",
   "tone_detected": "<detected communication tone>",
-  "visual_style_detected": "<detected visual or audio style>",
+  "visual_style_detected": "<detected visual or aesthetic style>",
+  "typography_detected": "<detected font style, hierarchy, legibility, and typographic harmony>",
+  "layout_detected": "<detected layout structure, whitespace density, and spatial balance>",
   "target_audience_alignment": "<assessment of audience fit>",
   "detailed_analysis": "<objective explanation of why the content aligns or diverges>",
   "mismatches_identified": ["<list of specific off-brand elements or guideline divergences>"],
@@ -136,12 +174,7 @@ Return ONLY a valid JSON object matching the following structure:
             contents.append(prompt_text)
 
             raw_text, used_model = self._generate_with_fallback(contents)
-
-            try:
-                response_data = json.loads(raw_text)
-            except Exception:
-                json_match = re.search(r"\{.*\}", raw_text, re.DOTALL)
-                response_data = json.loads(json_match.group(0)) if json_match else {}
+            response_data = extract_json_from_llm(raw_text)
 
             raw_align = float(response_data.get("alignment_score", 50.0))
             clamped_align = max(0.0, min(100.0, raw_align))
@@ -157,6 +190,8 @@ Return ONLY a valid JSON object matching the following structure:
                 personality_detected=str(response_data.get("personality_detected", "Unknown")),
                 tone_detected=str(response_data.get("tone_detected", "Unknown")),
                 visual_style_detected=str(response_data.get("visual_style_detected", "Unknown")),
+                typography_detected=str(response_data.get("typography_detected", "Standard typography")),
+                layout_detected=str(response_data.get("layout_detected", "Balanced layout")),
                 target_audience_alignment=str(response_data.get("target_audience_alignment", "Unknown")),
                 detailed_analysis=str(response_data.get("detailed_analysis", "")),
                 mismatches_identified=list(response_data.get("mismatches_identified", [])),
@@ -216,6 +251,7 @@ Return ONLY a valid JSON object matching this schema:
   "brand_mood": ["list of emotional vibes, e.g. 'Energetic', 'Optimistic'"],
   "communication_tone": ["list of communication tones, e.g. 'Friendly', 'Direct'"],
   "visual_style": ["list of visual rules, e.g. 'Minimalist', 'Flat Design', 'High Contrast'"],
+  "suggested_typography": ["list of recommended font families, styles or typographic hierarchy guidelines"],
   "target_audience": "Concise description of the target demographic",
   "key_values": ["Core brand values"],
   "disallowed_elements": ["Specific concepts, terms, tones, or aesthetics to strictly avoid"],
@@ -225,12 +261,7 @@ Return ONLY a valid JSON object matching this schema:
 }}
 """
             raw_text, used_model = self._generate_with_fallback(prompt)
-
-            try:
-                data = json.loads(raw_text)
-            except Exception:
-                json_match = re.search(r"\{.*\}", raw_text, re.DOTALL)
-                data = json.loads(json_match.group(0)) if json_match else {}
+            data = extract_json_from_llm(raw_text)
 
             raw_conf = float(data.get("confidence_score", 0.9))
             clamped_conf = max(0.0, min(1.0, raw_conf))
@@ -244,6 +275,7 @@ Return ONLY a valid JSON object matching this schema:
                 brand_mood=list(data.get("brand_mood", [])),
                 communication_tone=list(data.get("communication_tone", [])),
                 visual_style=list(data.get("visual_style", [])),
+                suggested_typography=list(data.get("suggested_typography", [])),
                 target_audience=str(data.get("target_audience", "")),
                 key_values=list(data.get("key_values", [])),
                 disallowed_elements=list(data.get("disallowed_elements", [])),

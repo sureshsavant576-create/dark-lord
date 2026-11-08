@@ -1,4 +1,3 @@
-// Security Sanitization Helper
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
   return String(str)
@@ -8,6 +7,48 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+function animateValue(elem, start, end, duration = 800, suffix = '') {
+  if (!elem) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    elem.textContent = end + suffix;
+    return;
+  }
+  const startTime = performance.now();
+  const isFloat = String(end).includes('.');
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const current = start + (end - start) * ease;
+    elem.textContent = (isFloat ? current.toFixed(1) : Math.round(current)) + suffix;
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      elem.textContent = end + suffix;
+    }
+  }
+  requestAnimationFrame(update);
+}
+window.animateValue = animateValue;
+
+function filterFindings(filterSeverity) {
+  const cards = document.querySelectorAll('.finding-card');
+  const buttons = document.querySelectorAll('.filter-chip');
+  buttons.forEach(b => b.classList.remove('active'));
+  const activeBtn = document.getElementById('filter-' + filterSeverity.toLowerCase());
+  if (activeBtn) activeBtn.classList.add('active');
+
+  cards.forEach(card => {
+    if (filterSeverity === 'ALL') {
+      card.style.display = 'block';
+    } else if (card.classList.contains('finding-severity-' + filterSeverity)) {
+      card.style.display = 'block';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+window.filterFindings = filterFindings;
 
 const API_BASE = '/api/v1';
 let brandsMap = {};
@@ -105,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPaletteManagerControls();
   initColorStudio();
   initInspection();
+  initSidebarState();
   loadProvidersStatus();
   loadBrands();
   loadRecentReport();
@@ -136,7 +178,19 @@ function switchMainView(view) {
     if (btnLanding) btnLanding.classList.remove('active');
     if (btnDev) btnDev.classList.remove('active');
     if (btnCo) btnCo.classList.add('active');
+    const btnAcc = document.getElementById('nav-btn-account');
+    if (btnAcc) btnAcc.classList.remove('active');
     switchDashboardTab('tab-onboard');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (view === 'account') {
+    if (landingView) landingView.classList.add('hidden');
+    if (dashboardView) dashboardView.classList.remove('hidden');
+    if (btnLanding) btnLanding.classList.remove('active');
+    if (btnDev) btnDev.classList.remove('active');
+    if (btnCo) btnCo.classList.remove('active');
+    const btnAcc = document.getElementById('nav-btn-account');
+    if (btnAcc) btnAcc.classList.add('active');
+    switchDashboardTab('tab-account');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
@@ -150,23 +204,26 @@ function switchDashboardTab(tabId) {
   panes.forEach(p => p.classList.remove('active'));
   const targetPane = document.getElementById(tabId);
   if (targetPane) targetPane.classList.add('active');
+
   const sideInspect = document.getElementById('side-tab-inspect');
   const sideOnboard = document.getElementById('side-tab-onboard');
+  const sideAccount = document.getElementById('side-tab-account');
   const btnDev = document.getElementById('nav-btn-developer');
   const btnCo = document.getElementById('nav-btn-company');
+  const btnAcc = document.getElementById('nav-btn-account');
   const btnLanding = document.getElementById('nav-btn-landing');
-  if (tabId === 'tab-inspect') {
-    if (sideInspect) sideInspect.classList.add('active');
-    if (sideOnboard) sideOnboard.classList.remove('active');
-    if (btnDev) btnDev.classList.add('active');
-    if (btnCo) btnCo.classList.remove('active');
-    if (btnLanding) btnLanding.classList.remove('active');
-  } else {
-    if (sideInspect) sideInspect.classList.remove('active');
-    if (sideOnboard) sideOnboard.classList.add('active');
-    if (btnDev) btnDev.classList.remove('active');
-    if (btnCo) btnCo.classList.add('active');
-    if (btnLanding) btnLanding.classList.remove('active');
+
+  if (sideInspect) sideInspect.classList.toggle('active', tabId === 'tab-inspect');
+  if (sideOnboard) sideOnboard.classList.toggle('active', tabId === 'tab-onboard');
+  if (sideAccount) sideAccount.classList.toggle('active', tabId === 'tab-account');
+
+  if (btnDev) btnDev.classList.toggle('active', tabId === 'tab-inspect');
+  if (btnCo) btnCo.classList.toggle('active', tabId === 'tab-onboard');
+  if (btnAcc) btnAcc.classList.toggle('active', tabId === 'tab-account');
+  if (btnLanding) btnLanding.classList.remove('active');
+
+  if (tabId === 'tab-account') {
+    renderAccountPage(currentAccountBrandId);
   }
 }
 window.switchDashboardTab = switchDashboardTab;
@@ -179,6 +236,13 @@ function scrollColorStudio() {
 }
 window.scrollColorStudio = scrollColorStudio;
 function scrollToTrackedReports() {
+  const layout = document.getElementById('dashboard-layout');
+  const floatBtn = document.getElementById('floating-activity-trigger');
+  if (layout && layout.classList.contains('activity-hidden')) {
+    layout.classList.remove('activity-hidden');
+    if (floatBtn) floatBtn.classList.add('hidden');
+    try { localStorage.setItem('sanket_activity_hidden', 'false'); } catch (e) {}
+  }
   const panel = document.getElementById('dashboard-activity-panel');
   if (panel) {
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -202,7 +266,25 @@ function initDropZone() {
   const previewSize = document.getElementById('preview-filesize');
   const btnClear = document.getElementById('btn-clear-file');
   const filterPanel = document.getElementById('dev-color-filter-panel');
+  const uploadBadge = document.getElementById('preview-upload-badge');
+  const uploadBadgeText = document.getElementById('preview-upload-badge-text');
+  const statusTip = document.getElementById('preview-status-tip');
+  const progressFill = document.getElementById('upload-progress-fill');
+  const progressStatusText = document.getElementById('upload-progress-status-text');
+  const progressPercent = document.getElementById('upload-progress-percent');
+  const btnQuickInspect = document.getElementById('btn-quick-run-inspect');
+  const btnRunInspect = document.getElementById('btn-run-inspect');
+  const brandSelect = document.getElementById('inspect-brand-select');
+
   if (!dropZone || !fileInput) return;
+
+  if (btnQuickInspect) {
+    btnQuickInspect.addEventListener('click', () => {
+      const form = document.getElementById('inspection-form');
+      if (form) form.requestSubmit();
+    });
+  }
+
   ['dragenter', 'dragover'].forEach(event => {
     dropZone.addEventListener(event, (e) => {
       e.preventDefault();
@@ -226,22 +308,88 @@ function initDropZone() {
       updateFilePreview(fileInput.files[0]);
     }
   });
+
+  if (brandSelect) {
+    brandSelect.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files.length > 0) {
+        updateFilePreview(fileInput.files[0]);
+      }
+    });
+  }
+
   function updateFilePreview(file) {
     if (!previewName || !previewSize || !previewInfo) return;
     previewName.textContent = file.name;
-    previewSize.textContent = `(${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+    const mb = (file.size / (1024 * 1024)).toFixed(2);
+    previewSize.textContent = `(${mb} MB)`;
     previewInfo.classList.remove('hidden');
+
+    const hasBrand = brandSelect && brandSelect.value;
+
+    const thumb = document.getElementById('preview-thumbnail');
+    const fallbackIcon = document.getElementById('preview-fallback-icon');
+    if (file.type.startsWith('image/') && thumb) {
+      thumb.src = URL.createObjectURL(file);
+      thumb.classList.remove('hidden');
+      if (fallbackIcon) fallbackIcon.classList.add('hidden');
+    } else {
+      if (thumb) thumb.classList.add('hidden');
+      if (fallbackIcon) fallbackIcon.classList.remove('hidden');
+    }
+
+    if (progressFill) {
+      progressFill.className = 'upload-progress-fill staged-animating';
+      progressFill.style.width = '0%';
+      setTimeout(() => {
+        progressFill.style.width = '100%';
+      }, 50);
+    }
+    if (progressStatusText) {
+      progressStatusText.textContent = hasBrand
+        ? 'File staged locally (Ready for AI upload & verification)'
+        : 'File staged locally (Select company above to verify)';
+    }
+    if (progressPercent) {
+      progressPercent.textContent = '100% (Local)';
+    }
+
+    if (uploadBadge && uploadBadgeText) {
+      if (hasBrand) {
+        uploadBadge.className = 'upload-badge badge-staged';
+        uploadBadgeText.textContent = '✓ Ready for Inspection';
+      } else {
+        uploadBadge.className = 'upload-badge badge-warn';
+        uploadBadgeText.textContent = 'Select Company Above';
+      }
+    }
+
+    if (statusTip) {
+      statusTip.textContent = hasBrand
+        ? 'Asset loaded. Click "Run Brand Inspection" below to upload and audit compliance.'
+        : '⚠️ Select a company brand profile above, then click "Run Brand Inspection".';
+    }
+
+    if (btnRunInspect) {
+      btnRunInspect.classList.add('btn-pulse-ready');
+    }
+
     if (file.type.startsWith('image/')) {
       triggerDeveloperColorPreFilter(file);
     } else if (filterPanel) {
       filterPanel.classList.add('hidden');
     }
   }
+
   if (btnClear) {
     btnClear.addEventListener('click', () => {
       fileInput.value = '';
+      const thumb = document.getElementById('preview-thumbnail');
+      const fallbackIcon = document.getElementById('preview-fallback-icon');
+      if (thumb) { thumb.src = ''; thumb.classList.add('hidden'); }
+      if (fallbackIcon) fallbackIcon.classList.remove('hidden');
       if (previewInfo) previewInfo.classList.add('hidden');
       if (filterPanel) filterPanel.classList.add('hidden');
+      if (btnRunInspect) btnRunInspect.classList.remove('btn-pulse-ready');
     });
   }
 }
@@ -251,6 +399,10 @@ async function triggerDeveloperColorPreFilter(file) {
   const scoreBadge = document.getElementById('dev-prefilter-score');
   const spectrumBar = document.getElementById('dev-spectrum-bar');
   const resultsGrid = document.getElementById('dev-color-filter-results');
+  const uploadBadge = document.getElementById('preview-upload-badge');
+  const uploadBadgeText = document.getElementById('preview-upload-badge-text');
+  const statusTip = document.getElementById('preview-status-tip');
+
   if (!filterPanel || !brandSelect) return;
   const brandId = brandSelect.value;
   if (!brandId) {
@@ -260,11 +412,25 @@ async function triggerDeveloperColorPreFilter(file) {
       scoreBadge.textContent = 'Select Company Above';
     }
     if (resultsGrid) {
-      resultsGrid.innerHTML = '<p class="field-hint" style="grid-column: 1/-1;">Select a target company from the dropdown above to run the deterministic pre-AI color check.</p>';
+      resultsGrid.innerHTML = '<p class="field-hint" style="grid-column: 1/-1;">⚠️ Select a target company from the dropdown above to test color palette match.</p>';
     }
     if (spectrumBar) spectrumBar.innerHTML = '';
     return;
   }
+
+  filterPanel.classList.remove('hidden');
+  if (scoreBadge) {
+    scoreBadge.className = 'prefilter-score-badge';
+    scoreBadge.innerHTML = '<span class="inline-spinner-sm"></span> Testing Palette...';
+  }
+  if (uploadBadge && uploadBadgeText) {
+    uploadBadge.className = 'upload-badge badge-uploading';
+    uploadBadgeText.textContent = 'Sampling Colors...';
+  }
+  if (statusTip) {
+    statusTip.textContent = 'Pre-filtering creative palette against company brand colors...';
+  }
+
   const formData = new FormData();
   formData.append('file', file);
   try {
@@ -286,6 +452,13 @@ async function triggerDeveloperColorPreFilter(file) {
       } else {
         scoreBadge.className = 'prefilter-score-badge status-fail';
       }
+    }
+    if (uploadBadge && uploadBadgeText) {
+      uploadBadge.className = 'upload-badge badge-staged';
+      uploadBadgeText.textContent = '✓ Ready for Inspection';
+    }
+    if (statusTip) {
+      statusTip.textContent = `Pre-filter palette match: ${score}%. Click "Run Brand Inspection" below to execute full audit.`;
     }
     if (spectrumBar && data.color_distribution) {
       spectrumBar.innerHTML = '';
@@ -396,12 +569,20 @@ async function loadBrands() {
             <button type="button" class="btn-edit-brand" onclick="startEditingBrand('${b.brand_id}')">
               Configure Brand Guidelines
             </button>
+            <button type="button" class="btn-sm btn-secondary" onclick="renderAccountPage('${b.brand_id}'); switchDashboardTab('tab-account');">
+              View Account Details &rarr;
+            </button>
+            <button type="button" class="btn-delete-brand-danger" onclick="confirmDeleteBrand('${b.brand_id}', '${escapeHtml(b.brand_name)}')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Delete Brand
+            </button>
           </div>
         `;
         confirmedList.appendChild(card);
       }
     });
     renderCompanyCards(confirmedBrands);
+    renderAccountPage(currentAccountBrandId);
     if (select) {
       select.onchange = () => {
         const selectedId = select.value;
@@ -419,18 +600,12 @@ async function loadBrands() {
         const prevName = document.getElementById('prev-brand-name');
         if (prevName) prevName.textContent = b.brand_name;
         const prevTone = document.getElementById('prev-brand-tone');
-        if (prevTone) prevTone.textContent = `Tone: ${(b.communication_tone || []).join(', ')}`;
-        const chipsContainer = document.getElementById('prev-palette-chips');
-        if (chipsContainer) {
-          chipsContainer.innerHTML = (b.approved_palette || []).map(hex => `
-            <span class="color-swatch-chip" title="Copy ${hex}" onclick="copyToClipboard('${hex}', 'Copied ${hex}!')">
-              <span class="swatch-color-box" style="background: ${hex};"></span>
-              ${hex}
-            </span>
-          `).join('');
+        if (prevTone) prevTone.textContent = `Tone: ${(b.communication_tone || []).join(', ') || 'Standard'}`;
+        const prevSummary = document.getElementById('prev-palette-summary');
+        if (prevSummary) {
+          const count = (b.approved_palette || []).length;
+          prevSummary.textContent = `${count} Approved Color${count === 1 ? '' : 's'}`;
         }
-        const prevAvoid = document.getElementById('prev-avoid-text');
-        if (prevAvoid) prevAvoid.textContent = (b.disallowed_elements || []).join(', ') || 'None';
         preview.classList.remove('hidden');
       };
     }
@@ -448,8 +623,37 @@ function renderCompanyCards(brands) {
     brands.forEach(b => {
       const pill = document.createElement('div');
       pill.className = 'sidebar-brand-pill';
-      pill.innerHTML = `<span>${escapeHtml(b.brand_name)}</span> <span class="tone-badge-pill" style="font-size: 0.65rem;">${b.status}</span>`;
-      pill.onclick = () => selectCompanyById(b.brand_id);
+      pill.setAttribute('data-brand-id', b.brand_id);
+      pill.innerHTML = `
+        <div class="sidebar-brand-info" onclick="selectCompanyById('${b.brand_id}')">
+          <span class="brand-pill-name" title="${escapeHtml(b.brand_name)}">${escapeHtml(b.brand_name)}</span>
+          <span class="tone-badge-pill" style="font-size: 0.65rem;">${b.status}</span>
+        </div>
+        <div class="brand-kebab-menu-wrap">
+          <button type="button" class="btn-brand-kebab" onclick="event.stopPropagation(); toggleBrandKebabMenu(event, '${b.brand_id}')" title="Brand options" aria-label="Brand options">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="2.2"/>
+              <circle cx="12" cy="12" r="2.2"/>
+              <circle cx="12" cy="19" r="2.2"/>
+            </svg>
+          </button>
+          <div class="brand-kebab-dropdown hidden" id="kebab-menu-${b.brand_id}">
+            <button type="button" class="kebab-item" onclick="event.stopPropagation(); selectCompanyById('${b.brand_id}'); closeAllKebabMenus();">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Select for Inspection
+            </button>
+            <button type="button" class="kebab-item" onclick="event.stopPropagation(); startEditingBrand('${b.brand_id}'); closeAllKebabMenus();">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Configure Guidelines
+            </button>
+            <div class="kebab-divider"></div>
+            <button type="button" class="kebab-item kebab-item-danger" onclick="event.stopPropagation(); confirmDeleteBrand('${b.brand_id}', '${escapeHtml(b.brand_name)}'); closeAllKebabMenus();">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Delete Brand
+            </button>
+          </div>
+        </div>
+      `;
       sidebarList.appendChild(pill);
     });
   }
@@ -465,7 +669,12 @@ function renderCompanyCards(brands) {
     card.innerHTML = `
       <div class="card-top-row">
         <span class="company-title-bold">${escapeHtml(b.brand_name)}</span>
-        <span class="tone-badge-pill">${b.status}</span>
+        <div class="card-actions-mini">
+          <span class="tone-badge-pill">${b.status}</span>
+          <button type="button" class="btn-icon-delete-card" title="Permanently delete brand standard" onclick="event.stopPropagation(); confirmDeleteBrand('${b.brand_id}', '${escapeHtml(b.brand_name)}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
       </div>
       <div class="card-palette-strip">${swatches}</div>
       <p class="card-meta-notes"><strong>Personality:</strong> ${escapeHtml((b.personality || []).slice(0, 3).join(', '))}</p>
@@ -483,6 +692,9 @@ function selectCompanyById(brandId) {
   }
   document.querySelectorAll('.company-vibe-card').forEach(c => {
     c.classList.toggle('is-selected', c.getAttribute('data-brand-id') === brandId);
+  });
+  document.querySelectorAll('.sidebar-brand-pill').forEach(p => {
+    p.classList.toggle('is-selected', p.getAttribute('data-brand-id') === brandId);
   });
   const form = document.getElementById('inspection-form');
   if (form) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -607,10 +819,10 @@ function initPaletteManagerControls() {
         toast('Palette is empty.');
         return;
       }
-      let css = ':root {\n';
+      let css = ':root {\\n';
       currentPalette.forEach((c, idx) => {
         const cleanName = c.role.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || `color-${idx+1}`;
-        css += `  --brand-${cleanName}: ${c.hex};\n`;
+        css += `  --brand-${cleanName}: ${c.hex};\\n`;
       });
       css += '}';
       copyToClipboard(css, 'Copied CSS variables snippet!');
@@ -826,6 +1038,7 @@ function startEditingBrand(brandId) {
   setVal('ob-tone', (b.communication_tone || []).join(', '));
   setVal('ob-audience', b.target_audience || '');
   setVal('ob-style', (b.visual_style || []).join(', '));
+  setVal('ob-typography', (b.typography || []).join(', '));
   setVal('ob-avoid', (b.disallowed_elements || []).join(', '));
   setVal('ob-tagline', b.mission_statement || '');
   currentPalette = (b.approved_palette || []).map(hex => ({
@@ -844,6 +1057,10 @@ function startEditingBrand(brandId) {
   if (btnCancel) {
     btnCancel.classList.remove('hidden');
     btnCancel.onclick = resetOnboardingForm;
+  }
+  const btnDeleteBrand = document.getElementById('btn-delete-editing-brand');
+  if (btnDeleteBrand) {
+    btnDeleteBrand.classList.remove('hidden');
   }
   const feedback = document.getElementById('ob-scan-feedback');
   if (feedback) {
@@ -867,6 +1084,8 @@ function resetOnboardingForm() {
   if (btn) btn.innerHTML = '<span>Save Brand Profile</span>';
   const btnCancel = document.getElementById('btn-cancel-edit');
   if (btnCancel) btnCancel.classList.add('hidden');
+  const btnDeleteBrand = document.getElementById('btn-delete-editing-brand');
+  if (btnDeleteBrand) btnDeleteBrand.classList.add('hidden');
   const feedback = document.getElementById('ob-scan-feedback');
   if (feedback) feedback.classList.add('hidden');
 }
@@ -875,13 +1094,80 @@ function initReferenceScanning() {
   const dropZone = document.getElementById('ob-drop-zone');
   const feedback = document.getElementById('ob-scan-feedback');
   if (!fileInput) return;
+  const obPreviewInfo = document.getElementById('ob-file-preview-info');
+  const obThumb = document.getElementById('ob-preview-thumbnail');
+  const obFallback = document.getElementById('ob-preview-fallback-icon');
+  const obFilename = document.getElementById('ob-preview-filename');
+  const obFilesize = document.getElementById('ob-preview-filesize');
+  const obBadge = document.getElementById('ob-preview-upload-badge');
+  const obBadgeText = document.getElementById('ob-preview-upload-badge-text');
+  const obStatusTip = document.getElementById('ob-preview-status-tip');
+  const obProgressFill = document.getElementById('ob-upload-progress-fill');
+  const obProgressStatus = document.getElementById('ob-upload-progress-status-text');
+  const obProgressPercent = document.getElementById('ob-upload-progress-percent');
+  const btnClearOb = document.getElementById('btn-clear-ob-file');
+
+  if (btnClearOb) {
+    btnClearOb.addEventListener('click', () => {
+      fileInput.value = '';
+      if (obPreviewInfo) obPreviewInfo.classList.add('hidden');
+      if (feedback) feedback.classList.add('hidden');
+      const studio = document.getElementById('color-studio-container');
+      if (studio) studio.classList.add('hidden');
+    });
+  }
+
   const handleScan = async (file) => {
     if (!file) return;
+
+    if (obPreviewInfo) {
+      obPreviewInfo.classList.remove('hidden');
+      if (obFilename) obFilename.textContent = file.name;
+      const mb = (file.size / (1024 * 1024)).toFixed(2);
+      if (obFilesize) obFilesize.textContent = `(${mb} MB)`;
+
+      if (file.type.startsWith('image/') && obThumb) {
+        obThumb.src = URL.createObjectURL(file);
+        obThumb.classList.remove('hidden');
+        if (obFallback) obFallback.classList.add('hidden');
+      } else {
+        if (obThumb) obThumb.classList.add('hidden');
+        if (obFallback) obFallback.classList.remove('hidden');
+      }
+
+      if (obBadge && obBadgeText) {
+        obBadge.className = 'upload-badge badge-uploading';
+        obBadgeText.textContent = 'Uploading & Extracting DNA...';
+      }
+      if (obStatusTip) obStatusTip.textContent = 'Transmitting brand reference asset to server...';
+      if (obProgressFill) {
+        obProgressFill.className = 'upload-progress-fill uploading';
+        obProgressFill.style.width = '20%';
+      }
+      if (obProgressStatus) obProgressStatus.textContent = 'Uploading reference asset to server...';
+      if (obProgressPercent) obProgressPercent.textContent = '20%';
+    }
+
     if (feedback) {
       feedback.className = 'ob-scan-feedback scanning';
       feedback.innerHTML = '<div class="inline-spinner"></div> Extracting palette centroids, analyzing layout & extracting brand vibes...';
       feedback.classList.remove('hidden');
     }
+
+    let obTimer1 = setTimeout(() => {
+      if (obProgressFill) obProgressFill.style.width = '55%';
+      if (obProgressStatus) obProgressStatus.textContent = 'Extracting CIELAB centroids & whitespace density...';
+      if (obProgressPercent) obProgressPercent.textContent = '55%';
+      if (obStatusTip) obStatusTip.textContent = 'Quantizing 8-dominant color clusters and negative space...';
+    }, 350);
+
+    let obTimer2 = setTimeout(() => {
+      if (obProgressFill) obProgressFill.style.width = '85%';
+      if (obProgressStatus) obProgressStatus.textContent = 'Synthesizing voice guidelines & personality...';
+      if (obProgressPercent) obProgressPercent.textContent = '85%';
+      if (obStatusTip) obStatusTip.textContent = 'Detecting visual style and typography hierarchy...';
+    }, 850);
+
     const formData = new FormData();
     formData.append('file', file);
     try {
@@ -889,11 +1175,25 @@ function initReferenceScanning() {
         method: 'POST',
         body: formData
       });
+      clearTimeout(obTimer1);
+      clearTimeout(obTimer2);
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       const previewUrl = data.image_url || URL.createObjectURL(file);
       loadCreativeOnCanvas(previewUrl);
       renderExtractedColorStudio(data);
+
+      if (obProgressFill) {
+        obProgressFill.className = 'upload-progress-fill done';
+        obProgressFill.style.width = '100%';
+      }
+      if (obProgressStatus) obProgressStatus.textContent = '✓ DNA Centroids Extracted & Loaded to Studio';
+      if (obProgressPercent) obProgressPercent.textContent = '100%';
+      if (obBadge && obBadgeText) {
+        obBadge.className = 'upload-badge badge-success';
+        obBadgeText.textContent = '✓ DNA Extracted';
+      }
+      if (obStatusTip) obStatusTip.textContent = `Extracted ${(data.extracted_palette || []).length} colors & brand guidelines. Ready to lock standards.`;
       if (data.palette && data.palette.length > 0) {
         currentPalette = data.palette.map(p => ({
           hex: p.hex_code || p.hex,
@@ -907,27 +1207,30 @@ function initReferenceScanning() {
         }));
         renderPaletteManager();
       }
-      if (data.suggested_personality && !document.getElementById('ob-personality').value) {
+      if (data.suggested_personality) {
         document.getElementById('ob-personality').value = data.suggested_personality;
       }
-      if (data.suggested_mood && !document.getElementById('ob-mood').value) {
+      if (data.suggested_mood) {
         document.getElementById('ob-mood').value = data.suggested_mood;
       }
-      if (data.suggested_tone && !document.getElementById('ob-tone').value) {
+      if (data.suggested_tone) {
         document.getElementById('ob-tone').value = data.suggested_tone;
       }
-      if (data.suggested_visual_style && !document.getElementById('ob-style').value) {
+      if (data.suggested_visual_style) {
         document.getElementById('ob-style').value = data.suggested_visual_style;
       }
-      if (data.suggested_avoidances && !document.getElementById('ob-avoid').value) {
+      if (data.suggested_typography && document.getElementById('ob-typography')) {
+        document.getElementById('ob-typography').value = data.suggested_typography;
+      }
+      if (data.suggested_avoidances) {
         document.getElementById('ob-avoid').value = data.suggested_avoidances;
       }
-      if (data.extracted_motto && !document.getElementById('ob-tagline').value) {
+      if (data.extracted_motto) {
         document.getElementById('ob-tagline').value = data.extracted_motto;
       }
       if (feedback) {
         feedback.className = 'ob-scan-feedback success';
-        feedback.innerHTML = `✨ <strong>Creative Analyzed!</strong> Color Studio and Eyedropper ready below. Extracted ${(data.extracted_palette || []).length} colors, whitespace (${data.whitespace_ratio}) and aesthetic mood.`;
+        feedback.innerHTML = `✨ <strong>Reference Analyzed!</strong> Extracted ${(data.extracted_palette || []).length} colors, typography (${data.suggested_typography || 'Modern Sans'}), whitespace (${data.whitespace_ratio}) and aesthetic mood.`;
       }
     } catch (err) {
       if (feedback) {
@@ -987,6 +1290,7 @@ function initOnboarding() {
           mood: document.getElementById('ob-mood').value.split(',').map(s => s.trim()).filter(Boolean),
           communication_tone: document.getElementById('ob-tone').value.split(',').map(s => s.trim()).filter(Boolean),
           visual_style: document.getElementById('ob-style').value.split(',').map(s => s.trim()).filter(Boolean),
+          typography: document.getElementById('ob-typography')?.value ? document.getElementById('ob-typography').value.split(',').map(s => s.trim()).filter(Boolean) : [],
           target_audience: document.getElementById('ob-audience').value.trim(),
           approved_palette: paletteHexArray,
           disallowed_elements: document.getElementById('ob-avoid').value.split(',').map(s => s.trim()).filter(Boolean),
@@ -1003,8 +1307,7 @@ function initOnboarding() {
         await loadBrands();
         toast(`Brand profile for '${confirmed.brand_name}' updated successfully.`, 'success');
         resetOnboardingForm();
-        const devTab = document.querySelector('.nav-tab[data-tab="tab-inspect"]');
-        if (devTab) devTab.click();
+        switchDashboardTab('tab-inspect');
         const brandSelect = document.getElementById('inspect-brand-select');
         if (brandSelect) {
           brandSelect.value = confirmed.brand_id;
@@ -1019,6 +1322,7 @@ function initOnboarding() {
       formData.append('communication_tone', document.getElementById('ob-tone').value);
       formData.append('target_audience', document.getElementById('ob-audience').value);
       formData.append('visual_style', document.getElementById('ob-style').value);
+      formData.append('typography', document.getElementById('ob-typography')?.value || '');
       formData.append('palette', paletteHexArray.join(', '));
       formData.append('disallowed_elements', document.getElementById('ob-avoid').value);
       formData.append('tagline_or_mission', document.getElementById('ob-tagline').value);
@@ -1041,6 +1345,7 @@ function initOnboarding() {
         mood: draft.mood,
         communication_tone: draft.communication_tone,
         visual_style: draft.visual_style,
+        typography: document.getElementById('ob-typography')?.value ? document.getElementById('ob-typography').value.split(',').map(s => s.trim()).filter(Boolean) : (draft.typography || []),
         target_audience: draft.target_audience,
         approved_palette: paletteHexArray,
         disallowed_elements: draft.disallowed_elements,
@@ -1057,8 +1362,7 @@ function initOnboarding() {
       await loadBrands();
       toast(`Brand profile for '${confirmed.brand_name}' created successfully.`, 'success');
       resetOnboardingForm();
-      const devTab = document.querySelector('.nav-tab[data-tab="tab-inspect"]');
-      if (devTab) devTab.click();
+      switchDashboardTab('tab-inspect');
       const brandSelect = document.getElementById('inspect-brand-select');
       if (brandSelect) {
         brandSelect.value = confirmed.brand_id;
@@ -1112,15 +1416,65 @@ function initInspection() {
       }
       formData.append('file', fileInput.files[0]);
     }
+    const uploadBadge = document.getElementById('preview-upload-badge');
+    const uploadBadgeText = document.getElementById('preview-upload-badge-text');
+    const statusTip = document.getElementById('preview-status-tip');
+    const progressFill = document.getElementById('upload-progress-fill');
+    const progressStatusText = document.getElementById('upload-progress-status-text');
+    const progressPercent = document.getElementById('upload-progress-percent');
+
     if (emptyState) emptyState.classList.add('hidden');
     if (resultsView) resultsView.classList.add('hidden');
     if (loadingState) loadingState.classList.remove('hidden');
-    if (btn) btn.disabled = true;
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-spinner"></span> <span>Uploading &amp; Inspecting...</span>';
+    }
+
+    if (uploadBadge && uploadBadgeText) {
+      uploadBadge.className = 'upload-badge badge-uploading';
+      uploadBadgeText.textContent = 'Uploading & Analyzing...';
+    }
+    if (statusTip) {
+      statusTip.textContent = 'Transmitting creative payload to server and executing multimodal inspection...';
+    }
+    if (progressFill) {
+      progressFill.className = 'upload-progress-fill uploading';
+      progressFill.style.width = '20%';
+    }
+    if (progressStatusText) progressStatusText.textContent = 'Transmitting creative payload to server...';
+    if (progressPercent) progressPercent.textContent = '20%';
+
     if (inlineStatus) {
       inlineStatus.className = 'inspect-inline-status status-running';
       if (inlineText) inlineText.textContent = 'Analyzing feature vectors and verifying brand compliance...';
       inlineStatus.classList.remove('hidden');
     }
+    let stepTimer1 = null, stepTimer2 = null;
+    const p1 = document.getElementById('step-pill-1');
+    const p2 = document.getElementById('step-pill-2');
+    const p3 = document.getElementById('step-pill-3');
+    const stageTxt = document.getElementById('loading-stage-text');
+    if (p1) p1.className = 'step-pill active';
+    if (p2) p2.className = 'step-pill';
+    if (p3) p3.className = 'step-pill';
+    if (stageTxt) stageTxt.textContent = 'Step 1: Extracting CIELAB color centroids & layout density vectors...';
+    stepTimer1 = setTimeout(() => {
+      if (p1) p1.className = 'step-pill done';
+      if (p2) p2.className = 'step-pill active';
+      if (stageTxt) stageTxt.textContent = 'Step 2: Scanning communication vocabulary & prohibited claims...';
+      if (progressFill) progressFill.style.width = '70%';
+      if (progressStatusText) progressStatusText.textContent = 'Scanning vocabulary & feature vectors...';
+      if (progressPercent) progressPercent.textContent = '70%';
+    }, 600);
+    stepTimer2 = setTimeout(() => {
+      if (p2) p2.className = 'step-pill done';
+      if (p3) p3.className = 'step-pill active';
+      if (stageTxt) stageTxt.textContent = 'Step 3: Synthesizing multimodal aesthetic brand alignment...';
+      if (progressFill) progressFill.style.width = '90%';
+      if (progressStatusText) progressStatusText.textContent = 'Multimodal Gemini AI analysis running...';
+      if (progressPercent) progressPercent.textContent = '90%';
+    }, 1400);
     try {
       const res = await fetch(`${API_BASE}/inspect/${brandId}`, {
         method: 'POST',
@@ -1133,15 +1487,47 @@ function initInspection() {
       const report = await res.json();
       renderInspectionReport(report);
       loadRecentReport();
+
+      if (progressFill) {
+        progressFill.className = 'upload-progress-fill';
+        progressFill.style.width = '100%';
+      }
+      if (progressStatusText) progressStatusText.textContent = 'Inspection complete — Logged to Tracked Inspections';
+      if (progressPercent) progressPercent.textContent = '100%';
+      if (uploadBadge && uploadBadgeText) {
+        uploadBadge.className = 'upload-badge badge-success';
+        uploadBadgeText.textContent = '✓ Inspected & Verified';
+      }
+      if (statusTip) {
+        statusTip.textContent = `Audit complete (${report.verdict}). Logged to Tracked Inspections on the right.`;
+      }
+
       if (inlineStatus) {
         inlineStatus.className = 'inspect-inline-status status-success';
         const matchPct = report.overall_score !== null && report.overall_score !== undefined ? report.overall_score : report.deterministic_score;
-        if (inlineText) inlineText.innerHTML = `Audit complete: <strong>${matchPct}% Match (${report.verdict})</strong>. Report updated below.`;
+        if (inlineText) inlineText.innerHTML = `Audit complete: <strong>${matchPct}% Match (${report.verdict})</strong> — Logged to Tracked Inspections`;
       }
-      if (reportPanel) {
-        reportPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (typeof toggleActivityPanel === 'function') {
+        const actPanel = document.getElementById('dashboard-activity-panel');
+        if (actPanel && actPanel.classList.contains('collapsed')) {
+          toggleActivityPanel(false);
+        }
       }
     } catch (err) {
+      if (progressFill) {
+        progressFill.className = 'upload-progress-fill';
+        progressFill.style.width = '100%';
+      }
+      if (progressStatusText) progressStatusText.textContent = 'Inspection failed';
+      if (progressPercent) progressPercent.textContent = 'Error';
+      if (uploadBadge && uploadBadgeText) {
+        uploadBadge.className = 'upload-badge badge-error';
+        uploadBadgeText.textContent = '⚠️ Inspection Failed';
+      }
+      if (statusTip) {
+        statusTip.textContent = `Error: ${err.message}`;
+      }
+
       if (inlineStatus) {
         inlineStatus.className = 'inspect-inline-status status-error';
         if (inlineText) inlineText.textContent = `⚠️ Inspection Error: ${err.message}`;
@@ -1150,8 +1536,16 @@ function initInspection() {
       }
       if (emptyState) emptyState.classList.remove('hidden');
     } finally {
+      clearTimeout(stepTimer1);
+      clearTimeout(stepTimer2);
+      if (p1) p1.className = 'step-pill done';
+      if (p2) p2.className = 'step-pill done';
+      if (p3) p3.className = 'step-pill done';
       if (loadingState) loadingState.classList.add('hidden');
-      if (btn) btn.disabled = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Run Brand Inspection</span>';
+      }
     }
   });
 }
@@ -1181,20 +1575,27 @@ function renderInspectionReport(report) {
   const scDet = document.getElementById('score-deterministic');
   if (scDet) scDet.textContent = `${report.deterministic_score}%`;
   const scAi = document.getElementById('score-ai');
-  if (scAi) scAi.textContent = report.ai_score !== null && report.ai_score !== undefined ? `${report.ai_score}%` : '100%';
+  if (scAi) scAi.textContent = report.ai_score !== null && report.ai_score !== undefined ? `${report.ai_score}%` : 'N/A';
   const aiScoreBadge = document.getElementById('ai-hero-score-badge');
   if (aiScoreBadge) {
-    const s = report.ai_score !== null && report.ai_score !== undefined ? report.ai_score : 100;
-    aiScoreBadge.textContent = `${s}% Vibe Alignment`;
+    if (report.ai_score !== null && report.ai_score !== undefined) {
+      aiScoreBadge.textContent = `${report.ai_score}% Vibe Alignment`;
+    } else {
+      aiScoreBadge.textContent = 'Deterministic Checks Only';
+    }
   }
   let aiExpl = report.ai_explanation;
   let aiMood = report.ai_mood_detected;
   let aiPersonality = report.ai_personality_detected;
   let aiTone = report.ai_tone_detected;
+  let aiTypography = report.ai_typography_detected;
+  let aiLayout = report.ai_layout_detected;
   (report.findings || []).forEach(f => {
     if (f.source === 'AI_MODEL_INFERENCE') {
       if (f.category === 'PERSONALITY' && !aiExpl) aiExpl = f.explanation;
       if (f.category === 'MOOD' && !aiMood) aiMood = f.detected_value;
+      if (f.category === 'TYPOGRAPHY' && !aiTypography) aiTypography = f.detected_value;
+      if (f.category === 'LAYOUT' && !aiLayout) aiLayout = f.detected_value;
       if (f.category === 'PERSONALITY' && !aiPersonality) {
         const parts = (f.detected_value || '').split('|');
         if (parts[0]) aiPersonality = parts[0].replace('Personality:', '').trim();
@@ -1204,14 +1605,18 @@ function renderInspectionReport(report) {
   });
   const heroExpl = document.getElementById('ai-hero-explanation');
   if (heroExpl) {
-    heroExpl.textContent = aiExpl || "The creative piece strictly follows company brand guidelines. It utilizes ample negative space, clean color harmony from the approved palette, and confident messaging typical of official marketing campaigns. No disallowed terms or off-brand elements are present.";
+    heroExpl.textContent = aiExpl || "Multimodal AI evaluation was not executed for this report. Objective deterministic and biometric compliance checks completed.";
   }
   const heroMood = document.getElementById('ai-hero-mood');
-  if (heroMood) heroMood.textContent = aiMood || 'Minimalist, Calm';
+  if (heroMood) heroMood.textContent = aiMood || 'N/A';
   const heroPers = document.getElementById('ai-hero-personality');
-  if (heroPers) heroPers.textContent = aiPersonality || 'Sophisticated, Premium';
+  if (heroPers) heroPers.textContent = aiPersonality || 'N/A';
   const heroTone = document.getElementById('ai-hero-tone');
-  if (heroTone) heroTone.textContent = aiTone || 'Clear, Direct';
+  if (heroTone) heroTone.textContent = aiTone || 'N/A';
+  const heroTypo = document.getElementById('ai-hero-typography');
+  if (heroTypo) heroTypo.textContent = aiTypography || 'Standard Hierarchy';
+  const heroLayout = document.getElementById('ai-hero-layout');
+  if (heroLayout) heroLayout.textContent = aiLayout || 'Grid Balanced';
   const bio = report.biometric_match || {};
   const compScore = bio.composite_score !== undefined ? bio.composite_score : report.deterministic_score;
   const compBadge = document.getElementById('biometric-composite-badge');
@@ -1264,6 +1669,19 @@ function renderInspectionReport(report) {
       approvedRow.innerHTML = '<span class="id-badge">Palette registered in brand DNA</span>';
     }
   }
+  const fAll = document.getElementById('findings-count-all');
+  const fHigh = document.getElementById('findings-count-high');
+  const fMed = document.getElementById('findings-count-med');
+  const fPass = document.getElementById('findings-count-pass');
+  const findingsList = report.findings || [];
+  if (fAll) fAll.textContent = findingsList.length;
+  if (fHigh) fHigh.textContent = findingsList.filter(f => f.severity === 'HIGH').length;
+  if (fMed) fMed.textContent = findingsList.filter(f => f.severity === 'MEDIUM').length;
+  if (fPass) fPass.textContent = findingsList.filter(f => f.severity === 'PASS').length;
+  const filterButtons = document.querySelectorAll('.filter-chip');
+  filterButtons.forEach(b => b.classList.remove('active'));
+  const filterAllBtn = document.getElementById('filter-all');
+  if (filterAllBtn) filterAllBtn.classList.add('active');
   const findingsContainer = document.getElementById('findings-table-container');
   if (findingsContainer) {
     findingsContainer.innerHTML = '';
@@ -1292,8 +1710,14 @@ function renderInspectionReport(report) {
     humanDecision.textContent = report.human_decision || (report.verdict === 'APPROVED' ? 'APPROVED' : 'PENDING REVIEW');
     humanDecision.className = `tag-badge tag-${report.verdict === 'APPROVED' ? 'PASS' : 'WARNING'}`;
   }
+  activeInspectionId = report.inspection_id;
+  activeInspectionFilename = report.submission_filename || 'Audit Report';
+  const btnDeleteActive = document.getElementById('btn-delete-active-report');
+  if (btnDeleteActive) btnDeleteActive.classList.remove('hidden');
+  if (emptyState) emptyState.classList.add('hidden');
   if (resultsView) resultsView.classList.remove('hidden');
 }
+
 async function loadRecentReport() {
   try {
     const res = await fetch(`${API_BASE}/reports`);
@@ -1302,50 +1726,67 @@ async function loadRecentReport() {
     const badge = document.getElementById('activity-reports-badge');
     if (badge) badge.textContent = `${reports.length} report${reports.length === 1 ? '' : 's'}`;
     const statCounter = document.getElementById('stat-inspections-count');
-    if (statCounter) statCounter.textContent = reports.length;
+    if (statCounter) animateValue(statCounter, 0, reports.length, 600);
+    const btnClearAll = document.getElementById('btn-clear-all-history');
+    if (btnClearAll) {
+      if (reports.length > 0) btnClearAll.classList.remove('hidden');
+      else btnClearAll.classList.add('hidden');
+    }
     const list = document.getElementById('recent-inspections-list');
-    if (list && reports.length > 0) {
-      list.innerHTML = '';
-      reports.slice(0, 15).forEach(rep => {
-        const item = document.createElement('div');
-        item.className = 'tracked-inspection-item';
-        let iconClass = 'tracked-icon-pass';
-        let iconEmoji = '✓';
-        if (rep.verdict === 'CHANGES_REQUESTED') {
-          iconClass = 'tracked-icon-warn';
-          iconEmoji = '!';
-        } else if (rep.verdict === 'REJECTED') {
-          iconClass = 'tracked-icon-fail';
-          iconEmoji = '×';
-        }
-        const dateStr = rep.created_at ? new Date(rep.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent';
-        item.innerHTML = `
-          <div class="tracked-item-left">
-            <div class="tracked-icon-box ${iconClass}">${iconEmoji}</div>
-            <div class="tracked-info">
-              <span class="tracked-filename" title="${escapeHtml(rep.submission_filename)}">${escapeHtml(rep.submission_filename || 'Text Creative')}</span>
-              <span class="tracked-brand-time">${escapeHtml(rep.brand_name)} &bull; ${escapeHtml(dateStr)}</span>
+    if (list) {
+      if (reports.length > 0) {
+        list.innerHTML = '';
+        reports.slice(0, 15).forEach(rep => {
+          const item = document.createElement('div');
+          item.className = 'tracked-inspection-item';
+          let iconClass = 'tracked-icon-pass';
+          let iconEmoji = '✓';
+          if (rep.verdict === 'CHANGES_REQUESTED') {
+            iconClass = 'tracked-icon-warn';
+            iconEmoji = '!';
+          } else if (rep.verdict === 'REJECTED') {
+            iconClass = 'tracked-icon-fail';
+            iconEmoji = '×';
+          }
+          const dateStr = rep.created_at ? new Date(rep.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent';
+          item.innerHTML = `
+            <div class="tracked-item-left">
+              <div class="tracked-icon-box ${iconClass}">${iconEmoji}</div>
+              <div class="tracked-info">
+                <span class="tracked-filename" title="${escapeHtml(rep.submission_filename)}">${escapeHtml(rep.submission_filename || 'Text Creative')}</span>
+                <span class="tracked-brand-time">${escapeHtml(rep.brand_name)} &bull; ${escapeHtml(dateStr)}</span>
+              </div>
             </div>
-          </div>
-          <div class="tracked-item-right">
-            <span class="tracked-score-pill">${rep.overall_score !== null && rep.overall_score !== undefined ? rep.overall_score + '%' : '--'}</span>
-          </div>
-        `;
-        item.onclick = () => {
-          switchDashboardTab('tab-inspect');
-          renderInspectionReport(rep);
-          const panel = document.getElementById('report-panel');
-          if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          toast(`Loaded report for ${rep.submission_filename}`);
-        };
-        list.appendChild(item);
-      });
+            <div class="tracked-item-right">
+              <span class="tracked-score-pill">${rep.overall_score !== null && rep.overall_score !== undefined ? rep.overall_score + '%' : '--'}</span>
+              <button type="button" class="btn-delete-item" title="Permanently delete this audit report" onclick="event.stopPropagation(); confirmDeleteReport('${rep.inspection_id}', '${escapeHtml(rep.submission_filename || 'Audit Report')}')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          `;
+          item.onclick = (e) => {
+            if (e.target.closest('.btn-delete-item')) return;
+            switchDashboardTab('tab-inspect');
+            const inlineStatus = document.getElementById('inspect-inline-status');
+            const inlineText = document.getElementById('inline-status-text');
+            if (inlineStatus && inlineText) {
+              inlineStatus.className = 'inspect-inline-status status-success';
+              inlineStatus.classList.remove('hidden');
+              const matchPct = rep.overall_score !== null && rep.overall_score !== undefined ? `${rep.overall_score}%` : 'N/A';
+              inlineText.innerHTML = `Tracked audit <strong>${escapeHtml(rep.submission_filename || rep.inspection_id)}</strong>: <strong>${matchPct} Match (${rep.verdict})</strong>`;
+            }
+            toast(`Report ${rep.inspection_id}: ${rep.verdict} (${rep.overall_score !== null ? rep.overall_score : 100}% match)`);
+          };
+          list.appendChild(item);
+        });
+      } else {
+        list.innerHTML = '<div class="empty-note">No recent audits. Submit creative work on the left to inspect.</div>';
+      }
     }
     if (reports && reports.length > 0) {
       reports.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      renderInspectionReport(reports[0]);
       const select = document.getElementById('inspect-brand-select');
-      if (select && reports[0].brand_id) {
+      if (select && !select.value && reports[0].brand_id) {
         select.value = reports[0].brand_id;
         select.dispatchEvent(new Event('change'));
       }
@@ -1354,3 +1795,585 @@ async function loadRecentReport() {
     console.debug('No previous report to load:', e);
   }
 }
+
+/* ==========================================================================
+   PERMANENT DELETION & GOVERNANCE CLEANUP HANDLERS
+   ========================================================================== */
+
+let activeInspectionId = null;
+let activeInspectionFilename = null;
+let pendingDeleteAction = null;
+
+function showConfirmDeleteModal({ title, subtitle, targetName, message, confirmText, onConfirm }) {
+  const modal = document.getElementById('modal-confirm-delete');
+  const tElem = document.getElementById('delete-modal-title');
+  const sElem = document.getElementById('delete-modal-subtitle');
+  const nElem = document.getElementById('delete-modal-target-name');
+  const mElem = document.getElementById('delete-modal-message');
+  const cText = document.getElementById('delete-modal-confirm-btn-text');
+  const cBtn = document.getElementById('delete-modal-confirm-btn');
+
+  if (tElem) tElem.textContent = title || 'Confirm Permanent Deletion';
+  if (sElem) sElem.textContent = subtitle || 'This operation cannot be reversed.';
+  if (nElem) nElem.textContent = targetName || '';
+  if (mElem) mElem.textContent = message || 'Are you sure you want to permanently delete this item?';
+  if (cText) cText.textContent = confirmText || 'Permanently Delete';
+
+  pendingDeleteAction = onConfirm;
+
+  if (cBtn) {
+    cBtn.onclick = async () => {
+      if (pendingDeleteAction) {
+        const action = pendingDeleteAction;
+        pendingDeleteAction = null;
+        closeConfirmDeleteModal();
+        await action();
+      }
+    };
+  }
+
+  if (modal) modal.classList.remove('hidden');
+}
+window.showConfirmDeleteModal = showConfirmDeleteModal;
+
+function closeConfirmDeleteModal() {
+  const modal = document.getElementById('modal-confirm-delete');
+  if (modal) modal.classList.add('hidden');
+  pendingDeleteAction = null;
+}
+window.closeConfirmDeleteModal = closeConfirmDeleteModal;
+
+function confirmDeleteReport(inspectionId, filename) {
+  showConfirmDeleteModal({
+    title: 'Delete Inspection Report',
+    subtitle: 'Audit record and associated upload will be erased.',
+    targetName: filename || `Report ${inspectionId}`,
+    message: `Are you sure you want to permanently delete inspection report "${filename || inspectionId}"? This will permanently remove all compliance findings, AI scores, and stored creative assets.`,
+    confirmText: 'Delete Report',
+    onConfirm: async () => {
+      try {
+        const res = await fetch(`${API_BASE}/reports/${encodeURIComponent(inspectionId)}`, {
+          method: 'DELETE',
+          headers: { 'X-User-Role': 'admin' }
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          toast(`Failed to delete report: ${errData.detail || 'Server error'}`);
+          return;
+        }
+        if (activeInspectionId === inspectionId) {
+          activeInspectionId = null;
+          activeInspectionFilename = null;
+          const emptyState = document.getElementById('inspection-empty-state');
+          const resultsView = document.getElementById('inspection-results-view');
+          const btnDeleteActive = document.getElementById('btn-delete-active-report');
+          const idBadge = document.getElementById('report-id-badge');
+          if (emptyState) emptyState.classList.remove('hidden');
+          if (resultsView) resultsView.classList.add('hidden');
+          if (btnDeleteActive) btnDeleteActive.classList.add('hidden');
+          if (idBadge) idBadge.textContent = 'Awaiting submission';
+        }
+        toast('Inspection report permanently deleted');
+        await loadRecentReport();
+      } catch (err) {
+        console.error('Error deleting report:', err);
+        toast('Network error deleting inspection report');
+      }
+    }
+  });
+}
+window.confirmDeleteReport = confirmDeleteReport;
+
+function confirmDeleteActiveReport() {
+  if (!activeInspectionId) return;
+  confirmDeleteReport(activeInspectionId, activeInspectionFilename);
+}
+window.confirmDeleteActiveReport = confirmDeleteActiveReport;
+
+function confirmClearHistory() {
+  showConfirmDeleteModal({
+    title: 'Purge All Inspection History',
+    subtitle: 'Irreversible destruction of entire verification log.',
+    targetName: 'All Tracked Inspection Reports',
+    message: 'Are you sure you want to permanently purge all inspection history? All audit findings, compliance scores, and uploaded files will be permanently deleted from the database and storage.',
+    confirmText: 'Purge Entire History',
+    onConfirm: async () => {
+      try {
+        const res = await fetch(`${API_BASE}/reports`, {
+          method: 'DELETE',
+          headers: { 'X-User-Role': 'admin' }
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          toast(`Failed to purge history: ${errData.detail || 'Server error'}`);
+          return;
+        }
+        const data = await res.json();
+        activeInspectionId = null;
+        activeInspectionFilename = null;
+        const emptyState = document.getElementById('inspection-empty-state');
+        const resultsView = document.getElementById('inspection-results-view');
+        const btnDeleteActive = document.getElementById('btn-delete-active-report');
+        const idBadge = document.getElementById('report-id-badge');
+        if (emptyState) emptyState.classList.remove('hidden');
+        if (resultsView) resultsView.classList.add('hidden');
+        if (btnDeleteActive) btnDeleteActive.classList.add('hidden');
+        if (idBadge) idBadge.textContent = 'Awaiting submission';
+        toast(`Purged ${data.deleted_count || 0} inspection reports permanently`);
+        await loadRecentReport();
+      } catch (err) {
+        console.error('Error clearing history:', err);
+        toast('Network error purging history');
+      }
+    }
+  });
+}
+window.confirmClearHistory = confirmClearHistory;
+
+function confirmDeleteBrand(brandId, brandName) {
+  showConfirmDeleteModal({
+    title: 'Delete Brand Standard',
+    subtitle: 'Brand guidelines and all associated history will be erased.',
+    targetName: brandName || brandId,
+    message: `Are you sure you want to permanently delete brand standard "${brandName || brandId}"? All company guidelines, approved color palettes, strict avoidances, and associated inspection reports will be permanently purged.`,
+    confirmText: 'Delete Brand Permanently',
+    onConfirm: async () => {
+      try {
+        const res = await fetch(`${API_BASE}/brands/${encodeURIComponent(brandId)}?cascade_reports=true`, {
+          method: 'DELETE',
+          headers: { 'X-User-Role': 'admin' }
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          toast(`Failed to delete brand: ${errData.detail || 'Server error'}`);
+          return;
+        }
+        const editIdInput = document.getElementById('ob-editing-brand-id');
+        if (editIdInput && editIdInput.value === brandId) {
+          resetOnboardingForm();
+        }
+        const select = document.getElementById('inspect-brand-select');
+        if (select && select.value === brandId) {
+          select.value = '';
+          select.dispatchEvent(new Event('change'));
+        }
+        toast(`Brand "${brandName || brandId}" permanently deleted`);
+        await loadBrands();
+        await loadRecentReport();
+      } catch (err) {
+        console.error('Error deleting brand:', err);
+        toast('Network error deleting brand');
+      }
+    }
+  });
+}
+window.confirmDeleteBrand = confirmDeleteBrand;
+
+function confirmDeleteEditingBrand() {
+  const editIdInput = document.getElementById('ob-editing-brand-id');
+  const brandNameInput = document.getElementById('ob-brand-name');
+  if (!editIdInput || !editIdInput.value) return;
+  confirmDeleteBrand(editIdInput.value, brandNameInput ? brandNameInput.value : editIdInput.value);
+}
+window.confirmDeleteEditingBrand = confirmDeleteEditingBrand;
+
+/* ==========================================================================
+   SIDEBAR COLLAPSE, SIDE CONTENT HIDING & 3-DOTS KEBAB MENUS
+   ========================================================================== */
+
+function toggleSidebar() {
+  const layout = document.getElementById('dashboard-layout');
+  const floatBtn = document.getElementById('floating-sidebar-trigger');
+  if (!layout) return;
+
+  const isHidden = layout.classList.toggle('sidebar-hidden');
+  if (floatBtn) {
+    if (isHidden) {
+      floatBtn.classList.remove('hidden');
+    } else {
+      floatBtn.classList.add('hidden');
+    }
+  }
+
+  try {
+    localStorage.setItem('sanket_sidebar_hidden', isHidden ? 'true' : 'false');
+  } catch (e) {}
+
+  toast(isHidden ? 'Side content hidden — Distraction-free workspace' : 'Side content expanded');
+}
+window.toggleSidebar = toggleSidebar;
+
+function toggleActivityPanel() {
+  const layout = document.getElementById('dashboard-layout');
+  const floatBtn = document.getElementById('floating-activity-trigger');
+  if (!layout) return;
+
+  const isHidden = layout.classList.toggle('activity-hidden');
+  if (floatBtn) {
+    if (isHidden) {
+      floatBtn.classList.remove('hidden');
+    } else {
+      floatBtn.classList.add('hidden');
+    }
+  }
+
+  try {
+    localStorage.setItem('sanket_activity_hidden', isHidden ? 'true' : 'false');
+  } catch (e) {}
+
+  toast(isHidden ? 'Tracked reports hidden — Expanded workspace' : 'Tracked reports expanded');
+}
+window.toggleActivityPanel = toggleActivityPanel;
+
+function initSidebarState() {
+  try {
+    const savedSidebar = localStorage.getItem('sanket_sidebar_hidden');
+    if (savedSidebar === 'true') {
+      const layout = document.getElementById('dashboard-layout');
+      const floatBtn = document.getElementById('floating-sidebar-trigger');
+      if (layout) layout.classList.add('sidebar-hidden');
+      if (floatBtn) floatBtn.classList.remove('hidden');
+    }
+    const savedActivity = localStorage.getItem('sanket_activity_hidden');
+    if (savedActivity === 'true') {
+      const layout = document.getElementById('dashboard-layout');
+      const floatActBtn = document.getElementById('floating-activity-trigger');
+      if (layout) layout.classList.add('activity-hidden');
+      if (floatActBtn) floatActBtn.classList.remove('hidden');
+    }
+  } catch (e) {}
+}
+window.initSidebarState = initSidebarState;
+
+function toggleBrandKebabMenu(event, brandId) {
+  event.stopPropagation();
+  const menuId = `kebab-menu-${brandId}`;
+  const menu = document.getElementById(menuId);
+  const wasOpen = menu && !menu.classList.contains('hidden');
+  closeAllKebabMenus();
+  if (menu && !wasOpen) {
+    menu.classList.remove('hidden');
+  }
+}
+window.toggleBrandKebabMenu = toggleBrandKebabMenu;
+
+function closeAllKebabMenus() {
+  document.querySelectorAll('.brand-kebab-dropdown').forEach(m => m.classList.add('hidden'));
+}
+window.closeAllKebabMenus = closeAllKebabMenus;
+
+document.addEventListener('click', () => {
+  closeAllKebabMenus();
+});
+
+
+// ==========================================================================
+// COMPANY ACCOUNT & MASTER BRAND PROFILE LOGIC
+// ==========================================================================
+
+let currentAccountBrandId = null;
+
+function hexToRgb(hex) {
+  if (!hex) return null;
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  if (hex.length !== 6) return null;
+  const num = parseInt(hex, 16);
+  if (isNaN(num)) return null;
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255
+  };
+}
+
+function onAccountBrandSelectChange(brandId) {
+  currentAccountBrandId = brandId;
+  renderAccountPage(brandId);
+}
+window.onAccountBrandSelectChange = onAccountBrandSelectChange;
+
+function renderAccountPage(targetBrandId) {
+  const emptyState = document.getElementById('account-empty-state');
+  const mainContent = document.getElementById('account-main-content');
+  const accSelect = document.getElementById('acc-brand-select');
+  if (!mainContent) return;
+
+  const brands = Object.values(brandsMap || {});
+  if (brands.length === 0) {
+    if (emptyState) emptyState.classList.remove('hidden');
+    mainContent.classList.add('hidden');
+    if (accSelect) accSelect.innerHTML = '<option value="">No registered brands</option>';
+    return;
+  }
+
+  if (emptyState) emptyState.classList.add('hidden');
+  mainContent.classList.remove('hidden');
+
+  // Populate brand selector
+  if (accSelect) {
+    accSelect.innerHTML = '';
+    brands.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.brand_id;
+      opt.textContent = `${b.brand_name} (${b.status || 'CONFIRMED'})`;
+      accSelect.appendChild(opt);
+    });
+  }
+
+  // Determine active brand to show
+  let b = null;
+  if (targetBrandId && brandsMap[targetBrandId]) {
+    b = brandsMap[targetBrandId];
+  } else if (currentAccountBrandId && brandsMap[currentAccountBrandId]) {
+    b = brandsMap[currentAccountBrandId];
+  } else {
+    b = brands[0];
+  }
+  currentAccountBrandId = b.brand_id;
+  if (accSelect) accSelect.value = b.brand_id;
+
+  // 1. Identity & Hero Header
+  const avatarBox = document.getElementById('acc-avatar-box');
+  if (avatarBox) {
+    const initials = (b.brand_name || 'CO').trim().split(/\s+/).map(w => w[0]).join('').substring(0, 2).toUpperCase();
+    avatarBox.textContent = initials || 'CO';
+  }
+  const heroName = document.getElementById('acc-hero-name');
+  if (heroName) heroName.textContent = b.brand_name || 'Organization Brand';
+  const heroStatus = document.getElementById('acc-hero-status');
+  if (heroStatus) {
+    heroStatus.textContent = b.status || 'CONFIRMED';
+    heroStatus.className = `tag-badge ${b.status === 'CONFIRMED' ? 'tag-PASS' : 'tag-WARNING'}`;
+  }
+  const heroId = document.getElementById('acc-hero-id');
+  if (heroId) heroId.textContent = `ID: ${b.brand_id}`;
+  const heroTagline = document.getElementById('acc-hero-tagline');
+  if (heroTagline) {
+    const tag = b.mission_statement || b.tagline_or_mission;
+    heroTagline.textContent = tag ? `"${tag}"` : 'Organization mission statement & standard guidelines.';
+  }
+
+  // Meta pills
+  const metaEmail = document.getElementById('acc-meta-email');
+  if (metaEmail) metaEmail.textContent = b.confirmed_by || 'brand.lead@company.com';
+  const metaOwner = document.getElementById('acc-meta-owner');
+  if (metaOwner) metaOwner.textContent = b.owner_id || 'default-org';
+  const metaCreated = document.getElementById('acc-meta-created');
+  if (metaCreated) {
+    metaCreated.textContent = b.created_at ? new Date(b.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'Active Standard';
+  }
+
+  // 2. Approved Brand Palette
+  const paletteContainer = document.getElementById('acc-palette-cards-grid');
+  const paletteCount = document.getElementById('acc-palette-count');
+  const palette = b.approved_palette || [];
+  if (paletteCount) paletteCount.textContent = `${palette.length} Color${palette.length === 1 ? '' : 's'}`;
+  if (paletteContainer) {
+    if (palette.length > 0) {
+      paletteContainer.innerHTML = '';
+      const roleLabels = ['Primary Brand Color', 'Secondary Accent', 'Highlight / CTA', 'Background / Base'];
+      palette.forEach((hex, idx) => {
+        const rgb = hexToRgb(hex);
+        const role = roleLabels[idx % roleLabels.length];
+        const card = document.createElement('div');
+        card.className = 'acc-color-card';
+        card.title = `Click to copy ${hex}`;
+        card.onclick = () => copyToClipboard(hex);
+        card.innerHTML = `
+          <div class="acc-color-swatch-block" style="background: ${hex};"></div>
+          <div class="acc-color-meta">
+            <span class="acc-color-hex">${hex}</span>
+            <span class="acc-color-rgb">${rgb ? `RGB(${rgb.r}, ${rgb.g}, ${rgb.b})` : ''}</span>
+            <span class="acc-color-role">${role}</span>
+          </div>
+        `;
+        paletteContainer.appendChild(card);
+      });
+    } else {
+      paletteContainer.innerHTML = '<p class="empty-note">No approved colors defined in Company Portal.</p>';
+    }
+  }
+
+  // 3. Visual Aesthetic Guidelines
+  const styleBox = document.getElementById('acc-visual-style-text');
+  if (styleBox) {
+    const styles = Array.isArray(b.visual_style) ? b.visual_style.join(', ') : (b.visual_style || '');
+    styleBox.textContent = styles || 'Extreme Minimalism, High-contrast, Modern clean layout composition.';
+  }
+
+  // Typography
+  const typoBox = document.getElementById('acc-typography-text');
+  if (typoBox) {
+    const typo = Array.isArray(b.typography) ? b.typography.join(', ') : (b.typography || '');
+    typoBox.textContent = typo || 'Modern Sans-Serif, Inter / System Display, disciplined typographical hierarchy.';
+  }
+
+  // Core Values
+  const valuesWrap = document.getElementById('acc-key-values-chips');
+  if (valuesWrap) {
+    valuesWrap.innerHTML = '';
+    const values = b.key_values || [];
+    if (values.length > 0) {
+      values.forEach(v => {
+        const chip = document.createElement('span');
+        chip.className = 'acc-tag-chip';
+        chip.textContent = v;
+        valuesWrap.appendChild(chip);
+      });
+    } else {
+      valuesWrap.innerHTML = '<span class="acc-tag-chip">Brand Integrity</span><span class="acc-tag-chip">Visual Consistency</span><span class="acc-tag-chip">Evidence-Based Governance</span>';
+    }
+  }
+
+  // 4. Voice & Tone Chips
+  renderChips('acc-personality-chips', b.personality, 'chip-personality');
+  renderChips('acc-mood-chips', b.mood, 'chip-mood');
+  renderChips('acc-tone-chips', b.communication_tone, 'chip-tone');
+
+  const audienceText = document.getElementById('acc-audience-text');
+  if (audienceText) {
+    audienceText.textContent = b.target_audience || 'Enterprise clientele, professional designers, and global audience.';
+  }
+
+  // 5. Prohibited Terms
+  const avoidContainer = document.getElementById('acc-avoid-chips');
+  const avoidCount = document.getElementById('acc-avoid-count');
+  const avoid = b.disallowed_elements || [];
+  if (avoidCount) avoidCount.textContent = `${avoid.length} Term${avoid.length === 1 ? '' : 's'}`;
+  if (avoidContainer) {
+    if (avoid.length > 0) {
+      avoidContainer.innerHTML = '';
+      avoid.forEach(word => {
+        const item = document.createElement('span');
+        item.className = 'avoid-chip-item';
+        item.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> <span>${escapeHtml(word)}</span>`;
+        avoidContainer.appendChild(item);
+      });
+    } else {
+      avoidContainer.innerHTML = '<span class="acc-tag-chip">No prohibited terms registered</span>';
+    }
+  }
+
+  // 6. Reference Assets
+  const assetsContainer = document.getElementById('acc-reference-assets-list');
+  const assetsCount = document.getElementById('acc-assets-count');
+  const assets = b.reference_assets || [];
+  if (assetsCount) assetsCount.textContent = `${assets.length} Asset${assets.length === 1 ? '' : 's'}`;
+  if (assetsContainer) {
+    if (assets.length > 0) {
+      assetsContainer.innerHTML = '';
+      assets.forEach(ast => {
+        const it = document.createElement('div');
+        it.className = 'acc-asset-item';
+        it.innerHTML = `
+          <div class="acc-asset-info">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span class="acc-asset-name">${escapeHtml(ast.original_filename || ast.asset_id)}</span>
+          </div>
+          <span class="id-badge">${escapeHtml(ast.media_category || 'Reference Image')}</span>
+        `;
+        assetsContainer.appendChild(it);
+      });
+    } else {
+      assetsContainer.innerHTML = '<p class="empty-note">No reference graphics uploaded yet. Upload reference brand assets in Company Portal to auto-extract DNA centroids.</p>';
+    }
+  }
+}
+window.renderAccountPage = renderAccountPage;
+
+function renderChips(containerId, items, extraClass) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  const arr = Array.isArray(items) ? items : (items ? [items] : []);
+  if (arr.length > 0) {
+    arr.forEach(item => {
+      const chip = document.createElement('span');
+      chip.className = `acc-tag-chip ${extraClass || ''}`;
+      chip.textContent = item;
+      el.appendChild(chip);
+    });
+  } else {
+    el.innerHTML = '<span class="acc-tag-chip">None registered</span>';
+  }
+}
+
+function editCurrentAccountBrand() {
+  if (!currentAccountBrandId) return;
+  startEditingBrand(currentAccountBrandId);
+}
+window.editCurrentAccountBrand = editCurrentAccountBrand;
+
+function inspectCurrentAccountBrand() {
+  if (!currentAccountBrandId) return;
+  const b = brandsMap[currentAccountBrandId];
+  const select = document.getElementById('inspect-brand-select');
+  if (select) {
+    select.value = currentAccountBrandId;
+    select.dispatchEvent(new Event('change'));
+  }
+  switchDashboardTab('tab-inspect');
+  toast(`Selected '${b ? b.brand_name : currentAccountBrandId}' for verification in Check Vibe.`);
+}
+window.inspectCurrentAccountBrand = inspectCurrentAccountBrand;
+
+function exportCurrentAccountBrand() {
+  if (!currentAccountBrandId || !brandsMap[currentAccountBrandId]) return;
+  const b = brandsMap[currentAccountBrandId];
+  const jsonStr = JSON.stringify(b, null, 2);
+  copyToClipboard(jsonStr);
+  toast(`Brand specification for '${b.brand_name}' copied to clipboard as JSON.`);
+}
+window.exportCurrentAccountBrand = exportCurrentAccountBrand;
+
+function deleteCurrentAccountBrand() {
+  if (!currentAccountBrandId || !brandsMap[currentAccountBrandId]) return;
+  const b = brandsMap[currentAccountBrandId];
+  confirmDeleteBrand(b.brand_id, b.brand_name);
+}
+window.deleteCurrentAccountBrand = deleteCurrentAccountBrand;
+
+function copyAllAccountColors() {
+  if (!currentAccountBrandId || !brandsMap[currentAccountBrandId]) return;
+  const b = brandsMap[currentAccountBrandId];
+  const hexes = (b.approved_palette || []).join(', ');
+  if (!hexes) {
+    toast('No approved colors to copy.', 'warning');
+    return;
+  }
+  copyToClipboard(hexes);
+  toast(`Copied ${b.approved_palette.length} color HEX codes to clipboard.`);
+}
+window.copyAllAccountColors = copyAllAccountColors;
+
+function exportAccountCssVars() {
+  if (!currentAccountBrandId || !brandsMap[currentAccountBrandId]) return;
+  const b = brandsMap[currentAccountBrandId];
+  const palette = b.approved_palette || [];
+  if (palette.length === 0) {
+    toast('No approved colors to export.', 'warning');
+    return;
+  }
+  const cssLines = [
+    `/* Sanket AI Brand Palette: ${b.brand_name} */`,
+    `:root {`
+  ];
+  palette.forEach((hex, i) => {
+    cssLines.push(`  --brand-color-${i+1}: ${hex};`);
+  });
+  cssLines.push(`}`);
+  copyToClipboard(cssLines.join('\n'));
+  toast(`Exported CSS variables for '${b.brand_name}' to clipboard.`);
+}
+window.exportAccountCssVars = exportAccountCssVars;
+
+function viewSelectedBrandInAccount() {
+  const select = document.getElementById('inspect-brand-select');
+  const brandId = select ? select.value : currentAccountBrandId;
+  if (brandId) {
+    renderAccountPage(brandId);
+  }
+  switchDashboardTab('tab-account');
+}
+window.viewSelectedBrandInAccount = viewSelectedBrandInAccount;

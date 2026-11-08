@@ -16,9 +16,11 @@ class Settings(BaseSettings):
     DB_DIR: Path = Field(default_factory=lambda: Path("data/db"))
 
     GEMINI_API_KEY: Optional[str] = Field(default=None, description="Google Gemini API Key")
+    OPENAI_API_KEY: Optional[str] = Field(default=None, description="OpenAI API Key (optional fallback)")
+    HUGGINGFACE_API_KEY: Optional[str] = Field(default=None, description="Hugging Face API Key (optional fallback)")
 
-    DEFAULT_VISION_MODEL: str = Field(default="gemini-3.5-flash-lite", description="Default multimodal vision model")
-    DEFAULT_TEXT_MODEL: str = Field(default="gemini-3.5-flash-lite", description="Default text reasoning model")
+    DEFAULT_VISION_MODEL: str = Field(default="gemini-3.1-flash-lite", description="Default multimodal vision model")
+    DEFAULT_TEXT_MODEL: str = Field(default="gemini-3.1-flash-lite", description="Default text reasoning model")
     DEFAULT_EMBEDDING_MODEL: str = Field(default="gemini-embedding-001", description="Default embedding model")
 
     MAX_COLOR_DELTA_E: float = Field(default=15.0, description="Max acceptable CIELAB Delta E color deviation")
@@ -39,8 +41,23 @@ class Settings(BaseSettings):
         return bool(self.GEMINI_API_KEY and self.GEMINI_API_KEY.strip())
 
     @property
+    def has_openai(self) -> bool:
+        return bool(self.OPENAI_API_KEY and self.OPENAI_API_KEY.strip())
+
+    @property
+    def has_huggingface(self) -> bool:
+        return bool(self.HUGGINGFACE_API_KEY and self.HUGGINGFACE_API_KEY.strip())
+
+    @property
     def available_providers(self) -> List[str]:
-        return ["gemini"] if self.has_gemini else []
+        providers = []
+        if self.has_gemini:
+            providers.append("gemini")
+        if self.has_openai:
+            providers.append("openai")
+        if self.has_huggingface:
+            providers.append("huggingface")
+        return providers
 
     def get_provider_status_dict(self) -> dict:
         return {
@@ -48,6 +65,11 @@ class Settings(BaseSettings):
                 "configured": self.has_gemini,
                 "model": self.DEFAULT_VISION_MODEL,
                 "role": "Multimodal Vision, Audio & Tone Reasoning (Primary & Exclusive AI)"
+            },
+            "openai": {
+                "configured": self.has_openai,
+                "model": "gpt-4o-mini",
+                "role": "Secondary Multimodal & Vision Fallback"
             },
             "deterministic_local": {
                 "configured": True,

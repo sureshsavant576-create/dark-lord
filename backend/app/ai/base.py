@@ -27,6 +27,8 @@ class MultimodalEvaluation(BaseModel):
     personality_detected: str = Field(default="Unspecified", description="Brand personality reflected")
     tone_detected: str = Field(default="Unspecified", description="Communication tone reflected")
     visual_style_detected: str = Field(default="Unspecified", description="Visual/aesthetic style detected")
+    typography_detected: str = Field(default="Unspecified", description="Typography and font hierarchy analysis")
+    layout_detected: str = Field(default="Unspecified", description="Layout density, negative space and spatial balance")
     target_audience_alignment: str = Field(default="Unspecified", description="How well the content speaks to the target audience")
 
     detailed_analysis: str = Field(default="", description="Explainable analysis of creative alignment")
@@ -46,6 +48,7 @@ class BrandSynthesisEvaluation(BaseModel):
     brand_mood: List[str] = Field(default_factory=list, description="Approved moods and emotional resonance")
     communication_tone: List[str] = Field(default_factory=list, description="Approved verbal and written tones")
     visual_style: List[str] = Field(default_factory=list, description="Visual style guidelines and rules")
+    suggested_typography: List[str] = Field(default_factory=list, description="Extracted font styles, families or typographic hierarchy rules")
     target_audience: str = Field(default="", description="Target demographic definition")
     key_values: List[str] = Field(default_factory=list, description="Core corporate values")
     disallowed_elements: List[str] = Field(default_factory=list, description="Specific terms, aesthetics, or tropes to avoid")

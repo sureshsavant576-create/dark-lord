@@ -7,7 +7,6 @@ from backend.app.preprocessing.validator import inspect_file_content_safety, san
 client = TestClient(app)
 
 def test_security_headers_present():
-    """Verify VULN-INFRA-01: All defensive HTTP security headers are enforced."""
     res = client.get("/api/v1/health")
     assert res.status_code == 200
     assert res.headers.get("x-content-type-options") == "nosniff"
@@ -16,7 +15,6 @@ def test_security_headers_present():
     assert res.headers.get("referrer-policy") == "strict-origin-when-cross-origin"
 
 def test_file_upload_rejects_disguised_executable():
-    """Verify VULN-FILE-01: Disguised Windows PE and ELF executables are blocked."""
     fake_exe_bytes = b"MZ\x90\x00\x03\x00\x00\x00\x04\x00\x00\x00\xff\xff\x00\x00" + b"A" * 100
     files = {"file": ("malicious_program.png", io.BytesIO(fake_exe_bytes), "image/png")}
     res = client.post("/api/v1/brands/extract-palette", files=files)
@@ -24,7 +22,6 @@ def test_file_upload_rejects_disguised_executable():
     assert "Executable file detected" in res.json().get("detail", "")
 
 def test_file_upload_rejects_malicious_svg():
-    """Verify VULN-FILE-01: SVG with active script tags or onload handlers are blocked."""
     malicious_svg = b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(document.cookie)</script></svg>'
     files = {"file": ("xss_attack.svg", io.BytesIO(malicious_svg), "image/svg+xml")}
     res = client.post("/api/v1/brands/extract-palette", files=files)
@@ -32,7 +29,6 @@ def test_file_upload_rejects_malicious_svg():
     assert "prohibited active script" in res.json().get("detail", "")
 
 def test_file_upload_accepts_valid_png():
-    """Verify VULN-FILE-01: Authentic PNG files are accepted."""
     img = Image.new("RGB", (50, 50), color="#FC5404")
     buf = io.BytesIO()
     img.save(buf, format="PNG")
@@ -43,8 +39,6 @@ def test_file_upload_accepts_valid_png():
     assert "dominant_color" in res.json()
 
 def test_decompression_bomb_rejection():
-    """Verify VULN-DOS-02: Decompression Bomb images (>25 Megapixels) are rejected."""
-    # Create empty image with massive header dimensions (6000 x 5000 = 30 Megapixels)
     huge_img = Image.new("RGB", (6000, 5000), color="#FFFFFF")
     buf = io.BytesIO()
     huge_img.save(buf, format="PNG")
@@ -56,7 +50,6 @@ def test_decompression_bomb_rejection():
     assert "Decompression Bomb" in res.json().get("detail", "")
 
 def test_role_based_access_control_on_review():
-    """Verify VULN-AUTH-01: Standard developers cannot submit compliance review decisions."""
     headers = {
         "X-User-Id": "unauthorized-dev",
         "X-User-Role": "developer"
@@ -71,7 +64,6 @@ def test_role_based_access_control_on_review():
     assert "Forbidden" in res.json().get("detail", "")
 
 def test_role_based_access_control_on_brand_deletion():
-    """Verify VULN-AUTH-01: Unauthorized user cannot delete brand owned by another user."""
     draft_res = client.post(
         "/api/v1/brands/draft",
         data={
@@ -103,7 +95,6 @@ def test_role_based_access_control_on_brand_deletion():
     assert admin_del.status_code == 200
 
 def test_user_registration_and_password_hashing():
-    """Verify VULN-AUTH-02: Persistent user registration, PBKDF2 hashing, and login authentication."""
     reg_res = client.post(
         "/api/v1/auth/register",
         json={
@@ -113,13 +104,12 @@ def test_user_registration_and_password_hashing():
             "org_id": "brandshield-corp"
         }
     )
-    assert reg_res.status_code in (200, 400) # 400 if already registered from previous run
+    assert reg_res.status_code in (200, 400)
     if reg_res.status_code == 200:
         data = reg_res.json()
         assert data["email"] == "security.analyst@brandshield.ai"
         assert "session_token" in data
 
-    # Verify login with valid password
     login_res = client.post(
         "/api/v1/auth/login",
         json={
@@ -132,12 +122,10 @@ def test_user_registration_and_password_hashing():
     token = login_data["session_token"]
     assert token is not None
 
-    # Test /me endpoint with Bearer token
     me_res = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert me_res.status_code == 200
     assert me_res.json()["role"] == "compliance_lead"
 
-    # Verify login failure with invalid password
     bad_login = client.post(
         "/api/v1/auth/login",
         json={
@@ -147,14 +135,12 @@ def test_user_registration_and_password_hashing():
     )
     assert bad_login.status_code == 401
 
-    # Verify logout revokes token
     logout_res = client.post("/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"})
     assert logout_res.status_code == 200
     after_logout = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert after_logout.status_code == 401
 
 def test_idor_protection_on_reports():
-    """Verify VULN-IDOR-01: Developers cannot view other users' inspection reports."""
     from backend.app.models.brand import BrandProfile, ProfileStatus
     from backend.app.services.brand_service import brand_service
 
@@ -172,7 +158,6 @@ def test_idor_protection_on_reports():
         )
     )
 
-    # User Alice submits creative
     alice_res = client.post(
         "/api/v1/inspect/test-secure-brand",
         data={"copy_text": "Confidential Campaign by Alice."},
@@ -181,7 +166,6 @@ def test_idor_protection_on_reports():
     assert alice_res.status_code == 200
     rep_id = alice_res.json()["inspection_id"]
 
-    # Bob (developer from org-bob) attempts to access Alice's report
     bob_res = client.get(
         f"/api/v1/reports/{rep_id}",
         headers={"X-User-Id": "bob-dev", "X-User-Role": "developer", "X-Org-Id": "org-bob"}
@@ -189,7 +173,6 @@ def test_idor_protection_on_reports():
     assert bob_res.status_code == 403
     assert "Forbidden" in bob_res.json().get("detail", "")
 
-    # Alice accesses her own report
     alice_check = client.get(
         f"/api/v1/reports/{rep_id}",
         headers={"X-User-Id": "alice-dev", "X-User-Role": "developer", "X-Org-Id": "org-alice"}
@@ -197,7 +180,6 @@ def test_idor_protection_on_reports():
     assert alice_check.status_code == 200
 
 def test_rate_limiting_enforcement():
-    """Verify VULN-DOS-01: Excessive rapid requests trigger HTTP 429."""
     import time
     from backend.app.core.rate_limiter import rate_limiter
     now = time.time()
@@ -209,7 +191,6 @@ def test_rate_limiting_enforcement():
     rate_limiter._requests.clear()
 
 def test_error_shielding_no_stack_disclosure():
-    """Verify VULN-INFO-01: Internal errors do not leak internal system filepaths."""
     res = client.post("/api/v1/inspect/prefilter-colors/non-existent-brand-xyz", files={})
     assert res.status_code in (404, 422)
     detail = str(res.json().get("detail", ""))

@@ -18,6 +18,8 @@ class FindingCategory(str, Enum):
     MOOD = "MOOD"
     PERSONALITY = "PERSONALITY"
     VISUAL_STYLE = "VISUAL_STYLE"
+    TYPOGRAPHY = "TYPOGRAPHY"
+    LAYOUT = "LAYOUT"
     BIOMETRIC_VECTOR = "BIOMETRIC_VECTOR"
     TECHNICAL = "TECHNICAL"
 
@@ -50,6 +52,8 @@ class InspectionReport(BaseModel):
     brand_name: str
     submission_filename: str
     media_category: str
+    submission_file_path: Optional[str] = Field(default=None, description="Absolute on-disk storage path of the analyzed file")
+    annotated_preview_path: Optional[str] = Field(default=None, description="Path of any generated visual proof or heatmap")
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     submitted_by: str = Field(default="default-dev", description="Identity of the submitting developer/user")
@@ -64,6 +68,8 @@ class InspectionReport(BaseModel):
     ai_mood_detected: Optional[str] = Field(default=None, description="Emotional mood detected by Gemini AI")
     ai_personality_detected: Optional[str] = Field(default=None, description="Brand personality detected by Gemini AI")
     ai_tone_detected: Optional[str] = Field(default=None, description="Communication tone detected by Gemini AI")
+    ai_typography_detected: Optional[str] = Field(default=None, description="Typography hierarchy and style detected by AI")
+    ai_layout_detected: Optional[str] = Field(default=None, description="Layout structure and density detected by AI")
     
     biometric_match: Optional[Dict[str, Any]] = Field(default=None, description="Biometric mathematical vector match scores")
     findings: List[InspectionFinding] = Field(default_factory=list)

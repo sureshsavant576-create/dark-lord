@@ -10,6 +10,8 @@ from backend.app.core.auth import (
     UserRole,
     get_current_user,
     verify_can_access_report,
+    verify_can_clear_reports,
+    verify_can_delete_report,
     verify_can_review_report,
 )
 from backend.app.core.config import settings
@@ -158,3 +160,43 @@ def submit_human_review(
     except Exception as exc:
         logger.exception("Failed to record review decision: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to record review decision due to an internal processing error.")
+
+@router.delete("/reports/{inspection_id}")
+def delete_report(
+    inspection_id: str,
+    user: UserContext = Depends(get_current_user)
+):
+    report = inspection_service.get_report(inspection_id)
+    if not report:
+        raise HTTPException(status_code=404, detail=f"Inspection report '{inspection_id}' not found.")
+
+    verify_can_delete_report(user, report.org_id, report.submitted_by)
+
+    deleted = inspection_service.delete_report(inspection_id, delete_files=True)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"Inspection report '{inspection_id}' not found.")
+
+    return {
+        "status": "success",
+        "message": f"Inspection report '{inspection_id}' permanently deleted.",
+        "inspection_id": inspection_id
+    }
+
+@router.delete("/reports")
+def clear_all_reports(
+    brand_id: Optional[str] = None,
+    user: UserContext = Depends(get_current_user)
+):
+    verify_can_clear_reports(user)
+
+    count = inspection_service.clear_all_reports(
+        brand_id=brand_id,
+        org_id=user.org_id if user.role != UserRole.ADMIN else None,
+        delete_files=True
+    )
+
+    return {
+        "status": "success",
+        "message": f"Permanently deleted {count} inspection report(s).",
+        "deleted_count": count
+    }

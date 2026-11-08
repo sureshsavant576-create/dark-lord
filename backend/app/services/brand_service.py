@@ -10,6 +10,7 @@ import uuid
 
 from backend.app.ai.base import ProviderStatus
 from backend.app.ai.gateway import ai_gateway
+from backend.app.ai.gemini_provider import extract_json_from_llm
 from backend.app.core.config import settings
 from backend.app.models.brand import (
     BrandProfile,
@@ -71,10 +72,21 @@ class BrandService:
             self._save_all(data)
             return profile
 
-    def delete_brand_profile(self, brand_id: str) -> bool:
+    def delete_brand_profile(self, brand_id: str, delete_files: bool = True) -> bool:
         with self._lock:
             data = self._load_all()
             if brand_id in data:
+                raw = data[brand_id]
+                if delete_files and "reference_assets" in raw:
+                    for asset in raw.get("reference_assets", []):
+                        path_str = asset.get("stored_path")
+                        if path_str:
+                            try:
+                                p = Path(path_str)
+                                if p.exists() and p.is_file():
+                                    p.unlink(missing_ok=True)
+                            except Exception as e:
+                                logger.warning("Failed to remove reference asset %s: %s", path_str, e)
                 del data[brand_id]
                 self._save_all(data)
                 return True
@@ -133,6 +145,7 @@ class BrandService:
                 mood=ai_result.brand_mood or [questionnaire.mood],
                 communication_tone=ai_result.communication_tone or [questionnaire.communication_tone],
                 visual_style=ai_result.visual_style or [questionnaire.visual_style],
+                typography=ai_result.suggested_typography or ([questionnaire.typography] if getattr(questionnaire, "typography", None) else []),
                 target_audience=ai_result.target_audience or questionnaire.target_audience,
                 approved_palette=list(set(extracted_palette_candidates + [p.upper() for p in ai_result.suggested_palette])),
                 disallowed_elements=list(set(questionnaire.disallowed_elements + ai_result.disallowed_elements)),
@@ -155,6 +168,7 @@ class BrandService:
                 mood=[m.strip() for m in questionnaire.mood.split(",") if m.strip()],
                 communication_tone=[t.strip() for t in questionnaire.communication_tone.split(",") if t.strip()],
                 visual_style=[v.strip() for v in questionnaire.visual_style.split(",") if v.strip()],
+                typography=[t.strip() for t in questionnaire.typography.split(",") if t.strip()] if getattr(questionnaire, "typography", None) else [],
                 target_audience=questionnaire.target_audience,
                 approved_palette=extracted_palette_candidates,
                 disallowed_elements=questionnaire.disallowed_elements,
@@ -179,6 +193,8 @@ class BrandService:
         existing.mood = [m.strip() for m in request.mood if m.strip()]
         existing.communication_tone = [t.strip() for t in request.communication_tone if t.strip()]
         existing.visual_style = [v.strip() for v in request.visual_style if v.strip()]
+        if hasattr(request, "typography") and request.typography:
+            existing.typography = [t.strip() for t in request.typography if t.strip()]
         existing.target_audience = request.target_audience.strip()
         if hasattr(request, "owner_id") and request.owner_id:
             existing.owner_id = request.owner_id
@@ -206,9 +222,6 @@ class BrandService:
         return self.save_brand_profile(existing)
 
     async def scan_reference_features(self, file_path: Path) -> Dict[str, Any]:
-        from backend.app.preprocessing.pipeline import preprocessing_pipeline
-        from backend.app.ai.gateway import ai_gateway
-
         preprocessed = preprocessing_pipeline.preprocess(file_path=file_path)
 
         extracted_palette = preprocessed.extracted_colors_hex or []
@@ -222,6 +235,8 @@ class BrandService:
         suggested_mood = "Minimalist, Calm, Focused" if is_minimal else "Bold, Dynamic, Engaging"
         suggested_personality = "Sophisticated, Premium, Focused" if is_minimal else "Innovative, Energetic, Bold"
         suggested_tone = "Clear, Direct, Inspiring"
+        suggested_typography = "Modern Sans-Serif, Clean Hierarchy"
+        layout_structure = "Balanced Grid, Generous Negative Space"
         suggested_avoidances = "super cheap, bargain discount, clearance sale, miracle deal"
         extracted_motto = ""
 
@@ -240,6 +255,8 @@ class BrandService:
                     "- detected_personality: 2-3 brand personality traits (e.g. Sophisticated, Premium, Focused)\n"
                     "- communication_tone: 2-3 communication tone descriptors (e.g. Clear, Direct, Professional)\n"
                     "- visual_style: 2-3 visual aesthetic descriptors (e.g. Extreme Minimalism, Negative Space)\n"
+                    "- detected_typography: 2-3 typography characteristics (e.g. Geometric Sans-Serif, Bold Condensed Header, Clean Monospace)\n"
+                    "- layout_structure: 2-3 layout characteristics (e.g. Asymmetrical Grid, Generous Negative Space, High Contrast Focal)\n"
                     "- suggested_avoidances: 3-5 typical forbidden or cheap marketing claims that conflict with this brand identity\n"
                     "Return ONLY valid JSON."
                 )
@@ -269,8 +286,8 @@ class BrandService:
                     except Exception as model_err:
                         logger.warning("Reference scan error with model %s: %s", candidate_model, model_err)
 
-                if resp.text:
-                    parsed = json.loads(resp.text)
+                if resp and resp.text:
+                    parsed = extract_json_from_llm(resp.text)
                     if parsed.get("extracted_palette") and isinstance(parsed["extracted_palette"], list):
                         extracted_palette = list(dict.fromkeys(extracted_palette + [c.upper() for c in parsed["extracted_palette"] if c.startswith("#")]))
                     if parsed.get("detected_mood"):
@@ -281,6 +298,10 @@ class BrandService:
                         suggested_tone = ", ".join(parsed["communication_tone"]) if isinstance(parsed["communication_tone"], list) else str(parsed["communication_tone"])
                     if parsed.get("visual_style"):
                         suggested_style = ", ".join(parsed["visual_style"]) if isinstance(parsed["visual_style"], list) else str(parsed["visual_style"])
+                    if parsed.get("detected_typography"):
+                        suggested_typography = ", ".join(parsed["detected_typography"]) if isinstance(parsed["detected_typography"], list) else str(parsed["detected_typography"])
+                    if parsed.get("layout_structure"):
+                        layout_structure = ", ".join(parsed["layout_structure"]) if isinstance(parsed["layout_structure"], list) else str(parsed["layout_structure"])
                     if parsed.get("suggested_avoidances"):
                         suggested_avoidances = ", ".join(parsed["suggested_avoidances"]) if isinstance(parsed["suggested_avoidances"], list) else str(parsed["suggested_avoidances"])
                     if parsed.get("tagline_or_motto"):
@@ -309,6 +330,8 @@ class BrandService:
             "suggested_mood": suggested_mood,
             "suggested_tone": suggested_tone,
             "suggested_visual_style": suggested_style,
+            "suggested_typography": suggested_typography,
+            "layout_structure": layout_structure,
             "suggested_avoidances": suggested_avoidances,
             "extracted_motto": extracted_motto,
             "whitespace_ratio": round(ws, 2),
