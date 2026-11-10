@@ -5858,3 +5858,619 @@ html, body {
     grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)) !important;
   }
 }
+
+
+/* ==========================================================================
+   ROUND 3 DESIGN SYSTEM: JUDGE DEMO PRESETS, PRE-FLIGHT, CO-PILOT, AUTO-FIX
+   ========================================================================== */
+
+/* 1. Judge & Evaluator 1-Click Test Presets */
+.judge-demo-banner {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.08) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: var(--radius-md, 10px);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.judge-demo-banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6366F1, #A855F7, #EC4899);
+}
+
+.judge-demo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+
+.judge-demo-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.judge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 8px;
+  font-size: 1.1rem;
+}
+
+.judge-headline {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+
+.judge-subtext {
+  font-size: 0.78rem;
+  color: var(--text-muted, #94A3B8);
+  margin: 0.15rem 0 0 0;
+}
+
+.evaluator-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 0.25rem 0.65rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.judge-demo-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.75rem;
+}
+
+.btn-demo-preset {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-medium, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-sm, 8px);
+  color: var(--text-main, #F8FAFC);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast, 0.2s);
+}
+
+.btn-demo-preset:hover {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+}
+
+.btn-demo-preset.preset-warning:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.45);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+}
+
+.preset-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.preset-info strong {
+  display: block;
+  font-size: 0.82rem;
+  color: #FFFFFF;
+}
+
+.preset-info small {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted, #94A3B8);
+  margin-top: 0.1rem;
+}
+
+/* 2. Instant Pre-Flight Scanner HUD */
+.preflight-scanner-hud {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: var(--radius-md, 10px);
+  padding: 1rem 1.15rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.25s ease both;
+}
+
+.preflight-hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.preflight-hud-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: #FFFFFF;
+}
+
+.pf-latency-ticker {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  color: #818CF8;
+}
+
+.preflight-hud-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.75rem;
+}
+
+.pf-tile {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-label {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.68rem;
+  color: var(--text-faint, #64748B);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.25rem;
+}
+
+.pf-val {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.pf-sub {
+  font-size: 0.68rem;
+  color: var(--text-muted, #94A3B8);
+  margin-top: 0.2rem;
+}
+
+.pf-mini-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin-top: 0.35rem;
+  overflow: hidden;
+}
+
+.pf-mini-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366F1, #10B981);
+  border-radius: 2px;
+}
+
+.pf-swatches-row {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+}
+
+.pf-swatch-chip {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* 3. Auto-Remediation Banner & Modal */
+.auto-remediation-card {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(236, 72, 153, 0.1) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  border-radius: var(--radius-md, 10px);
+  padding: 1.25rem;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+}
+
+.auto-remed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.auto-remed-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.remed-sparkle {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.auto-remed-title-group h4 {
+  font-size: 1.05rem;
+  color: #FFFFFF;
+  margin: 0 0 0.2rem 0;
+}
+
+.auto-remed-title-group p {
+  font-size: 0.8rem;
+  color: var(--text-muted, #94A3B8);
+  margin: 0;
+}
+
+.btn-remediate {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1.35rem;
+  background: linear-gradient(135deg, #6366F1 0%, #A855F7 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.88rem;
+  border: none;
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4);
+  transition: all var(--transition-fast, 0.2s);
+}
+
+.btn-remediate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(168, 85, 247, 0.5);
+  filter: brightness(1.1);
+}
+
+/* Modal Split Comparison */
+.modal-remediation-dialog {
+  max-width: 820px;
+  width: 95%;
+}
+
+.modal-badge-remed {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #C084FC;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.remediation-comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.comparison-column {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 8px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.comp-col-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.label-before {
+  color: #F87171;
+}
+
+.label-after {
+  color: #34D399;
+}
+
+.comp-image-wrap {
+  width: 100%;
+  height: 240px;
+  background: #000000;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 0.65rem;
+}
+
+.comp-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.comp-telemetry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.telemetry-before strong {
+  color: #F87171;
+}
+
+.telemetry-after strong {
+  color: #34D399;
+}
+
+.remediation-palette-shifts {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+}
+
+.remed-swatches-grid {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.remed-shift-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.74rem;
+}
+
+.swatch-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 4. Interactive Brand Co-Pilot (Remediation Chatbot) */
+.copilot-assistant-card {
+  background: var(--bg-surface-elevated, #161B26);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: var(--radius-md, 10px);
+  padding: 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  margin-top: 1.5rem;
+}
+
+.copilot-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 1rem;
+}
+
+.copilot-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.copilot-avatar {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366F1, #A855F7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+
+.pulse-online {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #10B981;
+}
+
+.copilot-identity h4 {
+  font-size: 0.95rem;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.copilot-persona-text {
+  font-size: 0.74rem;
+  color: var(--text-muted, #94A3B8);
+}
+
+.copilot-messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.copilot-msg {
+  padding: 0.75rem 0.95rem;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  max-width: 85%;
+  animation: fadeIn 0.2s ease both;
+}
+
+.msg-assistant {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #E2E8F0;
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+}
+
+.msg-user {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+
+.copilot-rewrites-deck {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 8px;
+  padding: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.deck-header {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #818CF8;
+  margin-bottom: 0.5rem;
+}
+
+.copilot-rewrites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rewrite-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+.rewrite-text {
+  font-size: 0.82rem;
+  color: #F8FAFC;
+}
+
+.btn-apply-rewrite {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.2);
+  color: #818CF8;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.btn-apply-rewrite:hover {
+  background: #6366F1;
+  color: #FFFFFF;
+}
+
+.copilot-quick-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.quick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  color: var(--text-muted, #94A3B8);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quick-chip:hover {
+  background: rgba(99, 102, 241, 0.15);
+  color: #FFFFFF;
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.copilot-input-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.copilot-input-bar input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-medium, rgba(255, 255, 255, 0.12));
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  color: #FFFFFF;
+  font-size: 0.85rem;
+}
+
+.copilot-input-bar input:focus {
+  outline: none;
+  border-color: #6366F1;
+}
+
+.btn-copilot-send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--primary, #6366F1);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-copilot-send:hover {
+  background: #4F46E5;
+  transform: scale(1.05);
+}

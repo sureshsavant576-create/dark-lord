@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Check Vibe — Multimodal Creative Inspection & Verification | Sanket AI</title>
   <link rel="icon" type="image/png" href="/static/emblem.png">
-  <link rel="stylesheet" href="/static/style.css?v=24.0">
+  <link rel="stylesheet" href="/static/style.css?v=25.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -124,6 +124,43 @@
                   </div>
                 </div>
 
+                                <!-- Judge & Evaluator 1-Click Test Presets -->
+                <div class="judge-demo-banner" id="judge-demo-banner">
+                  <div class="judge-demo-header">
+                    <div class="judge-demo-title">
+                      <span class="judge-icon">⚡</span>
+                      <div>
+                        <strong class="judge-headline">Evaluator &amp; Judge 1-Click Test Presets</strong>
+                        <p class="judge-subtext">Zero-setup testing &mdash; loads brand guidelines, sample ad copy, and creative graphics in 1 click.</p>
+                      </div>
+                    </div>
+                    <span class="evaluator-badge">Round 3 Ready</span>
+                  </div>
+                  <div class="judge-demo-actions">
+                    <button type="button" class="btn-demo-preset" onclick="loadJudgePreset('nike_compliant')">
+                      <span class="preset-icon">🚀</span>
+                      <div class="preset-info">
+                        <strong>Nike Certified (Compliant)</strong>
+                        <small>Find Your Greatness &bull; Expected Pass</small>
+                      </div>
+                    </button>
+                    <button type="button" class="btn-demo-preset preset-warning" onclick="loadJudgePreset('off_brand_remediate')">
+                      <span class="preset-icon">⚠️</span>
+                      <div class="preset-info">
+                        <strong>Off-Brand Poster (Auto-Fix Demo)</strong>
+                        <small>Prohibited claims &amp; off-palette &bull; Co-Pilot &amp; Recolor</small>
+                      </div>
+                    </button>
+                    <button type="button" class="btn-demo-preset" onclick="loadJudgePreset('grb_heritage')">
+                      <span class="preset-icon">🌿</span>
+                      <div class="preset-info">
+                        <strong>GRB Traditional (Heritage Vibe)</strong>
+                        <small>Heritage food &bull; Traditional Palette</small>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
                 <form id="inspection-form" class="app-form">
                   <!-- Target Brand Standard Selector -->
                   <div class="form-group">
@@ -233,6 +270,40 @@
                         <div id="dev-spectrum-bar" class="color-spectrum-bar"></div>
                         <div id="dev-color-filter-results" class="dev-filter-chips-grid"></div>
                       </div>
+                      <!-- Instant Drag-and-Drop Pre-Flight Scanner (Round 3 Improvement 3) -->
+                      <div id="preflight-scanner-hud" class="preflight-scanner-hud hidden">
+                        <div class="preflight-hud-header">
+                          <div class="preflight-hud-title">
+                            <span class="status-pulse-dot"></span>
+                            <strong>Instant Pre-Flight Scanner</strong>
+                            <span class="pf-latency-ticker" id="pf-latency-ticker">&bull; Real-Time Diagnostics</span>
+                          </div>
+                          <span id="pf-brand-alignment-badge" class="badge badge-success">88% Expected Alignment</span>
+                        </div>
+                        <div class="preflight-hud-grid">
+                          <div class="pf-tile">
+                            <span class="pf-label">Color Temperature</span>
+                            <strong id="pf-temp-text" class="pf-val">Warm 3200K</strong>
+                            <span id="pf-temp-sub" class="pf-sub">Golden / Ambient Hue</span>
+                          </div>
+                          <div class="pf-tile">
+                            <span class="pf-label">Negative Space</span>
+                            <strong id="pf-whitespace-text" class="pf-val">42.4%</strong>
+                            <div class="pf-mini-bar"><div id="pf-whitespace-fill" class="pf-mini-fill" style="width: 42.4%;"></div></div>
+                          </div>
+                          <div class="pf-tile">
+                            <span class="pf-label">Predicted Visual Vibe</span>
+                            <strong id="pf-vibe-text" class="pf-val">Minimalist Modern</strong>
+                            <span id="pf-vibe-sub" class="pf-sub">High Whitespace / Balanced Contrast</span>
+                          </div>
+                          <div class="pf-tile">
+                            <span class="pf-label">Extracted Palette</span>
+                            <div id="pf-swatches-row" class="pf-swatches-row"></div>
+                            <span class="pf-sub">Dominant Centroids</span>
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
 
@@ -502,6 +573,78 @@
                     <div id="findings-table-container" class="findings-list"></div>
                   </div>
 
+                  
+                  <!-- 1-Click Generative Auto-Remediation (Round 3 Improvement 2) -->
+                  <div class="section-block auto-remediation-card" id="auto-remediation-banner">
+                    <div class="auto-remed-header">
+                      <div class="auto-remed-title-group">
+                        <span class="remed-sparkle">✨</span>
+                        <div>
+                          <h4>1-Click Generative Auto-Remediation</h4>
+                          <p>Programmatically shift off-brand colors to approved brand palette centroids (&Delta;E &lt; 5.0) and generate a certified download-ready graphic.</p>
+                        </div>
+                      </div>
+                      <button type="button" class="btn btn-remediate" id="btn-trigger-remediation" onclick="triggerAutoRemediation()">
+                        <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                        <span>Auto-Fix &amp; Recolor Asset</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Interactive Brand Co-Pilot & Remediation Assistant (Round 3 Improvement 1) -->
+                  <div class="section-block copilot-assistant-card" id="brand-copilot-card">
+                    <div class="copilot-card-header">
+                      <div class="copilot-identity">
+                        <div class="copilot-avatar">
+                          <span class="copilot-avatar-icon">🛡️</span>
+                          <span class="status-pulse-dot pulse-online"></span>
+                        </div>
+                        <div>
+                          <h4 id="copilot-brand-title">Brand Guardian Co-Pilot</h4>
+                          <span id="copilot-persona-subtitle" class="copilot-persona-text">Interactive Remediation Assistant</span>
+                        </div>
+                      </div>
+                      <span class="badge badge-success">Persona Connected</span>
+                    </div>
+
+                    <div class="copilot-chat-body">
+                      <!-- Chat log -->
+                      <div id="copilot-messages-list" class="copilot-messages-list"></div>
+
+                      <!-- Suggested Rewrites Deck -->
+                      <div id="copilot-rewrites-deck" class="copilot-rewrites-deck hidden">
+                        <div class="deck-header">
+                          <span>✨ 1-Click Certified Copy Rewrites:</span>
+                        </div>
+                        <div id="copilot-rewrites-list" class="copilot-rewrites-list"></div>
+                      </div>
+
+                      <!-- Quick Prompts Chips -->
+                      <div class="copilot-quick-chips" id="copilot-quick-chips">
+                        <button type="button" class="quick-chip" onclick="sendCopilotQuickPrompt('Suggest 3 compliant headlines in brand voice')">
+                          <span>💡</span> Suggest 3 headlines
+                        </button>
+                        <button type="button" class="quick-chip" onclick="sendCopilotQuickPrompt('How do I fix the color palette discrepancy?')">
+                          <span>🎨</span> Fix color palette
+                        </button>
+                        <button type="button" class="quick-chip" onclick="sendCopilotQuickPrompt('Rewrite this ad copy to match brand personality')">
+                          <span>✨</span> Rewrite ad copy
+                        </button>
+                        <button type="button" class="quick-chip" onclick="sendCopilotQuickPrompt('Explain step-by-step how to get certified')">
+                          <span>📋</span> Step-by-step guidance
+                        </button>
+                      </div>
+
+                      <!-- Input bar -->
+                      <form id="copilot-input-form" class="copilot-input-bar" onsubmit="handleCopilotSubmit(event)">
+                        <input type="text" id="copilot-text-input" placeholder="Ask your Brand Guardian Co-Pilot anything..." autocomplete="off">
+                        <button type="submit" id="btn-send-copilot" class="btn-copilot-send" title="Send message">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+
                   <!-- Signoff Summary -->
                   <div class="section-block signoff-summary-box">
                     <div class="signoff-summary-header">
@@ -756,6 +899,55 @@
     }
   </script>
 
-  <script src="/static/app.js?v=24.0"></script>
+  <script src="/static/app.js?v=25.0"></script>
+
+  <!-- Auto-Remediation Split Comparison Modal (Round 3 Improvement 2) -->
+  <div id="modal-auto-remediation" class="modal-backdrop hidden" onclick="if(event.target===this)closeRemediationModal()">
+    <div class="modal-dialog modal-remediation-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-badge-remed">✨ 1-Click Generative Auto-Remediation</span>
+          <h3 id="remed-modal-title">Creative Color Shift &amp; Palette Remapping</h3>
+        </div>
+        <button type="button" class="btn-close-modal" onclick="closeRemediationModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="remediation-comparison-grid">
+          <div class="comparison-column">
+            <span class="comp-col-label label-before">Original Submission (Off-Brand)</span>
+            <div class="comp-image-wrap">
+              <img id="remed-orig-img" class="comp-img" alt="Original submission">
+            </div>
+            <div class="comp-telemetry telemetry-before">
+              <span>Color Accuracy:</span>
+              <strong id="remed-orig-delta">&Delta;E 24.5 &bull; Non-Compliant</strong>
+            </div>
+          </div>
+          <div class="comparison-column">
+            <span class="comp-col-label label-after">&check; Remediated Graphic (Brand-Certified)</span>
+            <div class="comp-image-wrap">
+              <img id="remed-fixed-img" class="comp-img" alt="Remediated compliant asset">
+            </div>
+            <div class="comp-telemetry telemetry-after">
+              <span>Color Accuracy:</span>
+              <strong id="remed-fixed-delta">&Delta;E 3.2 &bull; 98.4% Compliant</strong>
+            </div>
+          </div>
+        </div>
+        <div class="remediation-palette-shifts">
+          <strong>Color Centroids Remapped:</strong>
+          <div id="remed-swatches-grid" class="remed-swatches-grid"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a id="btn-download-remediated" href="#" download="brand_certified_creative.png" class="btn btn-primary btn-large">
+          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Download Certified Graphic</span>
+        </a>
+        <button type="button" class="btn btn-outline" onclick="closeRemediationModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

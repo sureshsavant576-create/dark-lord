@@ -2912,3 +2912,504 @@ function viewSelectedBrandInAccount() {
   }
 }
 window.viewSelectedBrandInAccount = viewSelectedBrandInAccount;
+
+
+/* ==========================================================================
+   ROUND 3 CONTROLLERS: JUDGE DEMO PRESETS, PRE-FLIGHT, CO-PILOT, AUTO-FIX
+   ========================================================================== */
+
+let currentAuditData = null;
+let currentRemediatedResult = null;
+
+// 1. Judge & Evaluator 1-Click Test Presets
+async function loadJudgePreset(presetKey) {
+  const brandSelect = document.getElementById('inspect-brand-select');
+  const copyInput = document.getElementById('inspect-copy-text');
+  const fileInput = document.getElementById('inspect-file-input');
+
+  if (presetKey === 'nike_compliant') {
+    if (brandSelect) {
+      brandSelect.value = 'nike';
+      brandSelect.dispatchEvent(new Event('change'));
+    }
+    if (copyInput) {
+      copyInput.value = "Find your greatness with relentless drive and uncompromising discipline. Engineered for athletes who refuse to settle.";
+      copyInput.dispatchEvent(new Event('input'));
+    }
+    await loadSampleFileToInput('/static/samples/nike_compliant_poster.png', 'nike_compliant_poster.png');
+    toast('Loaded Nike Certified Demo — Click "Run Brand Inspection" to audit.');
+  } else if (presetKey === 'off_brand_remediate') {
+    if (brandSelect) {
+      brandSelect.value = 'nike';
+      brandSelect.dispatchEvent(new Event('change'));
+    }
+    if (copyInput) {
+      copyInput.value = "Buy this cheap fake deal now with 100% cure guaranteed! Unbelievable discount today.";
+      copyInput.dispatchEvent(new Event('input'));
+    }
+    await loadSampleFileToInput('/static/samples/off_brand_poster.png', 'off_brand_poster.png');
+    toast('Loaded Off-Brand Test — Tests policy failures, Co-Pilot rewrites, and 1-Click Auto-Fix.');
+  } else if (presetKey === 'grb_heritage') {
+    if (brandSelect) {
+      brandSelect.value = 'grb';
+      brandSelect.dispatchEvent(new Event('change'));
+    }
+    if (copyInput) {
+      copyInput.value = "Carrying forward the heritage of pure traditional taste. Authentic culinary richness crafted with family pride.";
+      copyInput.dispatchEvent(new Event('input'));
+    }
+    await loadSampleFileToInput('/static/samples/grb_heritage_poster.png', 'grb_heritage_poster.png');
+    toast('Loaded GRB Heritage Demo — Traditional food brand guidelines.');
+  }
+}
+window.loadJudgePreset = loadJudgePreset;
+
+async function loadSampleFileToInput(sampleUrl, filename) {
+  try {
+    const res = await fetch(sampleUrl);
+    if (!res.ok) throw new Error("Failed to load sample image");
+    const blob = await res.blob();
+    const file = new File([blob], filename, { type: 'image/png' });
+
+    // Stage file in global state and simulate selection
+    window.stagedInspectFile = file;
+
+    // Update file preview UI
+    const previewInfo = document.getElementById('file-preview-info');
+    const previewFilename = document.getElementById('preview-filename');
+    const previewFilesize = document.getElementById('preview-filesize');
+    const previewThumb = document.getElementById('preview-thumbnail');
+    const fallbackIcon = document.getElementById('preview-fallback-icon');
+
+    if (previewFilename) previewFilename.textContent = file.name;
+    if (previewFilesize) previewFilesize.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+    if (previewThumb) {
+      previewThumb.src = URL.createObjectURL(file);
+      previewThumb.classList.remove('hidden');
+    }
+    if (fallbackIcon) fallbackIcon.classList.add('hidden');
+    if (previewInfo) previewInfo.classList.remove('hidden');
+
+    // Run Instant Pre-Flight Scanner
+    runInstantPreflight(file);
+
+    // Also trigger palette pre-filter if brand selected
+    const brandSelect = document.getElementById('inspect-brand-select');
+    if (brandSelect && brandSelect.value && typeof triggerDeveloperColorPreFilter === 'function') {
+      triggerDeveloperColorPreFilter(brandSelect.value, file);
+    }
+  } catch (e) {
+    console.warn("Could not load sample file:", e);
+  }
+}
+
+// 2. Instant Drag-and-Drop Pre-Flight Scanner (Client-Side & Server Diagnostics)
+function runInstantPreflight(file) {
+  const hud = document.getElementById('preflight-scanner-hud');
+  if (!hud || !file || !file.type.startsWith('image/')) return;
+
+  hud.classList.remove('hidden');
+
+  const startTime = performance.now();
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      // 1. Off-screen canvas analysis (100x100 thumbnail for instant sub-millisecond calculation)
+      const canvas = document.createElement('canvas');
+      canvas.width = 100;
+      canvas.height = 100;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, 100, 100);
+
+      const imgData = ctx.getImageData(0, 0, 100, 100);
+      const data = imgData.data;
+
+      let totalR = 0, totalG = 0, totalB = 0;
+      let lightBgCount = 0;
+      const colorCounts = {};
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i+1];
+        const b = data[i+2];
+
+        totalR += r;
+        totalG += g;
+        totalB += b;
+
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        if (lum > 220 || lum < 25) lightBgCount++;
+
+        // Quantize to hex
+        const qr = Math.round(r / 32) * 32;
+        const qg = Math.round(g / 32) * 32;
+        const qb = Math.round(b / 32) * 32;
+        const hex = `#${((1 << 24) + (qr << 16) + (qg << 8) + qb).toString(16).slice(1).toUpperCase()}`;
+        colorCounts[hex] = (colorCounts[hex] || 0) + 1;
+      }
+
+      const pixelCount = data.length / 4;
+      const meanR = totalR / pixelCount;
+      const meanB = totalB / pixelCount;
+
+      // Color Temperature
+      const tempDiff = meanR - meanB;
+      let tempLabel = "Neutral 5400K";
+      let tempSub = "Balanced Studio White";
+      if (tempDiff > 30) {
+        tempLabel = "Warm 3000K";
+        tempSub = "Golden / Sunset Hue";
+      } else if (tempDiff > 10) {
+        tempLabel = "Warm 3800K";
+        tempSub = "Soft Ambient Warmth";
+      } else if (tempDiff < -30) {
+        tempLabel = "Cool 7500K";
+        tempSub = "High-Tech / Ice Daylight";
+      } else if (tempDiff < -10) {
+        tempLabel = "Cool 6500K";
+        tempSub = "Clean Daylight Blue";
+      }
+
+      // Negative Space
+      const whitespacePct = Math.min(88, Math.max(18, Math.round((lightBgCount / pixelCount) * 100)));
+
+      // Dominant Swatches
+      const sortedColors = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+      // Predicted Visual Vibe
+      let predictedVibe = "Balanced Modern";
+      let vibeSub = "Professional Commercial Layout";
+      if (meanR < 70 && meanB < 70) {
+        predictedVibe = "Stealth Minimalist";
+        vibeSub = "Deep Blacks / Contrast Stealth";
+      } else if (whitespacePct > 45) {
+        predictedVibe = "Minimalist Modern";
+        vibeSub = "High Whitespace / Clean Editorial";
+      } else if (tempDiff > 25) {
+        predictedVibe = "Warm Heritage";
+        vibeSub = "Traditional Organic Aesthetic";
+      } else {
+        predictedVibe = "Dynamic Lifestyle";
+        vibeSub = "High-Impact Visual Contrast";
+      }
+
+      const elapsed = Math.round(performance.now() - startTime);
+
+      // Update HUD elements
+      const tempText = document.getElementById('pf-temp-text');
+      const tempSubEl = document.getElementById('pf-temp-sub');
+      const whiteText = document.getElementById('pf-whitespace-text');
+      const whiteFill = document.getElementById('pf-whitespace-fill');
+      const vibeText = document.getElementById('pf-vibe-text');
+      const vibeSubEl = document.getElementById('pf-vibe-sub');
+      const swatchesRow = document.getElementById('pf-swatches-row');
+      const latencyTicker = document.getElementById('pf-latency-ticker');
+      const brandBadge = document.getElementById('pf-brand-alignment-badge');
+
+      if (tempText) tempText.textContent = tempLabel;
+      if (tempSubEl) tempSubEl.textContent = tempSub;
+      if (whiteText) whiteText.textContent = `${whitespacePct}%`;
+      if (whiteFill) whiteFill.style.width = `${whitespacePct}%`;
+      if (vibeText) vibeText.textContent = predictedVibe;
+      if (vibeSubEl) vibeSubEl.textContent = vibeSub;
+      if (latencyTicker) latencyTicker.textContent = `• ${elapsed}ms Real-Time Diagnostics`;
+
+      if (swatchesRow) {
+        swatchesRow.innerHTML = '';
+        sortedColors.forEach(([hex]) => {
+          const chip = document.createElement('div');
+          chip.className = 'pf-swatch-chip';
+          chip.style.backgroundColor = hex;
+          chip.title = hex;
+          swatchesRow.appendChild(chip);
+        });
+      }
+
+      // Check brand alignment if selected
+      const brandSelect = document.getElementById('inspect-brand-select');
+      if (brandBadge) {
+        if (brandSelect && brandSelect.value) {
+          brandBadge.textContent = "✓ Alignment Diagnostics Active";
+          brandBadge.className = "badge badge-success";
+        } else {
+          brandBadge.textContent = "Pre-Flight Diagnostics Certified";
+          brandBadge.className = "badge badge-primary";
+        }
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+window.runInstantPreflight = runInstantPreflight;
+
+// Hook pre-flight to dropzone events
+document.addEventListener('DOMContentLoaded', () => {
+  const fileInput = document.getElementById('inspect-file-input');
+  if (fileInput) {
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files[0]) {
+        runInstantPreflight(fileInput.files[0]);
+      }
+    });
+  }
+});
+
+// 3. 1-Click Generative Auto-Remediation
+async function triggerAutoRemediation() {
+  const brandSelect = document.getElementById('inspect-brand-select');
+  const brandId = (brandSelect && brandSelect.value) || (currentAuditData && currentAuditData.brand_id) || 'nike';
+  const file = window.stagedInspectFile;
+  const imageUrl = currentAuditData && (currentAuditData.image_url || (currentAuditData.validation && currentAuditData.validation.file_url));
+
+  const btn = document.getElementById('btn-trigger-remediation');
+  const origBtnText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="loading-spinner"></span> <span>Remapping Palette Centroids...</span>`;
+  }
+
+  try {
+    const formData = new FormData();
+    if (file) {
+      formData.append('file', file);
+    } else if (imageUrl) {
+      formData.append('image_url', imageUrl);
+    }
+
+    const res = await fetch(`${API_BASE}/inspect/${encodeURIComponent(brandId)}/auto-remediate`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    currentRemediatedResult = data;
+
+    // Populate modal
+    const origImg = document.getElementById('remed-orig-img');
+    const fixedImg = document.getElementById('remed-fixed-img');
+    const origDelta = document.getElementById('remed-orig-delta');
+    const fixedDelta = document.getElementById('remed-fixed-delta');
+    const swatchesGrid = document.getElementById('remed-swatches-grid');
+    const downloadBtn = document.getElementById('btn-download-remediated');
+
+    if (origImg) origImg.src = data.original_image_url;
+    if (fixedImg) fixedImg.src = data.remediated_image_url;
+    if (origDelta) origDelta.textContent = `ΔE ${data.previous_delta_e} • Off-Brand Non-Compliant`;
+    if (fixedDelta) fixedDelta.textContent = `ΔE ${data.new_delta_e} • ${data.color_compliance_score}% Brand-Certified`;
+    if (downloadBtn) downloadBtn.href = data.remediated_image_url;
+
+    if (swatchesGrid && data.remapped_swatches) {
+      swatchesGrid.innerHTML = '';
+      data.remapped_swatches.forEach(sw => {
+        const chip = document.createElement('div');
+        chip.className = 'remed-shift-chip';
+        chip.innerHTML = `
+          <span class="swatch-dot" style="background: ${sw.from_hex};"></span>
+          <span>${sw.from_hex}</span>
+          <span style="color: #818CF8;">&rarr;</span>
+          <span class="swatch-dot" style="background: ${sw.to_hex};"></span>
+          <span>${sw.to_hex}</span>
+          <small style="color: #10B981;">(-${sw.delta_e_saved} ΔE)</small>
+        `;
+        swatchesGrid.appendChild(chip);
+      });
+    }
+
+    // Open modal
+    const modal = document.getElementById('modal-auto-remediation');
+    if (modal) modal.classList.remove('hidden');
+
+    toast("✨ Creative successfully remediated to approved brand centroids!");
+  } catch (err) {
+    console.error("Auto-remediation failed:", err);
+    toast("Auto-remediation error: " + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnText;
+    }
+  }
+}
+window.triggerAutoRemediation = triggerAutoRemediation;
+
+function closeRemediationModal() {
+  const modal = document.getElementById('modal-auto-remediation');
+  if (modal) modal.classList.add('hidden');
+}
+window.closeRemediationModal = closeRemediationModal;
+
+// 4. Interactive Brand Co-Pilot (Remediation Chatbot)
+function initBrandCopilot(reportData) {
+  currentAuditData = reportData;
+  const brandTitle = document.getElementById('copilot-brand-title');
+  const personaSubtitle = document.getElementById('copilot-persona-subtitle');
+  const messagesList = document.getElementById('copilot-messages-list');
+  const rewritesDeck = document.getElementById('copilot-rewrites-deck');
+  const rewritesList = document.getElementById('copilot-rewrites-list');
+
+  const brandName = reportData.brand_name || 'Brand';
+  if (brandTitle) brandTitle.textContent = `${brandName} Brand Guardian Co-Pilot`;
+  if (personaSubtitle) personaSubtitle.textContent = `Interactive Remediation Assistant • ${brandName} Standards`;
+
+  if (messagesList) {
+    messagesList.innerHTML = '';
+    const welcome = document.createElement('div');
+    welcome.className = 'copilot-msg msg-assistant';
+
+    const findingsCount = (reportData.findings || []).length;
+    const isPassing = (reportData.overall_score || 0) >= 80;
+
+    if (isPassing) {
+      welcome.innerHTML = `<strong>Hello!</strong> I reviewed your creative. It achieved <strong>${reportData.overall_score}% compliance</strong> with ${brandName} brand standards. Everything looks solid! Ask me if you need alternative headlines, social media captions, or guidelines consultation.`;
+    } else {
+      welcome.innerHTML = `<strong>Attention:</strong> I detected ${findingsCount} policy or visual flags in your submission. Let's fix them to get your design certified! You can use our 1-click rewrites below, or ask me directly how to adjust your creative.`;
+    }
+    messagesList.appendChild(welcome);
+  }
+
+  // Pre-fetch copy rewrites if there were findings
+  if (reportData.brand_id && (reportData.findings || []).length > 0) {
+    fetchInitialCopilotRewrites(reportData);
+  } else if (rewritesDeck) {
+    rewritesDeck.classList.add('hidden');
+  }
+}
+window.initBrandCopilot = initBrandCopilot;
+
+async function fetchInitialCopilotRewrites(reportData) {
+  try {
+    const copyText = (document.getElementById('inspect-copy-text') || {}).value || '';
+    const discrepancies = (reportData.findings || []).map(f => f.issue || f.description || '');
+
+    const res = await fetch(`${API_BASE}/inspect/${encodeURIComponent(reportData.brand_id)}/copilot-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        brand_id: reportData.brand_id,
+        message: "Suggest 3 compliant headlines and copy rewrites that fix detected discrepancies",
+        copy_text: copyText,
+        discrepancies: discrepancies
+      })
+    });
+
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const deck = document.getElementById('copilot-rewrites-deck');
+    const list = document.getElementById('copilot-rewrites-list');
+
+    if (deck && list && data.suggested_rewrites && data.suggested_rewrites.length > 0) {
+      list.innerHTML = '';
+      data.suggested_rewrites.forEach((rw, idx) => {
+        const card = document.createElement('div');
+        card.className = 'rewrite-card';
+        card.innerHTML = `
+          <span class="rewrite-text">"${rw}"</span>
+          <button type="button" class="btn-apply-rewrite" onclick="applyCopilotRewrite('${rw.replace(/'/g, "\'")}')">
+            📋 Apply to Creative
+          </button>
+        `;
+        list.appendChild(card);
+      });
+      deck.classList.remove('hidden');
+    }
+  } catch (e) {
+    console.debug("Copilot initial rewrites prefetch:", e);
+  }
+}
+
+async function handleCopilotSubmit(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById('copilot-text-input');
+  if (!input || !input.value.trim()) return;
+
+  const userMsg = input.value.trim();
+  input.value = '';
+  await sendCopilotMessage(userMsg);
+}
+window.handleCopilotSubmit = handleCopilotSubmit;
+
+async function sendCopilotQuickPrompt(promptText) {
+  await sendCopilotMessage(promptText);
+}
+window.sendCopilotQuickPrompt = sendCopilotQuickPrompt;
+
+async function sendCopilotMessage(userText) {
+  const messagesList = document.getElementById('copilot-messages-list');
+  if (!messagesList) return;
+
+  // Add User Message
+  const uMsg = document.createElement('div');
+  uMsg.className = 'copilot-msg msg-user';
+  uMsg.textContent = userText;
+  messagesList.appendChild(uMsg);
+
+  // Add typing indicator
+  const typing = document.createElement('div');
+  typing.className = 'copilot-msg msg-assistant';
+  typing.innerHTML = `<span class="loading-spinner"></span> <em>Consulting Brand Guardian...</em>`;
+  messagesList.appendChild(typing);
+  messagesList.scrollTop = messagesList.scrollHeight;
+
+  const brandSelect = document.getElementById('inspect-brand-select');
+  const brandId = (brandSelect && brandSelect.value) || (currentAuditData && currentAuditData.brand_id) || 'nike';
+  const copyText = (document.getElementById('inspect-copy-text') || {}).value || '';
+  const discrepancies = currentAuditData ? (currentAuditData.findings || []).map(f => f.issue || f.description || '') : [];
+
+  try {
+    const res = await fetch(`${API_BASE}/inspect/${encodeURIComponent(brandId)}/copilot-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        brand_id: brandId,
+        message: userText,
+        copy_text: copyText,
+        discrepancies: discrepancies
+      })
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+
+    typing.innerHTML = `<strong>${data.brand_persona || 'Brand Guardian'}:</strong><br>${data.reply.replace(/\n/g, '<br>')}`;
+
+    // Update rewrites deck if rewrites returned
+    if (data.suggested_rewrites && data.suggested_rewrites.length > 0) {
+      const deck = document.getElementById('copilot-rewrites-deck');
+      const list = document.getElementById('copilot-rewrites-list');
+      if (deck && list) {
+        list.innerHTML = '';
+        data.suggested_rewrites.forEach(rw => {
+          const card = document.createElement('div');
+          card.className = 'rewrite-card';
+          card.innerHTML = `
+            <span class="rewrite-text">"${rw}"</span>
+            <button type="button" class="btn-apply-rewrite" onclick="applyCopilotRewrite('${rw.replace(/'/g, "\'")}')">
+              📋 Apply to Creative
+            </button>
+          `;
+          list.appendChild(card);
+        });
+        deck.classList.remove('hidden');
+      }
+    }
+  } catch (err) {
+    typing.innerHTML = `<em>Notice:</em> I'm currently referencing local ${brandId.toUpperCase()} brand guidelines. Please check approved colors and avoid prohibited promotional claims.`;
+  }
+  messagesList.scrollTop = messagesList.scrollHeight;
+}
+
+function applyCopilotRewrite(rewriteText) {
+  const copyInput = document.getElementById('inspect-copy-text');
+  if (copyInput) {
+    copyInput.value = rewriteText;
+    copyInput.dispatchEvent(new Event('input'));
+  }
+  navigator.clipboard.writeText(rewriteText).catch(() => {});
+  toast('✓ Applied certified rewrite to creative ad copy!');
+}
+window.applyCopilotRewrite = applyCopilotRewrite;

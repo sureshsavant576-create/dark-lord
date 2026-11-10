@@ -63,6 +63,25 @@ async def prefilter_poster_colors(
         logger.exception("Failed to pre-filter colors: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to pre-filter colors due to an internal processing error.")
 
+from backend.app.services.preflight_service import preflight_scanner_service
+
+@router.post("/inspect/preflight-scan")
+async def preflight_scan_creative(
+    file: UploadFile = File(...),
+    brand_id: Optional[str] = Form(default=None)
+):
+    settings.init_directories()
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Image file required for pre-flight scanning.")
+
+    target_path = save_upload_safely(file, settings.UPLOADS_DIR, prefix="preflight")
+    try:
+        return preflight_scanner_service.analyze_image_preflight(target_path, brand_id=brand_id)
+    except Exception as exc:
+        logger.exception("Pre-flight scan failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to run pre-flight scan.")
+
+
 @router.post("/inspect/{brand_id}", response_model=InspectionReport)
 async def inspect_developer_content(
     brand_id: str,
@@ -200,3 +219,63 @@ def clear_all_reports(
         "message": f"Permanently deleted {count} inspection report(s).",
         "deleted_count": count
     }
+
+
+# =========================================================================
+# ROUND 3 IMPROVEMENTS: BRAND CO-PILOT, AUTO-REMEDIATION, PRE-FLIGHT
+# =========================================================================
+
+from backend.app.services.copilot_service import (
+    CopilotChatRequest,
+    CopilotChatResponse,
+    brand_copilot_service,
+)
+from backend.app.services.remediation_service import creative_remediation_service
+
+
+@router.post("/inspect/{brand_id}/copilot-chat", response_model=CopilotChatResponse)
+async def chat_with_brand_copilot(
+    brand_id: str,
+    payload: CopilotChatRequest
+):
+    try:
+        payload.brand_id = brand_id
+        return await brand_copilot_service.chat(payload)
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
+    except Exception as exc:
+        logger.exception("Brand Co-Pilot error: %s", exc)
+        raise HTTPException(status_code=500, detail="Brand Co-Pilot encountered an internal processing error.")
+
+
+@router.post("/inspect/{brand_id}/auto-remediate")
+async def auto_remediate_creative(
+    brand_id: str,
+    file: Optional[UploadFile] = File(default=None),
+    image_url: Optional[str] = Form(default=None)
+):
+    settings.init_directories()
+    target_path = None
+
+    if file and file.filename:
+        target_path = save_upload_safely(file, settings.UPLOADS_DIR, prefix="remed_src")
+    elif image_url:
+        clean_name = Path(image_url.split("?")[0]).name
+        local_path = settings.UPLOADS_DIR / clean_name
+        if local_path.exists():
+            target_path = local_path
+
+    if not target_path or not target_path.exists():
+        raise HTTPException(status_code=400, detail="Valid creative image file or existing uploaded image URL is required.")
+
+    try:
+        result = creative_remediation_service.auto_remediate_image(target_path, brand_id)
+        return result
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
+    except Exception as exc:
+        logger.exception("Creative Auto-Remediation failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to auto-remediate creative due to an internal processing error.")
+
+
+
