@@ -262,6 +262,14 @@ async def auto_remediate_creative(
     elif image_url:
         clean_name = Path(image_url.split("?")[0]).name
         local_path = settings.UPLOADS_DIR / clean_name
+        if not local_path.exists():
+            static_sample = settings.STATIC_DIR / "samples" / clean_name
+            if static_sample.exists():
+                local_path = static_sample
+            else:
+                static_direct = settings.STATIC_DIR / clean_name
+                if static_direct.exists():
+                    local_path = static_direct
         if local_path.exists():
             target_path = local_path
 
