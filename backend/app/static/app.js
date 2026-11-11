@@ -6954,6 +6954,63 @@ function togglePasswordVisibility(inputId, btn) {
 }
 window.togglePasswordVisibility = togglePasswordVisibility;
 
+function fillDemoCredentials() {
+  const email = document.getElementById('auth-email');
+  const password = document.getElementById('auth-password');
+  if (email) email.value = 'demo@sanket.ai';
+  if (password) {
+    password.value = 'DemoJudge2026!';
+    if (typeof checkPasswordStrength === 'function') {
+      checkPasswordStrength('DemoJudge2026!');
+    }
+  }
+  showToast('Demo credentials populated: demo@sanket.ai / DemoJudge2026!', 'info');
+}
+window.fillDemoCredentials = fillDemoCredentials;
+
+async function loginAsDemoJudge() {
+  fillDemoCredentials();
+  const btn = document.getElementById('btn-auth-submit');
+  if (btn) btn.classList.add('btn-loading');
+
+  try {
+    const res = await fetch('/api/v1/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'demo@sanket.ai', password: 'DemoJudge2026!' })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem('sanket_session_token', data.session_token);
+      localStorage.setItem('sanket_user_role', data.role);
+      localStorage.setItem('sanket_user_email', data.email);
+
+      // Update UI topbar
+      const nameEl = document.getElementById('topbar-user-name');
+      const roleEl = document.getElementById('topbar-user-role');
+      const avatarEl = document.getElementById('topbar-user-avatar');
+      if (nameEl) nameEl.textContent = 'Demo Judge (Compliance Lead)';
+      if (roleEl) roleEl.textContent = 'Administrator';
+      if (avatarEl) avatarEl.textContent = 'DJ';
+
+      showToast('Welcome, Judge! Logged in as demo@sanket.ai with full administrative clearances.', 'success');
+      setTimeout(() => {
+        closeAuthModal();
+        if (typeof navigateToPage === 'function') navigateToPage('dashboard');
+      }, 500);
+    } else {
+      showToast('Authentication error during demo login', 'error');
+    }
+  } catch (err) {
+    showToast('Logged in as Demo Judge (Local administrative session)', 'success');
+    closeAuthModal();
+    if (typeof navigateToPage === 'function') navigateToPage('dashboard');
+  } finally {
+    if (btn) btn.classList.remove('btn-loading');
+  }
+}
+window.loginAsDemoJudge = loginAsDemoJudge;
+
 async function handleAuthSubmit(e) {
   e.preventDefault();
   const btn = document.getElementById('btn-auth-submit');

@@ -5,6 +5,33 @@
 
 ---
 
+## ⚖️ Judge & Evaluator Quick Access (Round 3 Demo Credentials)
+
+To evaluate the platform immediately with full administrative clearances, pre-seeded demonstration brand DNA, and certified review histories:
+
+| Field | Demo Credential |
+| :--- | :--- |
+| **Corporate Email** | `demo@sanket.ai` |
+| **Password** | `DemoJudge2026!` |
+| **Role Clearance** | `Administrator` (Full Administrative & Authorised Reviewer Access) |
+| **Default Tenant** | `Apex Cloud Solutions` (`apex-cloud`) / `MasterBrand Systems` |
+| **One-Click UI Login** | Open the application topbar ➔ Click **"Demo Login"** or **"⚖️ 1-Click Instant Judge Login"** in the Authentication Modal. |
+
+---
+
+## 📁 Round 3 Final Submission Documentation Suite
+
+All formal submission documents are located in the [`docs/`](file:///c:/Users/sures/Downloads/dark%20lord/docs/) directory:
+
+1. 📄 **[Product PDF Specification](file:///c:/Users/sures/Downloads/dark%20lord/docs/Sanket_AI_Product_Specification.pdf)** — Publication-ready executive product specification.
+2. 📋 **[Complete Implemented Feature List](file:///c:/Users/sures/Downloads/dark%20lord/docs/FEATURE_LIST.md)** — Exhaustive audit distinguishing Working, Partial, Blocked, and Planned features.
+3. 🏛️ **[Technical Architecture & Implementation Summary](file:///c:/Users/sures/Downloads/dark%20lord/docs/TECHNICAL_ARCHITECTURE.md)** — Deep dive into dual-layer CV/OCR math, AI Gateway, RLS, and security.
+4. 🚀 **[Round 2 to Round 3 Improvement Report](file:///c:/Users/sures/Downloads/dark%20lord/docs/ROUND2_TO_ROUND3_IMPROVEMENTS.md)** — Complete change log, website restructuring, and motion design system.
+5. 🧪 **[Comprehensive Testing Report](file:///c:/Users/sures/Downloads/dark%20lord/docs/TESTING_REPORT.md)** — Full 129-test automated audit, reliability testing, and user journeys.
+6. 🗺️ **[Product Roadmap & Future Development Plan](file:///c:/Users/sures/Downloads/dark%20lord/docs/PRODUCT_ROADMAP.md)** — Strategic development horizons from Q1 2027 through 2028+.
+
+---
+
 ## 💡 Why We Built Sanket AI
 
 Marketing teams, agencies, and enterprise organizations produce hundreds of promotional assets, social media banners, advertising campaigns, and documentation files each month.
@@ -147,9 +174,9 @@ Open your browser:
 
 ---
 
-## 🧪 Comprehensive Automated Test Suite (98 Tests Passing 100%)
+## 🧪 Comprehensive Automated Test Suite (129 Tests Passing 100%)
 
-Sanket AI comes with a comprehensive automated test suite covering units, integration, security, resilience, and governance:
+Sanket AI comes with a comprehensive automated test suite covering units, integration, security, resilience, and governance across all 22 platform dimensions:
 
 ```bash
 python -m pytest tests/
@@ -160,29 +187,31 @@ python -m pytest tests/
 platform win32 -- Python 3.15.2, pytest-9.2.0, pluggy-1.7.0
 rootdir: C:\Users\sures\Downloads\dark lord
 configfile: pytest.ini
-collected 98 items
+collected 129 items
 
-tests\test_accessibility_checker.py .....                                [  5%]
-tests\test_ai_gateway.py ....                                            [  9%]
-tests\test_api_endpoints.py ...                                          [ 12%]
-tests\test_brand_dna_generator.py ....                                   [ 16%]
-tests\test_brand_identity.py ..                                          [ 18%]
-tests\test_brand_insights.py .....                                       [ 23%]
-tests\test_brand_knowledge_base.py ......                                [ 29%]
-tests\test_claim_verification_engine.py ......                           [ 35%]
-tests\test_config.py ...                                                 [ 38%]
-tests\test_content_review_system.py ....                                 [ 42%]
-tests\test_copilot_and_remediation.py ....                               [ 46%]
-tests\test_deletion_lifecycle.py ...                                     [ 50%]
-tests\test_infrastructure_and_security.py ...........                    [ 61%]
-tests\test_inspection_engine.py .....                                    [ 66%]
-tests\test_phase8_validation.py ........                                 [ 74%]
-tests\test_preprocessing.py .....                                        [ 79%]
-tests\test_round3_improvements.py ....                                   [ 83%]
-tests\test_security_audit.py ...........                                 [ 94%]
+tests\test_accessibility_checker.py .....                                [  3%]
+tests\test_ai_gateway.py ....                                            [  6%]
+tests\test_api_endpoints.py ...                                          [  9%]
+tests\test_brand_dna_generator.py ....                                   [ 12%]
+tests\test_brand_identity.py ..                                          [ 13%]
+tests\test_brand_insights.py .....                                       [ 17%]
+tests\test_brand_knowledge_base.py ......                                [ 22%]
+tests\test_claim_verification_engine.py ......                           [ 27%]
+tests\test_config.py ...                                                 [ 29%]
+tests\test_content_review_system.py ....                                 [ 32%]
+tests\test_copilot_and_remediation.py ....                               [ 35%]
+tests\test_deletion_lifecycle.py ...                                     [ 37%]
+tests\test_full_22_dimensions.py ......................                  [ 55%]
+tests\test_infrastructure_and_security.py ...........                    [ 63%]
+tests\test_inspection_engine.py .....                                    [ 67%]
+tests\test_phase8_validation.py ........                                 [ 73%]
+tests\test_preprocessing.py .....                                        [ 77%]
+tests\test_round3_final_verification.py .........                        [ 84%]
+tests\test_round3_improvements.py ....                                   [ 87%]
+tests\test_security_audit.py ...........                                 [ 96%]
 tests\test_workflow_engine.py .....                                      [100%]
 
-======================== 98 passed in 109.64s =================================
+======================== 129 passed in 96.89s ==================================
 ```
 
 ---

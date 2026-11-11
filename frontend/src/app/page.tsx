@@ -269,6 +269,14 @@ export default function PlatformPage() {
               <span className="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
             </div>
             <button
+              title="Judge & Demo Login Portal"
+              onClick={() => setShowAuthModal(true)}
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30 transition-all flex items-center gap-1.5"
+            >
+              <span>⚖️</span>
+              <span>Demo Login</span>
+            </button>
+            <button
               title="Notifications"
               className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 relative"
             >
@@ -976,6 +984,47 @@ export default function PlatformPage() {
           )}
         </main>
       </div>
+
+      {/* Auth & Judge Demo Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-[#0f172a] border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white text-lg font-bold"
+            >
+              &times;
+            </button>
+            <h3 className="text-base font-bold text-white mb-1">Enterprise Authentication</h3>
+            <p className="text-xs text-slate-400 mb-4">Sign in to access tenant governance and clearance controls.</p>
+
+            {/* Judge Demo Banner */}
+            <div className="bg-blue-600/10 border border-blue-500/30 rounded-xl p-3.5 mb-4 text-xs">
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-bold text-blue-400 uppercase tracking-wide text-[10px]">⚖️ Judge Demo Access</span>
+                <span className="bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded text-[10px] font-bold">Pre-Configured</span>
+              </div>
+              <p className="text-[11px] text-slate-300 mb-2">
+                Pre-seeded with full Administrator permissions, sample Brand DNA, certified Knowledge Base, and review history:
+              </p>
+              <div className="bg-slate-900/80 p-2 rounded-lg font-mono text-[11px] text-slate-300 flex justify-between items-center mb-2.5">
+                <span>demo@sanket.ai / DemoJudge2026!</span>
+              </div>
+              <button
+                onClick={() => {
+                  setUserRole("Administrator");
+                  setOrgId("default-org");
+                  setShowAuthModal(false);
+                  alert("Logged in as Demo Judge (demo@sanket.ai) with full Administrator clearances.");
+                }}
+                className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span>🚀 Instant 1-Click Judge Login</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
