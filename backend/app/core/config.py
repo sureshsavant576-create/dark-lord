@@ -66,6 +66,8 @@ class Settings(BaseSettings):
         providers = []
         if self.has_gemini:
             providers.append("gemini")
+        if self.has_groq:
+            providers.append("groq")
         if self.has_openai:
             providers.append("openai")
         if self.has_huggingface:
@@ -81,7 +83,12 @@ class Settings(BaseSettings):
             "gemini": {
                 "configured": self.has_gemini,
                 "model": self.DEFAULT_VISION_MODEL,
-                "role": "Multimodal Vision, Audio & Tone Reasoning (Primary & Exclusive AI)"
+                "role": "Multimodal Vision, Audio & Tone Reasoning (Primary)"
+            },
+            "groq": {
+                "configured": self.has_groq,
+                "model": self.GROQ_VISION_MODEL,
+                "role": "Cloud-Hosted Vision & Fast Text Reasoning (Llama 3.2 Vision)"
             },
             "openai": {
                 "configured": self.has_openai,

@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 import uuid
 
 from backend.app.core.config import settings
+from backend.app.models.audit import AuditEventSeverity, AuditEventType
 from backend.app.models.workflow import (
     ApprovalDecisionRequest,
     CommentRequest,
@@ -21,6 +22,7 @@ from backend.app.models.workflow import (
     WorkflowItem,
     WorkflowRole,
 )
+from backend.app.services.audit_service import audit_service
 
 logger = logging.getLogger(__name__)
 
@@ -213,6 +215,23 @@ class WorkflowService:
             data[item_id] = item.model_dump()
             self._save_all(data)
 
+        try:
+            ev_type = AuditEventType.CLAIM_ESCALATED if req.has_high_risk_claims else AuditEventType.REVIEW_SUBMITTED
+            sev = AuditEventSeverity.HIGH if req.has_high_risk_claims else AuditEventSeverity.INFO
+            audit_service.log_event(
+                event_type=ev_type,
+                org_id=req.org_id,
+                user_id=req.user_id,
+                user_role=req.user_role.value if hasattr(req.user_role, "value") else str(req.user_role),
+                severity=sev,
+                resource_type="workflow_item",
+                resource_id=item_id,
+                action=f"SUBMIT_CONTENT ({initial_status.value})",
+                details={"title": req.title, "high_risk_claims": req.has_high_risk_claims}
+            )
+        except Exception as audit_err:
+            logger.warning("Audit logging failed on submit_content: %s", audit_err)
+
         logger.info(
             "Created workflow item %s for org '%s' (status: %s, role: %s)",
             item_id, req.org_id, initial_status.value, req.user_role.value
@@ -362,6 +381,21 @@ class WorkflowService:
             data[item_id] = item.model_dump()
             self._save_all(data)
 
+        try:
+            audit_service.log_event(
+                event_type=AuditEventType.REVISION_REQUESTED,
+                org_id=org_id,
+                user_id=req.user_id,
+                user_role=req.user_role.value if hasattr(req.user_role, "value") else str(req.user_role),
+                severity=AuditEventSeverity.WARNING,
+                resource_type="workflow_item",
+                resource_id=item_id,
+                action="REQUEST_REVISION",
+                details={"feedback": req.feedback, "from_status": prev_status.value}
+            )
+        except Exception as audit_err:
+            logger.warning("Audit logging failed on request_revision: %s", audit_err)
+
         return item
 
     # -------------------------------------------------------------------------
@@ -431,6 +465,21 @@ class WorkflowService:
             data = self._load_all()
             data[item_id] = item.model_dump()
             self._save_all(data)
+
+        try:
+            audit_service.log_event(
+                event_type=AuditEventType.REVISION_REQUESTED,
+                org_id=org_id,
+                user_id=req.user_id,
+                user_role=req.user_role.value if hasattr(req.user_role, "value") else str(req.user_role),
+                severity=AuditEventSeverity.WARNING,
+                resource_type="workflow_item",
+                resource_id=item_id,
+                action="REQUEST_REVISION",
+                details={"feedback": req.feedback, "from_status": prev_status.value}
+            )
+        except Exception as audit_err:
+            logger.warning("Audit logging failed on request_revision: %s", audit_err)
 
         return item
 
@@ -503,6 +552,30 @@ class WorkflowService:
             data = self._load_all()
             data[item_id] = item.model_dump()
             self._save_all(data)
+
+        try:
+            ev_type = (
+                AuditEventType.REVIEW_APPROVED
+                if target_status in (ContentStatus.APPROVED, ContentStatus.APPROVED_WITH_WARNINGS)
+                else AuditEventType.REVIEW_REJECTED
+            )
+            audit_service.log_event(
+                event_type=ev_type,
+                org_id=org_id,
+                user_id=req.user_id,
+                user_role=req.user_role.value if hasattr(req.user_role, "value") else str(req.user_role),
+                severity=AuditEventSeverity.INFO if is_approval else AuditEventSeverity.WARNING,
+                resource_type="workflow_item",
+                resource_id=item_id,
+                action=action_name,
+                details={
+                    "decision": target_status.value,
+                    "notes": req.notes,
+                    "from_status": prev_status.value
+                }
+            )
+        except Exception as audit_err:
+            logger.warning("Audit logging failed on record_decision: %s", audit_err)
 
         logger.info(
             "Workflow item %s transitioned from %s to %s by %s (%s)",

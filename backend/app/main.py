@@ -1,22 +1,32 @@
+import logging
 from pathlib import Path
+import uuid
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from backend.app.api.accessibility import router as accessibility_router
+from backend.app.api.audit import router as audit_router
 from backend.app.api.auth import router as auth_router
 from backend.app.api.brands import router as brands_router
 from backend.app.api.claims import router as claims_router
 from backend.app.api.inspections import router as inspections_router
 from backend.app.api.knowledge import router as knowledge_router
 from backend.app.api.reviews import router as reviews_router
+from backend.app.api.storage import router as storage_router
 from backend.app.api.system import router as system_router
 from backend.app.api.workflow import router as workflow_router
 from backend.app.api.insights import router as insights_router
 from backend.app.core.config import settings
 from backend.app.core.rate_limiter import RateLimitMiddleware
+from backend.app.core.security import (
+    SecurityPathTraversalError,
+    TenantIsolationViolationError,
+)
+
+logger = logging.getLogger(__name__)
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
@@ -70,6 +80,30 @@ app.include_router(claims_router, prefix=settings.API_V1_PREFIX)
 app.include_router(accessibility_router, prefix=settings.API_V1_PREFIX)
 app.include_router(workflow_router, prefix=settings.API_V1_PREFIX)
 app.include_router(insights_router, prefix=settings.API_V1_PREFIX)
+app.include_router(audit_router, prefix=settings.API_V1_PREFIX)
+app.include_router(storage_router, prefix=settings.API_V1_PREFIX)
+
+# Global Security & Robust Error Handlers
+@app.exception_handler(SecurityPathTraversalError)
+@app.exception_handler(TenantIsolationViolationError)
+async def handle_security_violation(request: Request, exc: Exception):
+    logger.warning("Security access blocked for %s: %s", request.url.path, exc)
+    return JSONResponse(
+        status_code=403,
+        content={"detail": f"Forbidden: {str(exc)}"}
+    )
+
+@app.exception_handler(Exception)
+async def handle_unhandled_exception(request: Request, exc: Exception):
+    req_id = str(uuid.uuid4())[:8]
+    logger.error("Internal Server Error on %s [request_id=%s]: %s", request.url.path, req_id, exc, exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "An internal server error occurred. System operators have been notified.",
+            "request_id": req_id
+        }
+    )
 
 STATIC_DIR = Path(__file__).parent / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)

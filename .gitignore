@@ -34,7 +34,10 @@ data/storage/guidelines/*
 data/db/*.sqlite
 data/db/*.db
 data/db/*.json
+data/db/*.jsonl
 data/db/*.tmp
+data/db/audit_logs/
+data/storage/tenants/
 !data/db/.gitkeep
 
 node_modules/

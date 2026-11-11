@@ -75,6 +75,37 @@ Most teams either rely on slow, manual reviews or blindly trust Large Language M
 | **9** | **Client-Side Pre-Flight Scanner** | `check-vibe.html`, `app.js` | 100% in-browser HTML5 Canvas execution on drag-and-drop before submit. Displays 9 preliminary measurements and 7 visual styles (*Minimalist, Bold, Corporate, Luxury, Playful, Futuristic, Editorial*). |
 | **10** | **Review & Approval Workflow Engine** | `workflow_service.py`, `company-portal.html` | 4 roles (*Creator, Manager, Authorised Reviewer, Administrator*), 7 statuses, versioning, commenting, revision tracking, immutable audit trails, automatic escalation of high-risk claims. |
 | **11** | **Brand Insights & Recurring Issues** | `brand_insights_service.py`, `insights.py` | Aggregates empirical reviews, claims, and approvals. Discovers recurring guideline violations, unapproved terminology, visual inconsistencies, department risks, and ambiguous guidelines with concrete wording recommendations. Zero-fabrication guardrail. |
+| **12** | **Infrastructure & Security Architecture** | `security.py`, `resilience.py`, `groq_provider.py`, `audit_service.py`, `frontend/`, `render.yaml` | Production-grade hardening: Modular Gemini & Groq APIs, zero frontend secrets, retry backoff with jitter on 429 rate limits, Pydantic AI validation, magic bytes file inspection, multi-tenant isolation, RBAC clearance, immutable audit logs, Next.js + React dashboard, Render deployment. |
+
+---
+
+## 🏗️ Production Architecture & Security Hardening
+
+Sanket AI is engineered around the recommended modern enterprise architecture:
+- **Frontend**: Next.js 15 + React 19 (`frontend/`), with legacy ES6+ dashboard compatibility (`backend/app/static/`).
+- **Backend**: Python 3.11+ with FastAPI (`backend/app/main.py`).
+- **AI Engine**: Modular **Google Gemini API** (primary vision & tone) + **Groq Cloud API** (Llama 3.2 Vision low-latency inference).
+- **Database**: Supabase PostgreSQL with Row Level Security (`SUPABASE_RLS_ENABLED=True`).
+- **Authentication**: Supabase Auth with Role-Based Access Control (`Creator`, `Manager`, `Authorised Reviewer`, `Administrator`).
+- **Storage**: Tenant-isolated file storage with magic-bytes signature verification (`inspect_file_magic_bytes`).
+- **Vector Search**: pgvector cosine similarity for semantic knowledge retrieval.
+- **Computer Vision & OCR**: OpenCV + Tesseract for deterministic pixel measurements and contrast calculation.
+- **Data Validation**: Strict Pydantic models with `validate_ai_json_output`.
+- **Hosting**: Render Cloud configuration (`render.yaml`) with dual web services for backend and frontend.
+
+### 12 Security & Resilience Principles:
+1. **Modular AI Integrations**: `AIGateway` dynamically delegates between `GeminiProvider` and `GroqProvider`.
+2. **Environment Variable Security**: All API keys, connection strings, and model parameters are strictly loaded from `.env` via `Settings`.
+3. **Zero Secrets in Frontend**: Client code never touches API keys or service role secrets; all communication flows via unprivileged proxy endpoints.
+4. **API Timeouts & Retries**: Asynchronous operations are protected with configurable timeouts and exponential backoff.
+5. **Rate-Limit Resilience**: Graceful exponential backoff with full jitter on HTTP 429 and transient errors (`retry_with_backoff`).
+6. **AI JSON Schema Validation**: Markdown code fences are stripped and raw LLM text is validated against Pydantic schemas before business logic consumption.
+7. **Secure File Uploads**: Magic bytes inspection blocks executable masquerading (`MZ`, ELF, `.exe`) and script injections in SVGs, enforcing 50MB limits.
+8. **Multi-Tenant Data Separation**: Strict filesystem and database tenancy boundaries (`get_tenant_storage_path` and `verify_tenant_isolation`).
+9. **Role-Based Access Control (RBAC)**: Fine-grained permission matrices and confidentiality clearance levels (`PUBLIC`, `INTERNAL`, `CONFIDENTIAL`, `RESTRICTED`).
+10. **Immutable Audit Trails**: Structured JSONL audit logging (`audit_service.py`) tracking uploads, review decisions, escalations, and security violations.
+11. **Confidential File Protection**: Files are served exclusively through authenticated routes with clearance verification and path traversal prevention.
+12. **Robust Global Error Handling**: Custom exception handlers prevent internal stack trace leakage while assigning unique `request_id` references for debugging.
 
 ---
 
@@ -116,9 +147,9 @@ Open your browser:
 
 ---
 
-## 🧪 Comprehensive Automated Test Suite (82 Tests Passing)
+## 🧪 Comprehensive Automated Test Suite (98 Tests Passing 100%)
 
-Sanket AI comes with a comprehensive automated test suite covering units, integration, security, and governance:
+Sanket AI comes with a comprehensive automated test suite covering units, integration, security, resilience, and governance:
 
 ```bash
 python -m pytest tests/
@@ -129,28 +160,29 @@ python -m pytest tests/
 platform win32 -- Python 3.15.2, pytest-9.2.0, pluggy-1.7.0
 rootdir: C:\Users\sures\Downloads\dark lord
 configfile: pytest.ini
-collected 87 items
+collected 98 items
 
 tests\test_accessibility_checker.py .....                                [  5%]
-tests\test_ai_gateway.py ....                                            [ 10%]
-tests\test_api_endpoints.py ...                                          [ 13%]
-tests\test_brand_dna_generator.py ....                                   [ 18%]
-tests\test_brand_identity.py ..                                          [ 20%]
-tests\test_brand_insights.py .....                                       [ 26%]
-tests\test_brand_knowledge_base.py ......                                [ 33%]
-tests\test_claim_verification_engine.py ......                           [ 40%]
-tests\test_config.py ...                                                 [ 43%]
-tests\test_content_review_system.py ....                                 [ 48%]
-tests\test_copilot_and_remediation.py ....                               [ 52%]
-tests\test_deletion_lifecycle.py ...                                     [ 56%]
-tests\test_inspection_engine.py .....                                    [ 62%]
-tests\test_phase8_validation.py ........                                 [ 71%]
-tests\test_preprocessing.py .....                                        [ 77%]
-tests\test_round3_improvements.py ....                                   [ 81%]
+tests\test_ai_gateway.py ....                                            [  9%]
+tests\test_api_endpoints.py ...                                          [ 12%]
+tests\test_brand_dna_generator.py ....                                   [ 16%]
+tests\test_brand_identity.py ..                                          [ 18%]
+tests\test_brand_insights.py .....                                       [ 23%]
+tests\test_brand_knowledge_base.py ......                                [ 29%]
+tests\test_claim_verification_engine.py ......                           [ 35%]
+tests\test_config.py ...                                                 [ 38%]
+tests\test_content_review_system.py ....                                 [ 42%]
+tests\test_copilot_and_remediation.py ....                               [ 46%]
+tests\test_deletion_lifecycle.py ...                                     [ 50%]
+tests\test_infrastructure_and_security.py ...........                    [ 61%]
+tests\test_inspection_engine.py .....                                    [ 66%]
+tests\test_phase8_validation.py ........                                 [ 74%]
+tests\test_preprocessing.py .....                                        [ 79%]
+tests\test_round3_improvements.py ....                                   [ 83%]
 tests\test_security_audit.py ...........                                 [ 94%]
 tests\test_workflow_engine.py .....                                      [100%]
 
-======================== 87 passed in 126.89s =================================
+======================== 98 passed in 109.64s =================================
 ```
 
 ---
