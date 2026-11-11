@@ -3958,19 +3958,23 @@ function switchPortalMode(mode) {
   const tabDna = document.getElementById('tab-btn-dna') || document.getElementById('portal-tab-dna');
   const tabManual = document.getElementById('tab-btn-manual') || document.getElementById('portal-tab-manual');
   const tabWorkflow = document.getElementById('tab-btn-workflow');
+  const tabInsights = document.getElementById('tab-btn-insights');
   const sectionDna = document.getElementById('brand-dna-section') || document.getElementById('brand-dna-suite');
   const sectionManual = document.getElementById('onboarding-form') || document.getElementById('ob-form-section');
   const sectionWorkflow = document.getElementById('workflow-portal-section');
+  const sectionInsights = document.getElementById('insights-portal-section');
 
   // Remove active from all tabs
   if (tabDna) tabDna.classList.remove('active');
   if (tabManual) tabManual.classList.remove('active');
   if (tabWorkflow) tabWorkflow.classList.remove('active');
+  if (tabInsights) tabInsights.classList.remove('active');
 
   // Hide all sections
   if (sectionDna) sectionDna.classList.add('hidden');
   if (sectionManual) sectionManual.classList.add('hidden');
   if (sectionWorkflow) sectionWorkflow.classList.add('hidden');
+  if (sectionInsights) sectionInsights.classList.add('hidden');
 
   if (mode === 'dna') {
     if (tabDna) tabDna.classList.add('active');
@@ -3979,6 +3983,10 @@ function switchPortalMode(mode) {
     if (tabWorkflow) tabWorkflow.classList.add('active');
     if (sectionWorkflow) sectionWorkflow.classList.remove('hidden');
     loadWorkflowItems();
+  } else if (mode === 'insights') {
+    if (tabInsights) tabInsights.classList.add('active');
+    if (sectionInsights) sectionInsights.classList.remove('hidden');
+    loadBrandInsights();
   } else {
     if (tabManual) tabManual.classList.add('active');
     if (sectionManual) sectionManual.classList.remove('hidden');
@@ -5030,3 +5038,473 @@ async function handleDecision(decision) {
 }
 window.handleDecision = handleDecision;
 
+
+
+/* ==========================================================================
+   BRAND INSIGHTS AND RECURRING ISSUES CONTROLLER
+   ========================================================================== */
+
+let activeInsightsReport = null;
+let currentInsightsBrand = 'apex_cloud';
+let currentInsightsSubtab = 'all';
+
+async function loadBrandInsights(brandId) {
+  if (brandId) {
+    currentInsightsBrand = brandId;
+  } else {
+    const sel = document.getElementById('insights-brand-select');
+    if (sel) currentInsightsBrand = sel.value;
+  }
+
+  // Set loading states
+  const summaryText = document.getElementById('insights-exec-summary-text');
+  if (summaryText) summaryText.textContent = 'Aggregating reviews, claims, and approval workflows...';
+  const violsGrid = document.getElementById('insights-violations-grid');
+  if (violsGrid) violsGrid.innerHTML = '<div class="insights-loading">Scanning empirical review records...</div>';
+
+  try {
+    const orgId = currentInsightsBrand;
+    const res = await fetch(`${API_BASE}/insights/${encodeURIComponent(currentInsightsBrand)}?org_id=${encodeURIComponent(orgId)}`);
+    if (!res.ok) {
+      throw new Error(`Failed to load insights (${res.status})`);
+    }
+    const report = await res.json();
+    activeInsightsReport = report;
+    renderBrandInsights(report);
+  } catch (err) {
+    console.error('Insights loading error:', err);
+    toast(`Insights error: ${err.message}`);
+    if (summaryText) summaryText.textContent = `Error loading brand insights: ${err.message}`;
+  }
+}
+window.loadBrandInsights = loadBrandInsights;
+
+function renderBrandInsights(report) {
+  if (!report) return;
+
+  // 1. Header & Timestamps
+  const ts = document.getElementById('insights-timestamp');
+  if (ts) {
+    const d = new Date(report.generated_at);
+    ts.textContent = d.toLocaleString();
+  }
+
+  // 2. Guardrail text & badge
+  const guardText = document.getElementById('insights-guardrail-text');
+  if (guardText) guardText.textContent = report.data_sufficiency_explanation;
+
+  const suffBadge = document.getElementById('insights-sufficiency-badge');
+  if (suffBadge) {
+    suffBadge.textContent = report.data_sufficiency;
+    if (report.data_sufficiency === 'INSUFFICIENT_DATA') {
+      suffBadge.className = 'metric-badge-status badge-insufficient';
+    } else {
+      suffBadge.className = 'metric-badge-status';
+    }
+  }
+
+  const reviewsHint = document.getElementById('insights-reviews-count-hint');
+  if (reviewsHint) {
+    reviewsHint.textContent = `${report.total_reviews_analyzed} review submissions evaluated`;
+  }
+
+  // 3. Health score & Trend
+  const healthEl = document.getElementById('insights-health-score');
+  if (healthEl) healthEl.textContent = report.overall_brand_health_score.toFixed(1);
+
+  const trendEl = document.getElementById('insights-trend-pill');
+  if (trendEl) {
+    const deltaStr = report.score_delta_pct > 0 ? `+${report.score_delta_pct}%` : `${report.score_delta_pct}%`;
+    trendEl.textContent = `${report.compliance_trend} (${deltaStr})`;
+    trendEl.className = 'metric-trend-pill ' + (
+      report.compliance_trend === 'IMPROVING' ? 'pill-improving' :
+      report.compliance_trend === 'DEGRADING' ? 'pill-degrading' : 'pill-stable'
+    );
+  }
+
+  const recCount = document.getElementById('insights-recurring-viol-count');
+  if (recCount) recCount.textContent = report.repeated_violations.length;
+
+  const ambigCount = document.getElementById('insights-ambiguous-count');
+  if (ambigCount) ambigCount.textContent = report.ambiguous_guidelines.length;
+
+  // 4. Executive Summary
+  const execText = document.getElementById('insights-exec-summary-text');
+  if (execText) execText.textContent = report.executive_summary;
+
+  // 5. Subtab counts
+  const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setTxt('cnt-sub-viols', report.repeated_violations.length);
+  setTxt('cnt-sub-terms', report.frequently_incorrect_terminology.length);
+  setTxt('cnt-sub-vis', report.common_visual_inconsistencies.length);
+  setTxt('cnt-sub-claims', report.repeated_unsupported_claims.length);
+  setTxt('cnt-sub-depts', report.department_problems.length);
+  setTxt('cnt-sub-ambig', report.ambiguous_guidelines.length);
+
+  // 6. Render Sub-Panels
+  renderRepeatedViolations(report.repeated_violations);
+  renderIncorrectTerminology(report.frequently_incorrect_terminology);
+  renderVisualInconsistencies(report.common_visual_inconsistencies);
+  renderUnsupportedClaims(report.repeated_unsupported_claims);
+  renderDepartmentProblems(report.department_problems);
+  renderAmbiguousGuidelines(report.ambiguous_guidelines);
+  renderTrendTimeline(report.trend_timeline);
+}
+
+function renderRepeatedViolations(violations) {
+  const container = document.getElementById('insights-violations-grid');
+  if (!container) return;
+
+  if (!violations || violations.length === 0) {
+    container.innerHTML = '<div class="insights-empty-note">✓ No repeated guideline violations detected. Creatives demonstrate high policy alignment.</div>';
+    return;
+  }
+
+  container.innerHTML = violations.map(v => {
+    const sevPillClass = v.severity_breakdown.critical > 0 ? 'badge-pill-critical' : 'badge-pill-warning';
+    const sevText = v.severity_breakdown.critical > 0
+      ? `${v.severity_breakdown.critical} Critical, ${v.severity_breakdown.warning} Warning`
+      : `${v.severity_breakdown.warning} Warning`;
+    const trendIcon = v.trend === 'IMPROVING' ? '↘ Improving' : (v.trend === 'DEGRADING' ? '↗ Escalating' : '→ Stable');
+
+    return `
+      <div class="insight-card">
+        <div class="insight-card-header">
+          <div>
+            <h5 class="insight-card-title">${escapeHtml(v.guideline_name)}</h5>
+            <div class="insight-card-subtitle">${escapeHtml(v.category.replace('_', ' ').toUpperCase())}</div>
+          </div>
+          <span class="insight-badge-pill ${sevPillClass}">${v.occurrence_count}x detected (${v.violation_rate_pct}%)</span>
+        </div>
+        <div class="insight-card-body">
+          ${v.recent_examples.map(ex => `<div class="term-quote-snippet">${escapeHtml(ex)}</div>`).join('')}
+        </div>
+        <div class="insight-meta-row">
+          <div>Departments: <span class="insight-depts-wrap">${v.affected_departments.map(d => `<span class="dept-chip">${escapeHtml(d)}</span>`).join('')}</span></div>
+          <span>Trajectory: <strong>${trendIcon}</strong></span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderIncorrectTerminology(terms) {
+  const container = document.getElementById('insights-terminology-grid');
+  if (!container) return;
+
+  if (!terms || terms.length === 0) {
+    container.innerHTML = '<div class="insights-empty-note">✓ Zero prohibited terminology detected across audited copy.</div>';
+    return;
+  }
+
+  container.innerHTML = terms.map(t => {
+    return `
+      <div class="insight-card">
+        <div class="insight-card-header">
+          <div>
+            <h5 class="insight-card-title">Prohibited Phrase Misuse</h5>
+            <div class="insight-card-subtitle">Detected in ${t.frequency_pct}% of textual copy</div>
+          </div>
+          <span class="insight-badge-pill badge-pill-warning">${t.occurrence_count}x detected</span>
+        </div>
+        <div class="term-exchange-box">
+          <span class="banned-term-chip">${escapeHtml(t.banned_term)}</span>
+          <span class="term-arrow-icon">➔</span>
+          <span class="approved-term-chip">✓ ${escapeHtml(t.suggested_replacement)}</span>
+        </div>
+        ${t.sample_contexts.map(c => `<div class="term-quote-snippet">${escapeHtml(c)}</div>`).join('')}
+        <div class="insight-meta-row">
+          <div>Teams: <span class="insight-depts-wrap">${t.affected_departments.map(d => `<span class="dept-chip">${escapeHtml(d)}</span>`).join('')}</span></div>
+          <span>Severity: <strong>${t.severity}</strong></span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderVisualInconsistencies(visuals) {
+  const container = document.getElementById('insights-visual-grid');
+  if (!container) return;
+
+  if (!visuals || visuals.length === 0) {
+    container.innerHTML = '<div class="insights-empty-note">✓ Visual standards intact. No recurring color drift, contrast issues, or layout clutter found.</div>';
+    return;
+  }
+
+  container.innerHTML = visuals.map(vi => {
+    let roguesHtml = '';
+    if (vi.rogue_colors && vi.rogue_colors.length > 0) {
+      roguesHtml = `
+        <div class="rogue-hex-strip">
+          ${vi.rogue_colors.map(rc => `
+            <span class="rogue-hex-chip" title="Click to copy rogue hex: ${rc.detected_hex}" onclick="navigator.clipboard.writeText('${rc.detected_hex}'); toast('Copied rogue hex ${rc.detected_hex}');">
+              <span class="color-dot-swatch" style="background: ${rc.detected_hex};"></span>
+              ${rc.detected_hex} (ΔE ${rc.delta_e.toFixed(1)})
+            </span>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    return `
+      <div class="insight-card">
+        <div class="insight-card-header">
+          <div>
+            <h5 class="insight-card-title">${escapeHtml(vi.title)}</h5>
+            <div class="insight-card-subtitle">${escapeHtml(vi.inconsistency_type)}</div>
+          </div>
+          <span class="insight-badge-pill badge-pill-warning">${vi.divergence_rate_pct}% of visual ads</span>
+        </div>
+        <div class="insight-card-body">
+          <p style="margin: 0 0 0.4rem 0;">${escapeHtml(vi.description)}</p>
+          <div class="visual-metric-compare">
+            <div class="compare-block observed">
+              <span>Observed Measure</span>
+              <strong>${escapeHtml(vi.observed_average)}</strong>
+            </div>
+            <div class="compare-block target">
+              <span>Required Standard</span>
+              <strong>${escapeHtml(vi.benchmark_target)}</strong>
+            </div>
+          </div>
+          ${roguesHtml}
+        </div>
+        <div class="insight-meta-row">
+          <div>Departments: <span class="insight-depts-wrap">${vi.affected_departments.map(d => `<span class="dept-chip">${escapeHtml(d)}</span>`).join('')}</span></div>
+          <span>Severity: <strong>${vi.severity}</strong></span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderUnsupportedClaims(claims) {
+  const container = document.getElementById('insights-claims-grid');
+  if (!container) return;
+
+  if (!claims || claims.length === 0) {
+    container.innerHTML = '<div class="insights-empty-note">✓ All promotional claims validated against verified evidence in Knowledge Base.</div>';
+    return;
+  }
+
+  container.innerHTML = claims.map(cl => {
+    return `
+      <div class="insight-card">
+        <div class="insight-card-header">
+          <div>
+            <h5 class="insight-card-title">${escapeHtml(cl.claim_pattern)}</h5>
+            <div class="insight-card-subtitle">Category: ${escapeHtml(cl.claim_type)}</div>
+          </div>
+          <span class="insight-badge-pill badge-pill-critical">${cl.occurrence_count}x detected</span>
+        </div>
+        <div class="insight-card-body">
+          ${cl.sample_claims.map(sc => `<div class="term-quote-snippet">${escapeHtml(sc)}</div>`).join('')}
+          <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 6px; padding: 0.5rem 0.75rem; margin-top: 0.5rem; font-size: 0.78rem;">
+            <strong style="color: #F87171; display: block; margin-bottom: 0.15rem;">Missing Documentary Evidence:</strong>
+            <span style="color: #CBD5E1;">${escapeHtml(cl.missing_evidence_required)}</span>
+          </div>
+        </div>
+        <div class="insight-meta-row">
+          <div>Teams: <span class="insight-depts-wrap">${cl.affected_departments.map(d => `<span class="dept-chip">${escapeHtml(d)}</span>`).join('')}</span></div>
+          <span>Escalated to Reviewers: <strong>${cl.escalation_count}x</strong></span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderDepartmentProblems(departments) {
+  const tbody = document.getElementById('insights-departments-tbody');
+  if (!tbody) return;
+
+  if (!departments || departments.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="insights-empty-note">No department risk data available (minimum sample required).</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = departments.map(d => {
+    const riskClass = `risk-${d.risk_level.toLowerCase()}`;
+    const barColor = d.risk_level === 'CRITICAL' ? '#EF4444' : (d.risk_level === 'HIGH' ? '#F59E0B' : (d.risk_level === 'MEDIUM' ? '#3B82F6' : '#10B981'));
+
+    return `
+      <tr>
+        <td><strong>${escapeHtml(d.department)}</strong></td>
+        <td>${d.total_submissions}</td>
+        <td>
+          <span style="color: #34D399;">${d.approved_count} pass</span> /
+          <span style="color: #FBBF24;">${d.needs_revision_count} rev</span> /
+          <span style="color: #F87171;">${d.escalated_count} esc</span>
+        </td>
+        <td>
+          <div><strong>${d.compliance_rate_pct}%</strong></div>
+          <div class="compliance-progress-bar">
+            <div class="compliance-progress-fill" style="width: ${d.compliance_rate_pct}%; background: ${barColor};"></div>
+          </div>
+        </td>
+        <td><strong>${d.average_compliance_score.toFixed(1)}</strong> / 100</td>
+        <td><span class="risk-badge ${riskClass}">${d.risk_level}</span></td>
+        <td>
+          <div style="font-size: 0.76rem; color: #94A3B8;">
+            ${d.top_recurring_issues.map(iss => `• ${escapeHtml(iss)}`).join('<br>')}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderAmbiguousGuidelines(guidelines) {
+  const container = document.getElementById('insights-ambiguity-grid');
+  if (!container) return;
+
+  if (!guidelines || guidelines.length === 0) {
+    container.innerHTML = '<div class="insights-empty-note">✓ No ambiguous brand guidelines detected. Creator error rates reflect standard execution rather than policy confusion.</div>';
+    return;
+  }
+
+  container.innerHTML = guidelines.map(ag => {
+    const barPct = Math.round(ag.ambiguity_score * 100);
+    const prioClass = ag.priority === 'IMMEDIATE' ? 'badge-pill-critical' : 'badge-pill-warning';
+
+    return `
+      <div class="insight-card" style="border-left: 4px solid #F59E0B;">
+        <div class="insight-card-header">
+          <div>
+            <h5 class="insight-card-title">${escapeHtml(ag.guideline_name)}</h5>
+            <div class="insight-card-subtitle">Category: ${escapeHtml(ag.category)} | Ambiguity Index: <strong>${ag.ambiguity_score.toFixed(2)} / 1.0</strong></div>
+          </div>
+          <span class="insight-badge-pill ${prioClass}">Priority: ${ag.priority}</span>
+        </div>
+        <div class="ambiguity-meter-strip">
+          <span style="font-size: 0.72rem; color: #94A3B8;">Confusion Rating:</span>
+          <div class="ambiguity-bar-bg">
+            <div class="ambiguity-bar-fill" style="width: ${barPct}%;"></div>
+          </div>
+          <span style="font-size: 0.72rem; font-weight: 700; color: #F59E0B;">${barPct}%</span>
+        </div>
+        <div class="insight-card-body">
+          <strong style="color: #CBD5E1; font-size: 0.78rem;">Friction & Confusion Signals:</strong>
+          <ul style="margin: 0.25rem 0 0.5rem 1.15rem; padding: 0; font-size: 0.78rem; color: #94A3B8;">
+            ${ag.confusion_signals.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+          </ul>
+          <p style="margin: 0.35rem 0; font-size: 0.8rem; color: #E2E8F0;">
+            <strong>Root Cause:</strong> ${escapeHtml(ag.root_cause_explanation)}
+          </p>
+
+          <div class="recommended-revision-callout">
+            <div class="revision-header">
+              <span class="revision-label">RECOMMENDED GUIDELINE REVISION (ACTIONABLE AMENDMENT)</span>
+              <button type="button" class="btn-copy-revision" onclick="copyRevisionText('${encodeURIComponent(ag.recommended_guideline_revision)}')">
+                Copy Revision Text
+              </button>
+            </div>
+            <p class="revision-text">${escapeHtml(ag.recommended_guideline_revision)}</p>
+            <span class="revision-impact">Expected Impact: ${escapeHtml(ag.expected_impact)}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTrendTimeline(timeline) {
+  const container = document.getElementById('insights-timeline-grid');
+  if (!container) return;
+
+  if (!timeline || timeline.length === 0) {
+    container.innerHTML = '<div class="insights-empty-note">Timeline trend analysis requires at least 2 historical review batches.</div>';
+    return;
+  }
+
+  container.innerHTML = timeline.map(tb => {
+    const trPill = tb.trend_direction === 'IMPROVING' ? 'pill-improving' : (tb.trend_direction === 'DEGRADING' ? 'pill-degrading' : 'pill-stable');
+
+    return `
+      <div class="timeline-period-card">
+        <div class="timeline-period-header">
+          <span class="timeline-period-label">${escapeHtml(tb.period_label)}</span>
+          <span class="metric-trend-pill ${trPill}">${tb.trend_direction}</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 0.35rem;">
+          <span class="timeline-score-big">${tb.average_score.toFixed(1)}</span>
+          <small style="color: #64748B;">/ 100 compliance</small>
+        </div>
+        <div class="timeline-stat-row">
+          <span>Submissions Evaluated:</span>
+          <strong>${tb.submission_count}</strong>
+        </div>
+        <div class="timeline-stat-row">
+          <span>Detected Violations:</span>
+          <strong>${tb.violation_count}</strong>
+        </div>
+        <div class="timeline-stat-row">
+          <span>High-Risk Escalations:</span>
+          <strong style="color: ${tb.escalated_count > 0 ? '#F87171' : '#34D399'};">${tb.escalated_count}</strong>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function switchInsightsSubtab(subtab) {
+  currentInsightsSubtab = subtab;
+  const tabs = document.querySelectorAll('.insights-subtab');
+  tabs.forEach(t => t.classList.remove('active'));
+  if (event && event.target) {
+    event.target.classList.add('active');
+  }
+
+  const blocks = {
+    violations: document.getElementById('block-insights-violations'),
+    terminology: document.getElementById('block-insights-terminology'),
+    visual: document.getElementById('block-insights-visual'),
+    claims: document.getElementById('block-insights-claims'),
+    departments: document.getElementById('block-insights-departments'),
+    ambiguity: document.getElementById('block-insights-ambiguity'),
+    timeline: document.getElementById('block-insights-timeline')
+  };
+
+  if (subtab === 'all') {
+    Object.values(blocks).forEach(b => { if (b) b.style.display = 'flex'; });
+  } else {
+    Object.entries(blocks).forEach(([key, b]) => {
+      if (b) b.style.display = (key === subtab) ? 'flex' : 'none';
+    });
+  }
+}
+window.switchInsightsSubtab = switchInsightsSubtab;
+
+async function exportBrandInsights() {
+  try {
+    const sel = document.getElementById('insights-brand-select');
+    const brand = sel ? sel.value : currentInsightsBrand;
+    const res = await fetch(`${API_BASE}/insights/${encodeURIComponent(brand)}/export?org_id=${encodeURIComponent(brand)}`);
+    if (!res.ok) throw new Error(`Export failed (${res.status})`);
+    const data = await res.json();
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `brand_insights_audit_${brand}_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✓ Exported brand compliance audit JSON');
+  } catch (err) {
+    toast(`Export error: ${err.message}`);
+  }
+}
+window.exportBrandInsights = exportBrandInsights;
+
+function copyRevisionText(encodedText) {
+  try {
+    const decoded = decodeURIComponent(encodedText);
+    navigator.clipboard.writeText(decoded);
+    toast('✓ Copied recommended guideline revision to clipboard!');
+  } catch (err) {
+    toast('Failed to copy text');
+  }
+}
+window.copyRevisionText = copyRevisionText;

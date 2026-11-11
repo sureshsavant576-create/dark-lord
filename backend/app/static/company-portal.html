@@ -138,6 +138,10 @@
                   <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
                   <span>Content Review &amp; Approval Workflow</span>
                 </button>
+                <button type="button" class="portal-mode-tab" id="tab-btn-insights" onclick="switchPortalMode('insights')">
+                  <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                  <span>Brand Insights &amp; Recurring Issues</span>
+                </button>
               </div>
 
               <!-- AI BRAND DNA GENERATOR SECTION -->
@@ -875,6 +879,196 @@
                 <div id="wf-items-container" class="wf-items-grid">
                   <div class="wf-empty-state">Loading organizational workflow submissions...</div>
                 </div>
+              </div>
+
+              <!-- BRAND INSIGHTS AND RECURRING ISSUES INTELLIGENCE SECTION -->
+              <div id="insights-portal-section" class="insights-portal-section hidden">
+                <div class="insights-header-panel">
+                  <div class="insights-title-group">
+                    <span class="insights-badge-main">EMPIRICAL GOVERNANCE INTELLIGENCE</span>
+                    <h3>Brand Insights &amp; Recurring Issues</h3>
+                    <p>Aggregates actual content reviews, claim audits, and approval workflows. Detects recurring guideline violations, unapproved terminology, visual inconsistencies, department risks, and ambiguous guidelines requiring revision.</p>
+                  </div>
+                  <div class="insights-header-controls">
+                    <div class="insights-brand-selector-wrap">
+                      <label for="insights-brand-select"><small>Target Brand Standard:</small></label>
+                      <select id="insights-brand-select" class="insights-brand-select" onchange="loadBrandInsights(this.value)">
+                        <option value="apex_cloud" selected>Apex Cloud Systems</option>
+                        <option value="nike">Nike Athletic Standards</option>
+                        <option value="test_empty_brand">Unseeded / New Brand (Test Zero-Fabrication)</option>
+                      </select>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="loadBrandInsights()" title="Re-scan and aggregate latest review data">
+                      <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                      <span>Refresh</span>
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="exportBrandInsights()" title="Export complete audit findings as JSON">
+                      <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      <span>Export Audit JSON</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Zero-Fabrication Guardrail Callout -->
+                <div class="insights-guardrail-callout" id="insights-guardrail-banner">
+                  <span class="callout-icon">🛡️</span>
+                  <div>
+                    <strong>Empirical Data Rigor Directive (Zero-Fabrication Guardrail):</strong>
+                    <p id="insights-guardrail-text">All compliance metrics, department risk scores, and trend vectors are derived exclusively from actual recorded reviews and approval decisions. If fewer than 3 submissions exist, statistical percentages and department risk rankings are withheld to prevent fabricated conclusions.</p>
+                  </div>
+                </div>
+
+                <!-- Executive Summary Box -->
+                <div class="insights-exec-summary-box" id="insights-exec-summary-box">
+                  <div class="exec-summary-header">
+                    <span class="exec-badge">EXECUTIVE SUMMARY</span>
+                    <span class="exec-timestamp" id="insights-timestamp">Generated just now</span>
+                  </div>
+                  <p class="exec-summary-text" id="insights-exec-summary-text">Loading executive summary...</p>
+                </div>
+
+                <!-- Metrics Strip -->
+                <div class="insights-metrics-strip" id="insights-metrics-strip">
+                  <div class="insight-metric-card">
+                    <span class="metric-label">DATA SUFFICIENCY</span>
+                    <div class="metric-value-wrap">
+                      <span class="metric-badge-status" id="insights-sufficiency-badge">STATISTICALLY_SUFFICIENT</span>
+                    </div>
+                    <span class="metric-hint" id="insights-reviews-count-hint">10 review events analyzed</span>
+                  </div>
+
+                  <div class="insight-metric-card">
+                    <span class="metric-label">BRAND COMPLIANCE HEALTH</span>
+                    <div class="metric-value-wrap">
+                      <span class="metric-big-score" id="insights-health-score">--</span>
+                      <small>/100</small>
+                    </div>
+                    <span class="metric-trend-pill pill-improving" id="insights-trend-pill">--</span>
+                  </div>
+
+                  <div class="insight-metric-card">
+                    <span class="metric-label">RECURRING VIOLATIONS</span>
+                    <div class="metric-value-wrap">
+                      <span class="metric-big-num" id="insights-recurring-viol-count">--</span>
+                      <small>patterns</small>
+                    </div>
+                    <span class="metric-hint" id="insights-top-viol-category">Primary: Palette &amp; Tone</span>
+                  </div>
+
+                  <div class="insight-metric-card">
+                    <span class="metric-label">AMBIGUOUS GUIDELINES</span>
+                    <div class="metric-value-wrap">
+                      <span class="metric-big-num metric-warning" id="insights-ambiguous-count">--</span>
+                      <small>flagged</small>
+                    </div>
+                    <span class="metric-hint">Policy revisions recommended</span>
+                  </div>
+                </div>
+
+                <!-- Navigation Filter Tabs within Insights -->
+                <div class="insights-subnav-tabs">
+                  <button type="button" class="insights-subtab active" onclick="switchInsightsSubtab('all')">Overview &amp; All Findings</button>
+                  <button type="button" class="insights-subtab" onclick="switchInsightsSubtab('violations')">Guideline Violations (<span id="cnt-sub-viols">0</span>)</button>
+                  <button type="button" class="insights-subtab" onclick="switchInsightsSubtab('terminology')">Incorrect Terminology (<span id="cnt-sub-terms">0</span>)</button>
+                  <button type="button" class="insights-subtab" onclick="switchInsightsSubtab('visual')">Visual Inconsistencies (<span id="cnt-sub-vis">0</span>)</button>
+                  <button type="button" class="insights-subtab" onclick="switchInsightsSubtab('claims')">Unsupported Claims (<span id="cnt-sub-claims">0</span>)</button>
+                  <button type="button" class="insights-subtab" onclick="switchInsightsSubtab('departments')">Department Risks (<span id="cnt-sub-depts">0</span>)</button>
+                  <button type="button" class="insights-subtab" onclick="switchInsightsSubtab('ambiguity')">Ambiguous Guidelines (<span id="cnt-sub-ambig">0</span>)</button>
+                  <button type="button" class="insights-subtab" onclick="switchInsightsSubtab('timeline')">Trend Timeline</button>
+                </div>
+
+                <!-- 1. Repeated Brand Guideline Violations Panel -->
+                <div class="insights-section-block" id="block-insights-violations">
+                  <div class="insights-block-title">
+                    <h4>Repeated Brand Guideline Violations</h4>
+                    <span class="block-tag">Identified from empirical review findings</span>
+                  </div>
+                  <div id="insights-violations-grid" class="insights-cards-grid">
+                    <div class="insights-loading">Loading repeated violations...</div>
+                  </div>
+                </div>
+
+                <!-- 2. Frequently Incorrect Terminology Panel -->
+                <div class="insights-section-block" id="block-insights-terminology">
+                  <div class="insights-block-title">
+                    <h4>Frequently Incorrect &amp; Prohibited Terminology</h4>
+                    <span class="block-tag">Scanned against Brand DNA &amp; Lexicon</span>
+                  </div>
+                  <div id="insights-terminology-grid" class="insights-cards-grid">
+                    <div class="insights-loading">Loading terminology insights...</div>
+                  </div>
+                </div>
+
+                <!-- 3. Common Visual Inconsistencies Panel -->
+                <div class="insights-section-block" id="block-insights-visual">
+                  <div class="insights-block-title">
+                    <h4>Common Visual Inconsistencies</h4>
+                    <span class="block-tag">Empirical measurements via OpenCV &amp; CIELAB</span>
+                  </div>
+                  <div id="insights-visual-grid" class="insights-cards-grid">
+                    <div class="insights-loading">Loading visual inconsistency insights...</div>
+                  </div>
+                </div>
+
+                <!-- 4. Repeated Unsupported Promotional Claims Panel -->
+                <div class="insights-section-block" id="block-insights-claims">
+                  <div class="insights-block-title">
+                    <h4>Repeated Unsupported Promotional Claims</h4>
+                    <span class="block-tag">Cross-referenced against Brand Knowledge Base</span>
+                  </div>
+                  <div id="insights-claims-grid" class="insights-cards-grid">
+                    <div class="insights-loading">Loading promotional claim insights...</div>
+                  </div>
+                </div>
+
+                <!-- 5. Departments with Recurring Problems Panel -->
+                <div class="insights-section-block" id="block-insights-departments">
+                  <div class="insights-block-title">
+                    <h4>Departments with Recurring Problems (Risk Matrix)</h4>
+                    <span class="block-tag">Submissions, pass rates, and failure mode attribution</span>
+                  </div>
+                  <div class="insights-dept-table-wrapper">
+                    <table class="insights-dept-table">
+                      <thead>
+                        <tr>
+                          <th>Department</th>
+                          <th>Submissions</th>
+                          <th>Pass / Revise / Escalate</th>
+                          <th>Compliance Rate</th>
+                          <th>Avg Score</th>
+                          <th>Risk Tier</th>
+                          <th>Top Recurring Failure Modes</th>
+                        </tr>
+                      </thead>
+                      <tbody id="insights-departments-tbody">
+                        <tr><td colspan="7" class="insights-loading">Loading department risk matrix...</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- 6. Guidelines that Appear Unclear or Frequently Misunderstood Panel -->
+                <div class="insights-section-block" id="block-insights-ambiguity">
+                  <div class="insights-block-title">
+                    <h4>Guidelines Requiring Revision (Ambiguity &amp; Confusion Index)</h4>
+                    <span class="block-tag">Algorithmic friction detection with recommended policy amendments</span>
+                  </div>
+                  <div id="insights-ambiguity-grid" class="insights-cards-grid">
+                    <div class="insights-loading">Loading ambiguous guidelines and recommendations...</div>
+                  </div>
+                </div>
+
+                <!-- 7. Chronological Trends Timeline Panel -->
+                <div class="insights-section-block" id="block-insights-timeline">
+                  <div class="insights-block-title">
+                    <h4>Chronological Compliance Trends</h4>
+                    <span class="block-tag">Multi-period trajectory tracking</span>
+                  </div>
+                  <div id="insights-timeline-grid" class="insights-timeline-grid">
+                    <div class="insights-loading">Loading trend timeline...</div>
+                  </div>
+                </div>
+
               </div>
             </div>
 

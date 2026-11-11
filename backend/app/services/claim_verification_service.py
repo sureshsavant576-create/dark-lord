@@ -452,5 +452,29 @@ class ClaimVerificationEngine:
         except Exception as e:
             logger.error("Failed to save claim verification report: %s", e)
 
+    def list_reports(self, org_id: Optional[str] = None, brand_id: Optional[str] = None) -> List[ClaimVerificationReport]:
+        try:
+            if not self.db_path.exists():
+                return []
+            content = self.db_path.read_text(encoding="utf-8").strip()
+            data = json.loads(content) if content else {}
+            results: List[ClaimVerificationReport] = []
+            for raw in data.values():
+                if org_id and raw.get("org_id") != org_id:
+                    continue
+                if brand_id:
+                    bid = raw.get("brand_id", "")
+                    # handle hyphen vs underscore
+                    if bid != brand_id and bid.replace("-", "_") != brand_id.replace("-", "_"):
+                        continue
+                try:
+                    results.append(ClaimVerificationReport(**raw))
+                except Exception:
+                    pass
+            return results
+        except Exception as e:
+            logger.error("Failed to list claim verification reports: %s", e)
+            return []
+
 
 claim_verification_engine = ClaimVerificationEngine()

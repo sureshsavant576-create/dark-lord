@@ -40,6 +40,7 @@ class ContentVersion(BaseModel):
     submitted_by: str
     submitted_at: str
     change_summary: str
+    department: Optional[str] = "Marketing"
     analysis_report_id: Optional[str] = None
     compliance_score: Optional[float] = None
     findings_summary: List[str] = Field(default_factory=list)
@@ -65,6 +66,7 @@ class WorkflowItem(BaseModel):
     org_id: str
     brand_id: str
     title: str
+    department: str = "Marketing"
     status: ContentStatus = ContentStatus.DRAFT
     current_version: int = 1
     versions: List[ContentVersion] = Field(default_factory=list)
@@ -85,6 +87,7 @@ class SubmitContentRequest(BaseModel):
     title: str
     content_text: str
     image_url: Optional[str] = None
+    department: Optional[str] = Field(default="Marketing", description="Submitting department")
     user_id: str
     user_name: str
     user_role: WorkflowRole = WorkflowRole.CREATOR

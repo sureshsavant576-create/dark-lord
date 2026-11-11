@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 import logging
 import threading
 import uuid
@@ -270,7 +271,44 @@ class ContentReviewService:
             created_at=now
         )
 
+        self._save_report(report)
         return report
+
+    def _save_report(self, report: ContentReviewReport) -> None:
+        with self._lock:
+            try:
+                data = self._load_all()
+                data[report.review_id] = report.model_dump()
+                tmp = self.db_path.with_suffix(".tmp")
+                tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                tmp.replace(self.db_path)
+            except Exception as e:
+                logger.error("Failed to save content review report: %s", e)
+
+    def _load_all(self) -> Dict[str, dict]:
+        with self._lock:
+            try:
+                if not self.db_path.exists():
+                    return {}
+                content = self.db_path.read_text(encoding="utf-8").strip()
+                return json.loads(content) if content else {}
+            except Exception as e:
+                logger.error("Failed to load content review reports: %s", e)
+                return {}
+
+    def list_reports(self, org_id: Optional[str] = None, brand_id: Optional[str] = None) -> List[ContentReviewReport]:
+        data = self._load_all()
+        results: List[ContentReviewReport] = []
+        for raw in data.values():
+            if org_id and raw.get("org_id") != org_id:
+                continue
+            if brand_id and raw.get("brand_id") != brand_id:
+                continue
+            try:
+                results.append(ContentReviewReport(**raw))
+            except Exception:
+                pass
+        return results
 
 
 content_review_service = ContentReviewService()

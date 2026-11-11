@@ -62,6 +62,7 @@ class ContentReviewRequest(BaseModel):
     org_id: str = Field(default="default-org", description="Organization ID for tenant isolation")
     brand_id: str = Field(..., description="Brand ID to audit against")
     content_type: ContentType = Field(default=ContentType.MARKETING_AD, description="Type of creative content submitted")
+    department: Optional[str] = Field(default="Marketing", description="Submitting department")
     copy_text: Optional[str] = Field(default=None, description="Advertising copy, caption, or textual script")
     file_path: Optional[str] = Field(default=None, description="Absolute or relative path to uploaded image or PDF")
     campaign_context: Optional[str] = Field(default=None, description="Optional campaign context for policy exception matching")
@@ -98,6 +99,7 @@ class ContentReviewReport(BaseModel):
     brand_name: str = Field(..., description="Audited brand name")
     content_type: ContentType
     content_filename: Optional[str] = None
+    department: Optional[str] = Field(default="Marketing", description="Submitting department")
     overall_score: float = Field(..., ge=0.0, le=100.0, description="Overall compliance score from 0 to 100")
     is_approved: bool = Field(default=False, description="True if content meets pass threshold with zero critical violations")
     detected_issues: List[ReviewDetectedIssue] = Field(default_factory=list)

@@ -90,6 +90,20 @@ from backend.app.models.workflow import (
     WorkflowItem,
     WorkflowRole,
 )
+from backend.app.models.insights import (
+    AmbiguousGuidelineInsight,
+    BrandInsightsReport,
+    DataSufficiencyStatus,
+    DepartmentRecurringProblem,
+    GuidelineViolationInsight,
+    IncorrectTerminologyInsight,
+    RogueColorUsage,
+    SeverityBreakdown,
+    TimeTrendBucket,
+    TrendDirection,
+    UnsupportedClaimInsight,
+    VisualInconsistencyInsight,
+)
 
 __all__ = [
     "BrandProfile",
@@ -127,4 +141,15 @@ __all__ = [
     "ContentReviewRequest",
     "MeasurableImageProperties",
     "ContentReviewReport",
+    "DataSufficiencyStatus",
+    "TrendDirection",
+    "GuidelineViolationInsight",
+    "IncorrectTerminologyInsight",
+    "RogueColorUsage",
+    "VisualInconsistencyInsight",
+    "UnsupportedClaimInsight",
+    "DepartmentRecurringProblem",
+    "AmbiguousGuidelineInsight",
+    "TimeTrendBucket",
+    "BrandInsightsReport",
 ]
