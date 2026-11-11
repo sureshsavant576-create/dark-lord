@@ -5,8 +5,10 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from backend.app.api.accessibility import router as accessibility_router
 from backend.app.api.auth import router as auth_router
 from backend.app.api.brands import router as brands_router
+from backend.app.api.claims import router as claims_router
 from backend.app.api.inspections import router as inspections_router
 from backend.app.api.knowledge import router as knowledge_router
 from backend.app.api.reviews import router as reviews_router
@@ -62,6 +64,8 @@ app.include_router(brands_router, prefix=settings.API_V1_PREFIX)
 app.include_router(inspections_router, prefix=settings.API_V1_PREFIX)
 app.include_router(knowledge_router, prefix=settings.API_V1_PREFIX)
 app.include_router(reviews_router, prefix=settings.API_V1_PREFIX)
+app.include_router(claims_router, prefix=settings.API_V1_PREFIX)
+app.include_router(accessibility_router, prefix=settings.API_V1_PREFIX)
 
 STATIC_DIR = Path(__file__).parent / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)

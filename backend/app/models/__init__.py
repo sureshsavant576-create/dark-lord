@@ -43,6 +43,23 @@ from backend.app.models.content_review import (
     ReviewIssueCategory,
     ReviewSeverity,
 )
+from backend.app.models.claim_verification import (
+    ClaimClassification,
+    ClaimRiskLevel,
+    ClaimType,
+    ClaimVerificationFinding,
+    ClaimVerificationReport,
+    ClaimVerificationRequest,
+    HumanClaimReviewDecision,
+)
+from backend.app.models.accessibility import (
+    AccessibilityCheckRequest,
+    AccessibilityDimension,
+    AccessibilityIssue,
+    AccessibilityMetrics,
+    AccessibilityReport,
+    AccessibilitySeverity,
+)
 
 __all__ = [
     "BrandProfile",
