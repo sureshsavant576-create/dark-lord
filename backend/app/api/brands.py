@@ -15,6 +15,14 @@ from backend.app.models.brand import (
 from backend.app.preprocessing.validator import save_upload_safely
 from backend.app.services.brand_service import brand_service
 from backend.app.services.inspection_service import inspection_service
+from backend.app.models.brand_dna import (
+    BrandDNAInput,
+    BrandDNAProfile,
+    BrandDNASynthesis,
+    BrandDNAApprovalRequest,
+)
+from backend.app.services.brand_dna_service import brand_dna_service
+from backend.app.services.supabase_service import supabase_service
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +31,84 @@ router = APIRouter(prefix="/brands", tags=["Brand Onboarding & Governance"])
 @router.get("", response_model=List[BrandProfile])
 def list_brands() -> List[BrandProfile]:
     return brand_service.list_brand_profiles()
+
+
+# ============================================================================
+# AI-POWERED BRAND DNA GENERATOR & SUPABASE PERSISTENCE ENDPOINTS
+# ============================================================================
+
+@router.get("/dna/supabase/status")
+def get_supabase_integration_status():
+    """
+    Returns connection and table schema status for Supabase persistence.
+    """
+    return supabase_service.get_status()
+
+@router.post("/dna/generate", response_model=BrandDNAProfile)
+async def generate_brand_dna_profile(input_data: BrandDNAInput) -> BrandDNAProfile:
+    """
+    Collects 10 company facts, uses Gemini API to synthesize 13 structured
+    Brand DNA attributes, strictly separates facts from AI recommendations,
+    and returns a validated draft profile pending user approval.
+    """
+    try:
+        profile = await brand_dna_service.generate_brand_dna(input_data)
+        return profile
+    except Exception as exc:
+        logger.exception("Failed to generate Brand DNA: %s", exc)
+        raise HTTPException(status_code=500, detail=f"Failed to generate Brand DNA: {str(exc)}")
+
+@router.get("/dna", response_model=List[BrandDNAProfile])
+def list_brand_dna_profiles() -> List[BrandDNAProfile]:
+    """
+    Lists all generated and approved Brand DNA profiles.
+    """
+    return brand_dna_service.list_dna_profiles()
+
+@router.get("/dna/{dna_id}", response_model=BrandDNAProfile)
+def get_brand_dna_profile(dna_id: str) -> BrandDNAProfile:
+    """
+    Retrieves a specific Brand DNA profile by DNA ID or brand slug.
+    """
+    profile = brand_dna_service.get_dna_profile(dna_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail=f"Brand DNA profile '{dna_id}' not found.")
+    return profile
+
+@router.put("/dna/{dna_id}", response_model=BrandDNAProfile)
+def update_draft_brand_dna(dna_id: str, edits: BrandDNASynthesis) -> BrandDNAProfile:
+    """
+    Allows user to edit any of the 13 generated Brand DNA sections before approval.
+    """
+    try:
+        updated = brand_dna_service.update_draft_dna(dna_id, edits)
+        return updated
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        logger.exception("Failed to update Brand DNA draft: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+@router.post("/dna/{dna_id}/approve", response_model=BrandDNAProfile)
+async def approve_and_activate_brand_dna(
+    dna_id: str,
+    request: BrandDNAApprovalRequest
+) -> BrandDNAProfile:
+    """
+    Requires user approval before activation.
+    1. Sets status to ACTIVE / APPROVED.
+    2. Saves approved profile to Supabase (with fallback).
+    3. Synchronizes with the core Sanket AI brand governance registry.
+    """
+    try:
+        approved_profile = await brand_dna_service.approve_and_activate_brand_dna(dna_id, request)
+        return approved_profile
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        logger.exception("Failed to approve Brand DNA: %s", exc)
+        raise HTTPException(status_code=500, detail=f"Approval failed: {str(exc)}")
+
 
 @router.get("/{brand_id}", response_model=BrandProfile)
 def get_brand(brand_id: str) -> BrandProfile:

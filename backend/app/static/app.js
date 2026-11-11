@@ -165,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
   safeRun(loadProvidersStatus, 'providersStatus');
   safeRun(loadBrands, 'brands');
   safeRun(loadRecentReport, 'recentReport');
+  safeRun(initBrandDNASuite, 'brandDNASuite');
 });
 function switchMainView(view) {
   if (view === 'landing') {
@@ -3433,3 +3434,625 @@ function applyCopilotRewrite(rewriteText) {
   toast('✓ Applied certified rewrite to creative ad copy!');
 }
 window.applyCopilotRewrite = applyCopilotRewrite;
+
+
+/* ==========================================================================
+   AI BRAND DNA GENERATOR & SUPABASE PERSISTENCE CLIENT SUITE
+   ========================================================================== */
+
+let currentDnaProfile = null;
+let dnaChips = {
+  personality: [],
+  photo: [],
+  messaging: [],
+  preferred: [],
+  avoid: [],
+  dos: [],
+  donts: []
+};
+let dnaColors = [];
+
+function initBrandDNASuite() {
+  loadSupabaseStatus();
+  
+  // Color picker sync
+  const picker = document.getElementById('dna-new-color-picker');
+  const hexInput = document.getElementById('dna-new-color-hex');
+  if (picker && hexInput) {
+    picker.addEventListener('input', () => {
+      hexInput.value = picker.value.toUpperCase();
+    });
+    hexInput.addEventListener('input', () => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(hexInput.value)) {
+        picker.value = hexInput.value;
+      }
+    });
+  }
+
+  // Pre-load latest active or draft DNA profile if present
+  fetch('/api/v1/brands/dna')
+    .then(r => r.json())
+    .then(data => {
+      const profiles = data.profiles || [];
+      if (profiles.length > 0) {
+        // Find latest active or first
+        const active = profiles.find(p => p.status === 'APPROVED') || profiles[0];
+        if (active && document.getElementById('dna-stage-review')) {
+          currentDnaProfile = active;
+          renderDNAReview(active);
+          // Show review stage directly if approved or has data
+          const stageInput = document.getElementById('dna-stage-input');
+          const stageReview = document.getElementById('dna-stage-review');
+          if (stageInput && stageReview && active.status === 'APPROVED') {
+            stageInput.classList.add('hidden');
+            stageReview.classList.remove('hidden');
+          }
+        }
+      }
+    })
+    .catch(err => console.debug('No existing brand DNA loaded:', err));
+}
+
+function switchPortalMode(mode) {
+  const tabDna = document.getElementById('portal-tab-dna');
+  const tabManual = document.getElementById('portal-tab-manual');
+  const suiteDna = document.getElementById('brand-dna-suite');
+  const sectionManual = document.getElementById('ob-form-section');
+
+  if (mode === 'dna') {
+    if (tabDna) tabDna.classList.add('active');
+    if (tabManual) tabManual.classList.remove('active');
+    if (suiteDna) suiteDna.classList.remove('hidden');
+    if (sectionManual) sectionManual.classList.add('hidden');
+  } else {
+    if (tabManual) tabManual.classList.add('active');
+    if (tabDna) tabDna.classList.remove('active');
+    if (sectionManual) sectionManual.classList.remove('hidden');
+    if (suiteDna) suiteDna.classList.add('hidden');
+  }
+}
+
+function loadDNASample(type) {
+  if (type === 'apex') {
+    setVal('dna-company-name', 'Apex Cloud Systems');
+    setVal('dna-industry', 'Enterprise Cloud Infrastructure & Cybersecurity');
+    setVal('dna-business-desc', 'Apex Cloud delivers zero-trust Kubernetes mesh, high-throughput secure networking, and continuous posture management for Global 2000 enterprises and banks.');
+    setVal('dna-products-services', 'Apex Shield Mesh, Zero-Trust Audit Pipeline, Cloud Guard Console');
+    setVal('dna-target-audience', 'DevOps Directors, Enterprise CISOs, Cloud Infrastructure Architects');
+    setVal('dna-company-values', 'Deterministic Security, Zero Downtime, Radical Transparency, Open Standards');
+    setVal('dna-brand-positioning', 'The zero-trust infrastructure engine for mission-critical enterprise workloads');
+    setVal('dna-desired-perception', 'Rock-solid, uncompromising, highly technical, authoritative, innovative');
+    setVal('dna-comm-personality', 'Crisp, technically rigorous, confident, direct, zero-fluff');
+    setVal('dna-reference-brands', 'Stripe, Cloudflare, Datadog');
+    toast('✓ Loaded Apex Cloud Systems sample data');
+  } else if (type === 'nike') {
+    setVal('dna-company-name', 'Aegis Athletics');
+    setVal('dna-industry', 'Performance Athletic Apparel & Smart Footwear');
+    setVal('dna-business-desc', 'Aegis designs biomechanically engineered running gear, carbon-fiber energy return shoes, and sensor-embedded athletic wear for endurance athletes.');
+    setVal('dna-products-services', 'Aegis Strider Carbon, Flow-Knit Compression Apparel, PulseTrack App');
+    setVal('dna-target-audience', 'Marathon runners, collegiate athletes, endurance enthusiasts aged 18-40');
+    setVal('dna-company-values', 'Relentless Innovation, Human Potential, Sustainable Craft, Grit');
+    setVal('dna-brand-positioning', 'Elite biomechanical athletic equipment pushing human performance boundaries');
+    setVal('dna-desired-perception', 'Empowering, high-performance, cutting-edge, inspiring, bold');
+    setVal('dna-comm-personality', 'Motivational, energetic, direct, audacious, action-oriented');
+    setVal('dna-reference-brands', 'Nike, On Running, Arcteryx');
+    toast('✓ Loaded Aegis Athletics sample data');
+  }
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val;
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+async function loadSupabaseStatus() {
+  const pill = document.getElementById('supabase-indicator-pill');
+  if (!pill) return;
+  try {
+    const res = await fetch('/api/v1/brands/dna/supabase/status');
+    const data = await res.json();
+    if (data.configured) {
+      pill.innerHTML = `
+        <span class="pulse-indicator-dot online"></span>
+        <span>Supabase Cloud Connected (${data.table})</span>
+      `;
+      pill.title = `Connected to PostgREST at ${data.url}`;
+      pill.classList.add('status-connected');
+    } else {
+      pill.innerHTML = `
+        <span class="pulse-indicator-dot local"></span>
+        <span>Supabase Local Fallback Ready</span>
+      `;
+      pill.title = 'Operating on local atomic JSON repository. Configure SUPABASE_URL to connect cloud.';
+      pill.classList.remove('status-connected');
+    }
+  } catch (err) {
+    pill.innerHTML = `
+      <span class="pulse-indicator-dot local"></span>
+      <span>Local DNA Engine Ready</span>
+    `;
+  }
+}
+
+async function generateBrandDNA() {
+  const company_name = getVal('dna-company-name');
+  const industry = getVal('dna-industry');
+  const business_description = getVal('dna-business-desc');
+  const products_and_services = getVal('dna-products-services');
+  const target_audience = getVal('dna-target-audience');
+  const company_values = getVal('dna-company-values');
+  const brand_positioning = getVal('dna-brand-positioning');
+  const desired_customer_perception = getVal('dna-desired-perception');
+  const communication_personality = getVal('dna-comm-personality');
+  const reference_brands = getVal('dna-reference-brands') || null;
+
+  if (!company_name || !industry || !business_description || !products_and_services ||
+      !target_audience || !company_values || !brand_positioning || !desired_customer_perception ||
+      !communication_personality) {
+    toast('Please fill all required Brand DNA fields marked with *');
+    return;
+  }
+
+  const stageInput = document.getElementById('dna-stage-input');
+  const stageLoading = document.getElementById('dna-stage-loading');
+  const stageReview = document.getElementById('dna-stage-review');
+
+  if (stageInput) stageInput.classList.add('hidden');
+  if (stageLoading) stageLoading.classList.remove('hidden');
+  if (stageReview) stageReview.classList.add('hidden');
+
+  // Stepper telemetry simulation
+  let step = 1;
+  const stepperInterval = setInterval(() => {
+    step = (step % 4) + 1;
+    for (let i = 1; i <= 4; i++) {
+      const stepRow = document.getElementById(`dna-step-${i}`);
+      if (stepRow) {
+        if (i < step) {
+          stepRow.className = 'dna-step-row done';
+          stepRow.querySelector('.step-icon').textContent = '✓';
+        } else if (i === step) {
+          stepRow.className = 'dna-step-row active';
+          stepRow.querySelector('.step-icon').textContent = i;
+        } else {
+          stepRow.className = 'dna-step-row';
+          stepRow.querySelector('.step-icon').textContent = i;
+        }
+      }
+    }
+  }, 1100);
+
+  try {
+    const payload = {
+      company_name,
+      industry,
+      business_description,
+      products_and_services,
+      target_audience,
+      company_values,
+      brand_positioning,
+      desired_customer_perception,
+      communication_personality,
+      reference_brands
+    };
+
+    const res = await fetch('/api/v1/brands/dna/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    clearInterval(stepperInterval);
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ detail: 'Generation failed' }));
+      throw new Error(errData.detail || 'Brand DNA synthesis failed');
+    }
+
+    const data = await res.json();
+    currentDnaProfile = data;
+    renderDNAReview(data);
+
+    if (stageLoading) stageLoading.classList.add('hidden');
+    if (stageReview) stageReview.classList.remove('hidden');
+    stageReview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast('✓ AI Brand DNA matrix generated and validated!');
+  } catch (err) {
+    clearInterval(stepperInterval);
+    if (stageLoading) stageLoading.classList.add('hidden');
+    if (stageInput) stageInput.classList.remove('hidden');
+    toast(`Error generating Brand DNA: ${err.message}`);
+  }
+}
+
+function renderDNAReview(profile) {
+  if (!profile) return;
+  const facts = profile.company_facts || {};
+  const recs = profile.ai_recommendations || {};
+
+  // Title & Status Badge
+  const titleEl = document.getElementById('dna-review-brand-title');
+  if (titleEl) {
+    titleEl.textContent = `${facts.company_name || 'Brand'} • Brand DNA Matrix`;
+  }
+
+  const statusBadge = document.getElementById('dna-profile-status-badge');
+  if (statusBadge) {
+    if (profile.status === 'APPROVED') {
+      statusBadge.textContent = 'ACTIVE & ENFORCED';
+      statusBadge.className = 'badge-status-approved';
+    } else {
+      statusBadge.textContent = 'DRAFT — PENDING APPROVAL';
+      statusBadge.className = 'badge-status-draft';
+    }
+  }
+
+  // 1. Immutable Company Facts Grid
+  const factsGrid = document.getElementById('dna-facts-display-grid');
+  if (factsGrid) {
+    factsGrid.innerHTML = `
+      <div class="fact-card"><span class="fact-label">Company Name:</span><span class="fact-val">${escapeHtml(facts.company_name || '--')}</span></div>
+      <div class="fact-card"><span class="fact-label">Industry:</span><span class="fact-val">${escapeHtml(facts.industry || '--')}</span></div>
+      <div class="fact-card full-span"><span class="fact-label">Business Description:</span><span class="fact-val">${escapeHtml(facts.business_description || '--')}</span></div>
+      <div class="fact-card"><span class="fact-label">Key Products & Services:</span><span class="fact-val">${escapeHtml(facts.products_and_services || '--')}</span></div>
+      <div class="fact-card"><span class="fact-label">Target Audience:</span><span class="fact-val">${escapeHtml(facts.target_audience || '--')}</span></div>
+      <div class="fact-card"><span class="fact-label">Company Values:</span><span class="fact-val">${escapeHtml(facts.company_values || '--')}</span></div>
+      <div class="fact-card"><span class="fact-label">Brand Positioning:</span><span class="fact-val">${escapeHtml(facts.brand_positioning || '--')}</span></div>
+      <div class="fact-card"><span class="fact-label">Desired Perception:</span><span class="fact-val">${escapeHtml(facts.desired_customer_perception || '--')}</span></div>
+      <div class="fact-card"><span class="fact-label">Communication Personality:</span><span class="fact-val">${escapeHtml(facts.communication_personality || '--')}</span></div>
+      <div class="fact-card"><span class="fact-label">Reference Brands:</span><span class="fact-val">${escapeHtml(facts.reference_brands || 'None specified')}</span></div>
+    `;
+  }
+
+  // 2. Recommendations State
+  dnaChips.personality = Array.isArray(recs.brand_personality) ? [...recs.brand_personality] : [];
+  dnaChips.photo = Array.isArray(recs.photography_preferences) ? [...recs.photography_preferences] : [];
+  dnaChips.messaging = Array.isArray(recs.messaging_guidelines) ? [...recs.messaging_guidelines] : [];
+  dnaChips.preferred = Array.isArray(recs.preferred_terminology) ? [...recs.preferred_terminology] : [];
+  dnaChips.avoid = Array.isArray(recs.words_to_avoid) ? [...recs.words_to_avoid] : [];
+  dnaChips.dos = (recs.visual_dos_and_donts && Array.isArray(recs.visual_dos_and_donts.dos)) ? [...recs.visual_dos_and_donts.dos] : [];
+  dnaChips.donts = (recs.visual_dos_and_donts && Array.isArray(recs.visual_dos_and_donts.donts)) ? [...recs.visual_dos_and_donts.donts] : [];
+
+  // Render chip containers
+  renderDnaChips('personality');
+  renderDnaChips('photo');
+  renderDnaChips('messaging');
+  renderDnaChips('preferred');
+  renderDnaChips('avoid');
+  renderDnaChips('dos');
+  renderDnaChips('donts');
+
+  // Positioning
+  setVal('dna-edit-positioning', recs.brand_positioning || '');
+
+  // Voice and tone
+  const voice = recs.brand_voice_and_tone || {};
+  setVal('dna-edit-voice-primary', voice.primary_voice || '');
+  setVal('dna-edit-voice-context', Array.isArray(voice.contextual_rules) ? voice.contextual_rules.join('; ') : '');
+
+  // Colors
+  const hexes = Array.isArray(recs.colour_hex_codes) ? recs.colour_hex_codes : [];
+  const roles = Array.isArray(recs.primary_and_secondary_colours) ? recs.primary_and_secondary_colours : [];
+  dnaColors = hexes.map((hex, idx) => ({
+    hex: (hex.startsWith('#') ? hex : '#' + hex).toUpperCase(),
+    role: roles[idx] || (idx === 0 ? 'Primary' : idx === 1 ? 'Secondary' : 'Accent')
+  }));
+  renderDnaColors();
+
+  // Typography
+  const typo = recs.typography_recommendations || {};
+  setVal('dna-edit-typo-headline', typo.headline_font || '');
+  setVal('dna-edit-typo-body', typo.body_font || '');
+  setVal('dna-edit-typo-accent', typo.accent_or_code_font || '');
+
+  // Visual Identity
+  const visual = recs.visual_identity || {};
+  setVal('dna-edit-visual-ethos', visual.style_ethos || '');
+  setVal('dna-edit-visual-icons', visual.iconography_rules || '');
+
+  // Design Language
+  const design = recs.design_language || {};
+  setVal('dna-edit-design-radius', design.corner_radius || '');
+  setVal('dna-edit-design-elevation', design.borders_and_elevation || '');
+
+  // Approver fields
+  if (profile.approved_by) {
+    setVal('dna-approver-name', profile.approved_by);
+  }
+  if (profile.approval_notes) {
+    setVal('dna-approval-notes', profile.approval_notes);
+  }
+
+  // Approved banner
+  const banner = document.getElementById('dna-approved-banner');
+  const btnApprove = document.getElementById('btn-approve-dna');
+  if (profile.status === 'APPROVED') {
+    if (banner) banner.classList.remove('hidden');
+    if (btnApprove) {
+      btnApprove.innerHTML = '✓ Brand DNA Active &amp; Enforced';
+      btnApprove.classList.remove('pulse-glow');
+    }
+    const receipt = document.getElementById('dna-supabase-receipt');
+    if (receipt) {
+      const syncId = profile.supabase_id || profile.dna_id;
+      receipt.textContent = `Supabase Record: ${syncId} • Approved at: ${profile.approved_at || 'Verified'}`;
+    }
+  } else {
+    if (banner) banner.classList.add('hidden');
+    if (btnApprove) {
+      btnApprove.innerHTML = `
+        <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Approve &amp; Activate Brand DNA (Save to Supabase)</span>
+      `;
+      btnApprove.classList.add('pulse-glow');
+    }
+  }
+}
+
+function renderDnaChips(category) {
+  let containerId = '';
+  if (category === 'personality') containerId = 'dna-edit-personality-chips';
+  else if (category === 'photo') containerId = 'dna-edit-photo-chips';
+  else if (category === 'messaging') containerId = 'dna-edit-messaging-chips';
+  else if (category === 'preferred') containerId = 'dna-edit-preferred-chips';
+  else if (category === 'avoid') containerId = 'dna-edit-avoid-chips';
+  else if (category === 'dos') containerId = 'dna-edit-dos-chips';
+  else if (category === 'donts') containerId = 'dna-edit-donts-chips';
+
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const items = dnaChips[category] || [];
+  container.innerHTML = items.map((item, idx) => `
+    <span class="dna-chip">
+      <span class="chip-text">${escapeHtml(item)}</span>
+      <button type="button" class="chip-del" onclick="removeDnaChip('${category}', ${idx})" title="Remove item">&times;</button>
+    </span>
+  `).join('');
+}
+
+function addDnaChip(category) {
+  let inputId = '';
+  if (category === 'personality') inputId = 'input-new-personality';
+  else if (category === 'photo') inputId = 'input-new-photo';
+  else if (category === 'messaging') inputId = 'input-new-messaging';
+  else if (category === 'preferred') inputId = 'input-new-preferred';
+  else if (category === 'avoid') inputId = 'input-new-avoid';
+  else if (category === 'dos') inputId = 'input-new-do';
+  else if (category === 'donts') inputId = 'input-new-dont';
+
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const val = input.value.trim();
+  if (val) {
+    if (!dnaChips[category]) dnaChips[category] = [];
+    dnaChips[category].push(val);
+    input.value = '';
+    renderDnaChips(category);
+  }
+}
+
+function removeDnaChip(category, idx) {
+  if (dnaChips[category] && dnaChips[category].length > idx) {
+    dnaChips[category].splice(idx, 1);
+    renderDnaChips(category);
+  }
+}
+
+function renderDnaColors() {
+  const container = document.getElementById('dna-colors-editor-row');
+  if (!container) return;
+
+  container.innerHTML = dnaColors.map((c, idx) => `
+    <div class="dna-color-swatch-box">
+      <div class="swatch-color-preview" style="background-color: ${c.hex};" title="${c.hex}"></div>
+      <div class="swatch-inputs">
+        <input type="text" class="swatch-hex-val" value="${c.hex}" onchange="updateDnaColorHex(${idx}, this.value)" placeholder="#HEX">
+        <input type="text" class="swatch-role-val" value="${escapeHtml(c.role || '')}" onchange="updateDnaColorRole(${idx}, this.value)" placeholder="Role">
+      </div>
+      <button type="button" class="btn-del-swatch" onclick="removeDnaColor(${idx})" title="Remove swatch">&times;</button>
+    </div>
+  `).join('');
+}
+
+function updateDnaColorHex(idx, newHex) {
+  if (dnaColors[idx]) {
+    const formatted = newHex.startsWith('#') ? newHex : '#' + newHex;
+    if (/^#[0-9A-Fa-f]{6}$/.test(formatted)) {
+      dnaColors[idx].hex = formatted.toUpperCase();
+      renderDnaColors();
+    }
+  }
+}
+
+function updateDnaColorRole(idx, newRole) {
+  if (dnaColors[idx]) {
+    dnaColors[idx].role = newRole.trim();
+  }
+}
+
+function addDnaColor() {
+  const hexInput = document.getElementById('dna-new-color-hex');
+  const nameInput = document.getElementById('dna-new-color-name');
+  if (!hexInput) return;
+  let hex = hexInput.value.trim();
+  if (!hex.startsWith('#')) hex = '#' + hex;
+  if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+    toast('Invalid HEX color format. Please use #RRGGBB');
+    return;
+  }
+  const role = nameInput ? nameInput.value.trim() : 'Accent';
+  dnaColors.push({ hex: hex.toUpperCase(), role: role || 'Brand Accent' });
+  if (nameInput) nameInput.value = '';
+  renderDnaColors();
+}
+
+function removeDnaColor(idx) {
+  if (dnaColors.length <= 1) {
+    toast('At least one brand color is required.');
+    return;
+  }
+  dnaColors.splice(idx, 1);
+  renderDnaColors();
+}
+
+function editDNAPrompt() {
+  const stageInput = document.getElementById('dna-stage-input');
+  const stageReview = document.getElementById('dna-stage-review');
+  if (stageInput && stageReview) {
+    stageReview.classList.add('hidden');
+    stageInput.classList.remove('hidden');
+    stageInput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function collectDNAReviewEdits() {
+  const voiceContextRules = getVal('dna-edit-voice-context')
+    .split(';')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  return {
+    brand_personality: dnaChips.personality || [],
+    brand_positioning: getVal('dna-edit-positioning'),
+    brand_voice_and_tone: {
+      primary_voice: getVal('dna-edit-voice-primary'),
+      contextual_rules: voiceContextRules.length > 0 ? voiceContextRules : ['Always align copy with verified core brand values.']
+    },
+    primary_and_secondary_colours: dnaColors.map(c => c.role || c.hex),
+    colour_hex_codes: dnaColors.map(c => c.hex.toUpperCase()),
+    typography_recommendations: {
+      headline_font: getVal('dna-edit-typo-headline') || 'Plus Jakarta Sans',
+      body_font: getVal('dna-edit-typo-body') || 'Inter',
+      accent_or_code_font: getVal('dna-edit-typo-accent') || 'JetBrains Mono'
+    },
+    visual_identity: {
+      style_ethos: getVal('dna-edit-visual-ethos') || 'Modern Minimalist',
+      iconography_rules: getVal('dna-edit-visual-icons') || '2px monoline stroke'
+    },
+    photography_preferences: dnaChips.photo || [],
+    design_language: {
+      corner_radius: getVal('dna-edit-design-radius') || '8px to 12px',
+      borders_and_elevation: getVal('dna-edit-design-elevation') || '1px subtle borders'
+    },
+    messaging_guidelines: dnaChips.messaging || [],
+    preferred_terminology: dnaChips.preferred || [],
+    words_to_avoid: dnaChips.avoid || [],
+    visual_dos_and_donts: {
+      dos: dnaChips.dos || [],
+      donts: dnaChips.donts || []
+    }
+  };
+}
+
+async function saveDNADraftEdits() {
+  if (!currentDnaProfile || !currentDnaProfile.dna_id) {
+    toast('No active Brand DNA profile loaded.');
+    return;
+  }
+
+  const edits = collectDNAReviewEdits();
+  try {
+    const res = await fetch(`/api/v1/brands/dna/${currentDnaProfile.dna_id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(edits)
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to save edits' }));
+      throw new Error(err.detail || 'Save failed');
+    }
+
+    const updated = await res.json();
+    currentDnaProfile = updated;
+    renderDNAReview(updated);
+    toast('✓ Brand DNA draft edits saved successfully!');
+  } catch (err) {
+    toast(`Failed to save draft edits: ${err.message}`);
+  }
+}
+
+async function approveAndActivateBrandDNA() {
+  if (!currentDnaProfile || !currentDnaProfile.dna_id) {
+    toast('No active Brand DNA profile to approve.');
+    return;
+  }
+
+  const approver_name = getVal('dna-approver-name');
+  const approval_notes = getVal('dna-approval-notes');
+  const syncPlatformCheck = document.getElementById('dna-sync-platform-check');
+  const sync_to_platform_brand = syncPlatformCheck ? syncPlatformCheck.checked : true;
+
+  if (!approver_name) {
+    toast('Please enter Approver Identity & Title before activating.');
+    return;
+  }
+
+  const reviewed_recommendations = collectDNAReviewEdits();
+
+  const btnApprove = document.getElementById('btn-approve-dna');
+  if (btnApprove) {
+    btnApprove.disabled = true;
+    btnApprove.innerHTML = '<span>Activating &amp; Syncing to Supabase...</span>';
+  }
+
+  try {
+    const payload = {
+      reviewed_recommendations,
+      approver_name,
+      approval_notes,
+      sync_to_platform_brand
+    };
+
+    const res = await fetch(`/api/v1/brands/dna/${currentDnaProfile.dna_id}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Approval failed' }));
+      throw new Error(err.detail || 'Approval failed');
+    }
+
+    const data = await res.json();
+    currentDnaProfile = data.dna_profile;
+    renderDNAReview(data.dna_profile);
+
+    toast('🎉 Brand DNA approved and activated! Ready for Check Vibe audits.');
+
+    if (typeof loadBrands === 'function') {
+      loadBrands();
+    }
+  } catch (err) {
+    if (btnApprove) {
+      btnApprove.disabled = false;
+      btnApprove.innerHTML = `
+        <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Approve &amp; Activate Brand DNA (Save to Supabase)</span>
+      `;
+    }
+    toast(`Activation error: ${err.message}`);
+  }
+}
+
+// Window exports
+window.switchPortalMode = switchPortalMode;
+window.loadDNASample = loadDNASample;
+window.generateBrandDNA = generateBrandDNA;
+window.editDNAPrompt = editDNAPrompt;
+window.addDnaChip = addDnaChip;
+window.removeDnaChip = removeDnaChip;
+window.addDnaColor = addDnaColor;
+window.removeDnaColor = removeDnaColor;
+window.updateDnaColorHex = updateDnaColorHex;
+window.updateDnaColorRole = updateDnaColorRole;
+window.saveDNADraftEdits = saveDNADraftEdits;
+window.approveAndActivateBrandDNA = approveAndActivateBrandDNA;
+window.initBrandDNASuite = initBrandDNASuite;

@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     MAX_COLOR_DELTA_E: float = Field(default=15.0, description="Max acceptable CIELAB Delta E color deviation")
     MIN_OVERALL_PASS_SCORE: float = Field(default=70.0, description="Minimum overall score for automatic pass")
 
+    SUPABASE_URL: Optional[str] = Field(default=None, description="Supabase project URL")
+    SUPABASE_KEY: Optional[str] = Field(default=None, description="Supabase API key anon or service role")
+    SUPABASE_TABLE: str = Field(default="brand_dna_profiles", description="Supabase table for storing approved Brand DNA profiles")
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -59,6 +63,10 @@ class Settings(BaseSettings):
         if self.has_huggingface:
             providers.append("huggingface")
         return providers
+
+    @property
+    def has_supabase(self) -> bool:
+        return bool(self.SUPABASE_URL and self.SUPABASE_KEY and self.SUPABASE_URL.strip() and self.SUPABASE_KEY.strip())
 
     def get_provider_status_dict(self) -> dict:
         return {

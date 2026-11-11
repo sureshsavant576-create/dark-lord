@@ -6,7 +6,7 @@
   <title>Company Portal — Brand DNA Onboarding & Identity Guidelines | Sanket AI</title>
   <link rel="icon" type="image/svg+xml" href="/static/brand/favicon.svg">
   <link rel="alternate icon" type="image/png" href="/static/emblem.png">
-  <link rel="stylesheet" href="/static/style.css?v=25.0">
+  <link rel="stylesheet" href="/static/style.css?v=26.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -123,6 +123,450 @@
                 <h2 class="portal-title">Company Portal &amp; Brand Standards</h2>
                 <p class="portal-subtitle">Register your organization, define brand personality and communication tone, and establish approved palette standards.</p>
               </div>
+
+                            <!-- Mode Switcher Pills -->
+              <div class="portal-mode-toggle-wrap">
+                <button type="button" class="portal-mode-tab active" id="tab-btn-dna" onclick="switchPortalMode('dna')">
+                  <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  <span>AI Brand DNA Generator (Gemini + Supabase)</span>
+                </button>
+                <button type="button" class="portal-mode-tab" id="tab-btn-manual" onclick="switchPortalMode('manual')">
+                  <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                  <span>Manual Registration &amp; Colour Studio</span>
+                </button>
+              </div>
+
+              <!-- AI BRAND DNA GENERATOR SECTION -->
+              <div id="brand-dna-section" class="brand-dna-wrapper">
+                
+                <!-- Supabase & AI Engine Info Strip -->
+                <div class="dna-meta-strip">
+                  <div class="meta-strip-left">
+                    <span class="dna-model-badge">
+                      <span class="status-pulse-dot"></span>
+                      <span>Gemini 3.1 Flash AI Engine</span>
+                    </span>
+                    <span class="dna-supabase-badge" id="dna-supabase-pill" title="Supabase Cloud Database Integration">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.2 12.604a.396.396 0 0 0 .316.638H12v8.958a.396.396 0 0 0 .716.233l9.084-12.441a.396.396 0 0 0-.438-.638z"/></svg>
+                      <span id="dna-supabase-label">Supabase Cloud Sync Ready</span>
+                    </span>
+                  </div>
+                  <div class="meta-strip-right">
+                    <button type="button" class="btn btn-ghost btn-xs sample-fill-btn" onclick="loadDNASample('apex')">
+                      ⚡ Fill Apex Cloud Demo
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-xs sample-fill-btn" onclick="loadDNASample('nike')">
+                      ⚡ Fill Nike Demo
+                    </button>
+                  </div>
+                </div>
+
+                <!-- STAGE 1: 10 INPUT FACTS COLLECTION -->
+                <div id="dna-stage-input" class="dna-stage-pane active">
+                  <div class="dna-card-intro">
+                    <h3 class="dna-intro-title">Synthesize Verified Brand DNA</h3>
+                    <p class="dna-intro-subtitle">Provide your authentic company facts below. Gemini will synthesize a structured 13-point Brand DNA profile strictly grounded in your inputs (no fabricated policies or statistical claims). You can review, edit, and approve before activation.</p>
+                  </div>
+
+                  <form id="dna-input-form" class="app-form" onsubmit="event.preventDefault(); generateBrandDNA();">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="dna-company-name">1. Company / Organization Name: <span class="required">*</span></label>
+                        <input type="text" id="dna-company-name" placeholder="e.g. Apex Cloud Systems" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="dna-industry">2. Industry &amp; Operating Sector: <span class="required">*</span></label>
+                        <input type="text" id="dna-industry" placeholder="e.g. Enterprise Cloud Infrastructure & Cybersecurity" required>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="dna-business-desc">3. Business Description &amp; Core Mission: <span class="required">*</span></label>
+                      <textarea id="dna-business-desc" rows="2" placeholder="Explain what the company does, its core purpose and engineering or business mission..." required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="dna-products-services">4. Key Products &amp; Services: <span class="required">*</span></label>
+                        <input type="text" id="dna-products-services" placeholder="e.g. Apex Shield Kubernetes Mesh, Automated Zero-Trust Audit Pipeline" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="dna-target-audience">5. Target Audience Demographic: <span class="required">*</span></label>
+                        <input type="text" id="dna-target-audience" placeholder="e.g. DevOps Leads, Cloud Architects, and Enterprise CISOs" required>
+                      </div>
+                    </div>
+
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="dna-company-values">6. Core Company Values: <span class="required">*</span></label>
+                        <input type="text" id="dna-company-values" placeholder="e.g. Deterministic Security, Zero Downtime, Radical Transparency" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="dna-brand-positioning">7. Brand Positioning Statement: <span class="required">*</span></label>
+                        <input type="text" id="dna-brand-positioning" placeholder="e.g. The zero-trust infrastructure engine for mission-critical enterprise workloads" required>
+                      </div>
+                    </div>
+
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="dna-desired-perception">8. Desired Customer Perception: <span class="required">*</span></label>
+                        <input type="text" id="dna-desired-perception" placeholder="e.g. Rock-solid, uncompromising, highly technical, authoritative" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="dna-comm-personality">9. Communication Personality: <span class="required">*</span></label>
+                        <input type="text" id="dna-comm-personality" placeholder="e.g. Crisp, empowering, direct, technically rigorous" required>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="dna-reference-brands">10. Benchmark / Reference Brands (Optional):</label>
+                      <input type="text" id="dna-reference-brands" placeholder="e.g. Stripe, Cloudflare, Linear, Patagonia">
+                      <span class="field-hint">Used as aesthetic or tonal reference anchors without copying logos or proprietary marks.</span>
+                    </div>
+
+                    <div class="dna-btn-action-row">
+                      <button type="submit" id="btn-generate-dna" class="btn btn-primary btn-lg">
+                        <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        <span>Generate Structured Brand DNA (Gemini AI)</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                <!-- STAGE 2: ANIMATED SYNTHESIS LOADING TELEMETRY -->
+                <div id="dna-stage-loading" class="dna-stage-pane hidden">
+                  <div class="dna-loading-card">
+                    <div class="dna-spinner-orbit">
+                      <div class="dna-orbit-ring"></div>
+                      <div class="dna-orbit-core">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                      </div>
+                    </div>
+                    <h3 class="dna-loading-title" id="dna-loading-title">Synthesizing Brand DNA Matrix</h3>
+                    <p class="dna-loading-subtitle" id="dna-loading-subtitle">Applying Gemini AI multimodal reasoning to anchor ground truth and derive standards...</p>
+                    <div class="dna-loading-stepper">
+                      <div class="dna-step-row active" id="dna-step-1">
+                        <span class="step-icon">✓</span>
+                        <span class="step-label">Validating 10 Verified Company Facts</span>
+                      </div>
+                      <div class="dna-step-row" id="dna-step-2">
+                        <span class="step-icon">2</span>
+                        <span class="step-label">Synthesizing 13 Structured Brand DNA Guidelines</span>
+                      </div>
+                      <div class="dna-step-row" id="dna-step-3">
+                        <span class="step-icon">3</span>
+                        <span class="step-label">Validating Perceptual HEX Codes &amp; Visual Do's / Don'ts</span>
+                      </div>
+                      <div class="dna-step-row" id="dna-step-4">
+                        <span class="step-icon">4</span>
+                        <span class="step-label">Preparing Draft Profile for User Review &amp; Supabase Staging</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- STAGE 3: INTERACTIVE REVIEW, EDIT & APPROVAL -->
+                <div id="dna-stage-review" class="dna-stage-pane hidden">
+                  <!-- Header & Approval Banner -->
+                  <div class="dna-review-header-bar">
+                    <div class="review-status-col">
+                      <div class="dna-status-chip-row">
+                        <span id="dna-profile-status-badge" class="badge-status-draft">DRAFT — PENDING APPROVAL</span>
+                        <span class="badge-source-verified">✓ 10 Verified Company Facts</span>
+                        <span class="badge-source-ai">✦ 13 AI Recommendations</span>
+                      </div>
+                      <h3 class="dna-review-brand-title" id="dna-review-brand-title">Apex Cloud Systems &bull; Brand DNA Matrix</h3>
+                    </div>
+                    <div class="review-action-col">
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="editDNAPrompt()">
+                        <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        <span>Re-prompt / Edit Facts</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- IMMUTABLE GROUND TRUTH: COMPANY-PROVIDED FACTS -->
+                  <div class="dna-panel-card facts-panel">
+                    <div class="panel-header">
+                      <div class="panel-badge-group">
+                        <span class="badge-tag tag-facts">Company-Provided Facts</span>
+                        <span class="panel-hint">Immutable Ground Truth Anchored by Company</span>
+                      </div>
+                      <span class="badge-pill">Source: Company Questionnaire</span>
+                    </div>
+                    <div class="facts-grid" id="dna-facts-display-grid">
+                      <!-- Rendered dynamically -->
+                    </div>
+                  </div>
+
+                  <!-- 13 STRUCTURED AI RECOMMENDATIONS (FULLY EDITABLE) -->
+                  <div class="dna-panel-card recommendations-panel">
+                    <div class="panel-header">
+                      <div class="panel-badge-group">
+                        <span class="badge-tag tag-ai">AI-Synthesized Brand DNA</span>
+                        <span class="panel-hint">13 Structured Guidelines (Editable before Approval)</span>
+                      </div>
+                      <span class="badge-pill">Validated by Pydantic</span>
+                    </div>
+
+                    <!-- 13 Interactive Sections -->
+                    <div class="dna-sections-grid">
+                      
+                      <!-- 1. Brand Personality -->
+                      <div class="dna-section-box">
+                        <div class="section-label-row">
+                          <span class="sec-num">01</span>
+                          <strong>Brand Personality</strong>
+                        </div>
+                        <p class="sec-help">Key personality traits defining how the brand acts and expresses itself.</p>
+                        <div class="editable-chip-container" id="dna-edit-personality-chips"></div>
+                        <div class="chip-input-row">
+                          <input type="text" id="input-new-personality" placeholder="Add personality trait..." onkeydown="if(event.key==='Enter'){event.preventDefault(); addDnaChip('personality');}">
+                          <button type="button" class="btn btn-secondary btn-xs" onclick="addDnaChip('personality')">+ Add</button>
+                        </div>
+                      </div>
+
+                      <!-- 2. Brand Positioning -->
+                      <div class="dna-section-box">
+                        <div class="section-label-row">
+                          <span class="sec-num">02</span>
+                          <strong>Brand Positioning Statement</strong>
+                        </div>
+                        <p class="sec-help">Unique market positioning anchoring the company against competitors.</p>
+                        <textarea id="dna-edit-positioning" class="dna-textarea" rows="2"></textarea>
+                      </div>
+
+                      <!-- 3. Brand Voice and Tone -->
+                      <div class="dna-section-box">
+                        <div class="section-label-row">
+                          <span class="sec-num">03</span>
+                          <strong>Brand Voice &amp; Tone</strong>
+                        </div>
+                        <div class="subfield-group">
+                          <label>Primary Voice Character:</label>
+                          <input type="text" id="dna-edit-voice-primary" class="dna-input">
+                        </div>
+                        <div class="subfield-group">
+                          <label>Contextual Tone Rules:</label>
+                          <input type="text" id="dna-edit-voice-context" class="dna-input">
+                        </div>
+                      </div>
+
+                      <!-- 4 & 5. Approved Colors & HEX Codes -->
+                      <div class="dna-section-box full-width">
+                        <div class="section-label-row">
+                          <span class="sec-num">04 &amp; 05</span>
+                          <strong>Primary, Secondary Colours &amp; Verified HEX Codes</strong>
+                        </div>
+                        <p class="sec-help">Validated color palette used for CIELAB ΔE perceptual compliance audits.</p>
+                        <div class="color-dna-editor-row" id="dna-colors-editor-row"></div>
+                        <div class="add-color-row">
+                          <input type="color" id="dna-new-color-picker" value="#6366F1" class="color-picker-input">
+                          <input type="text" id="dna-new-color-hex" value="#6366F1" placeholder="#HEX" class="hex-text-input">
+                          <input type="text" id="dna-new-color-name" placeholder="Role (e.g. Accent Cyan)" class="hex-name-input">
+                          <button type="button" class="btn btn-secondary btn-xs" onclick="addDnaColor()">+ Add Palette Swatch</button>
+                        </div>
+                      </div>
+
+                      <!-- 6. Typography Recommendations -->
+                      <div class="dna-section-box">
+                        <div class="section-label-row">
+                          <span class="sec-num">06</span>
+                          <strong>Typography Recommendations</strong>
+                        </div>
+                        <div class="subfield-group">
+                          <label>Headline Font:</label>
+                          <input type="text" id="dna-edit-typo-headline" class="dna-input">
+                        </div>
+                        <div class="subfield-group">
+                          <label>Body Font:</label>
+                          <input type="text" id="dna-edit-typo-body" class="dna-input">
+                        </div>
+                        <div class="subfield-group">
+                          <label>Accent / Code Font:</label>
+                          <input type="text" id="dna-edit-typo-accent" class="dna-input">
+                        </div>
+                      </div>
+
+                      <!-- 7. Visual Identity -->
+                      <div class="dna-section-box">
+                        <div class="section-label-row">
+                          <span class="sec-num">07</span>
+                          <strong>Visual Identity Guidelines</strong>
+                        </div>
+                        <div class="subfield-group">
+                          <label>Style Ethos:</label>
+                          <input type="text" id="dna-edit-visual-ethos" class="dna-input">
+                        </div>
+                        <div class="subfield-group">
+                          <label>Iconography Guidelines:</label>
+                          <input type="text" id="dna-edit-visual-icons" class="dna-input">
+                        </div>
+                      </div>
+
+                      <!-- 8. Photography Preferences -->
+                      <div class="dna-section-box">
+                        <div class="section-label-row">
+                          <span class="sec-num">08</span>
+                          <strong>Photography Preferences</strong>
+                        </div>
+                        <div class="editable-chip-container" id="dna-edit-photo-chips"></div>
+                        <div class="chip-input-row">
+                          <input type="text" id="input-new-photo" placeholder="Add art direction rule..." onkeydown="if(event.key==='Enter'){event.preventDefault(); addDnaChip('photo');}">
+                          <button type="button" class="btn btn-secondary btn-xs" onclick="addDnaChip('photo')">+ Add</button>
+                        </div>
+                      </div>
+
+                      <!-- 9. Design Language -->
+                      <div class="dna-section-box">
+                        <div class="section-label-row">
+                          <span class="sec-num">09</span>
+                          <strong>Design Language &amp; Graphic System</strong>
+                        </div>
+                        <div class="subfield-group">
+                          <label>Corner Radius:</label>
+                          <input type="text" id="dna-edit-design-radius" class="dna-input">
+                        </div>
+                        <div class="subfield-group">
+                          <label>Borders &amp; Elevation:</label>
+                          <input type="text" id="dna-edit-design-elevation" class="dna-input">
+                        </div>
+                      </div>
+
+                      <!-- 10. Messaging Guidelines -->
+                      <div class="dna-section-box">
+                        <div class="section-label-row">
+                          <span class="sec-num">10</span>
+                          <strong>Messaging Guidelines &amp; Pillars</strong>
+                        </div>
+                        <div class="editable-chip-container" id="dna-edit-messaging-chips"></div>
+                        <div class="chip-input-row">
+                          <input type="text" id="input-new-messaging" placeholder="Add messaging pillar..." onkeydown="if(event.key==='Enter'){event.preventDefault(); addDnaChip('messaging');}">
+                          <button type="button" class="btn btn-secondary btn-xs" onclick="addDnaChip('messaging')">+ Add</button>
+                        </div>
+                      </div>
+
+                      <!-- 11. Preferred Terminology -->
+                      <div class="dna-section-box">
+                        <div class="section-label-row">
+                          <span class="sec-num">11</span>
+                          <strong>Preferred Terminology</strong>
+                        </div>
+                        <p class="sec-help">Approved vocabulary and terms to use consistently in brand copy.</p>
+                        <div class="editable-chip-container" id="dna-edit-preferred-chips"></div>
+                        <div class="chip-input-row">
+                          <input type="text" id="input-new-preferred" placeholder="Add approved term..." onkeydown="if(event.key==='Enter'){event.preventDefault(); addDnaChip('preferred');}">
+                          <button type="button" class="btn btn-secondary btn-xs" onclick="addDnaChip('preferred')">+ Add</button>
+                        </div>
+                      </div>
+
+                      <!-- 12. Words to Avoid (Policy Lexicon Scanner) -->
+                      <div class="dna-section-box">
+                        <div class="section-label-row">
+                          <span class="sec-num">12</span>
+                          <strong>Words to Avoid (Strict Avoidances)</strong>
+                        </div>
+                        <p class="sec-help">Words, false claims, and buzzwords automatically penalized during audits.</p>
+                        <div class="editable-chip-container chips-danger" id="dna-edit-avoid-chips"></div>
+                        <div class="chip-input-row">
+                          <input type="text" id="input-new-avoid" placeholder="Add prohibited word..." onkeydown="if(event.key==='Enter'){event.preventDefault(); addDnaChip('avoid');}">
+                          <button type="button" class="btn btn-secondary btn-xs" onclick="addDnaChip('avoid')">+ Add</button>
+                        </div>
+                      </div>
+
+                      <!-- 13. Visual Do's and Don'ts -->
+                      <div class="dna-section-box full-width">
+                        <div class="section-label-row">
+                          <span class="sec-num">13</span>
+                          <strong>Visual Creative Do's &amp; Don'ts</strong>
+                        </div>
+                        <div class="dos-donts-flex-grid">
+                          <div class="dos-column">
+                            <div class="dos-header">
+                              <span class="do-icon">✓</span>
+                              <strong>Visual DO's</strong>
+                            </div>
+                            <div class="editable-chip-container chips-success" id="dna-edit-dos-chips"></div>
+                            <div class="chip-input-row">
+                              <input type="text" id="input-new-do" placeholder="Add visual DO rule..." onkeydown="if(event.key==='Enter'){event.preventDefault(); addDnaChip('dos');}">
+                              <button type="button" class="btn btn-secondary btn-xs" onclick="addDnaChip('dos')">+ Add</button>
+                            </div>
+                          </div>
+                          <div class="donts-column">
+                            <div class="donts-header">
+                              <span class="dont-icon">✕</span>
+                              <strong>Visual DON'Ts</strong>
+                            </div>
+                            <div class="editable-chip-container chips-danger" id="dna-edit-donts-chips"></div>
+                            <div class="chip-input-row">
+                              <input type="text" id="input-new-dont" placeholder="Add visual DON'T rule..." onkeydown="if(event.key==='Enter'){event.preventDefault(); addDnaChip('donts');}">
+                              <button type="button" class="btn btn-secondary btn-xs" onclick="addDnaChip('donts')">+ Add</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <!-- APPROVAL & SUPABASE ACTIVATION BAR -->
+                  <div class="dna-approval-bar" id="dna-approval-bar">
+                    <div class="approval-meta-inputs">
+                      <div class="approval-input-group">
+                        <label for="dna-approver-name">Approver Identity &amp; Title: <span class="required">*</span></label>
+                        <input type="text" id="dna-approver-name" value="Elena Rostova (Chief Brand Officer)">
+                      </div>
+                      <div class="approval-input-group">
+                        <label for="dna-approval-notes">Approval Certification Notes:</label>
+                        <input type="text" id="dna-approval-notes" value="All 13 Brand DNA standards reviewed, edited, and approved for active governance.">
+                      </div>
+                    </div>
+
+                    <div class="approval-action-row">
+                      <div class="approval-sync-opt">
+                        <label class="checkbox-label">
+                          <input type="checkbox" id="dna-sync-platform-check" checked>
+                          <span>Sync directly to active Platform Standard &amp; Check Vibe inspection engine</span>
+                        </label>
+                      </div>
+
+                      <div class="approval-btns">
+                        <button type="button" id="btn-save-draft-dna" class="btn btn-secondary" onclick="saveDNADraftEdits()">
+                          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                          <span>Save Draft Edits</span>
+                        </button>
+                        <button type="button" id="btn-approve-dna" class="btn btn-primary btn-lg pulse-glow" onclick="approveAndActivateBrandDNA()">
+                          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          <span>Approve &amp; Activate Brand DNA (Save to Supabase)</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Post-Approval Confirmation Banner -->
+                    <div id="dna-approved-banner" class="dna-approved-banner hidden">
+                      <div class="banner-left">
+                        <div class="banner-check-circle">✓</div>
+                        <div class="banner-text">
+                          <strong id="dna-approved-title">Brand DNA Approved &amp; Activated!</strong>
+                          <p id="dna-approved-sub">Profile is now actively enforced across all Check Vibe creative audits.</p>
+                          <div class="supabase-sync-receipt" id="dna-supabase-receipt">
+                            <!-- Populated with Supabase status -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="banner-right">
+                        <a href="/check-vibe" class="btn btn-primary btn-sm">
+                          <span>Inspect Creatives with New DNA &rarr;</span>
+                        </a>
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
 
               <form id="onboarding-form" class="app-form" novalidate>
                 <input type="hidden" id="ob-editing-brand-id">
@@ -647,6 +1091,6 @@
     }
   </script>
 
-  <script src="/static/app.js?v=25.0"></script>
+  <script src="/static/app.js?v=26.0"></script>
 </body>
 </html>
