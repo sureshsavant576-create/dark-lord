@@ -423,6 +423,9 @@ function initDropZone() {
     }
 
     if (file.type.startsWith('image/')) {
+      if (typeof runInstantPreflight === 'function') {
+        runInstantPreflight(file);
+      }
       triggerDeveloperColorPreFilter(file);
     } else if (filterPanel) {
       filterPanel.classList.add('hidden');
@@ -438,6 +441,8 @@ function initDropZone() {
       if (thumb) { thumb.src = ''; thumb.classList.add('hidden'); }
       if (fallbackIcon) fallbackIcon.classList.remove('hidden');
       if (previewInfo) previewInfo.classList.add('hidden');
+      const pfHud = document.getElementById('preflight-scanner-hud');
+      if (pfHud) pfHud.classList.add('hidden');
       if (filterPanel) filterPanel.classList.add('hidden');
       if (btnRunInspect) btnRunInspect.classList.remove('btn-pulse-ready');
     });
@@ -2925,7 +2930,7 @@ let currentRemediatedResult = null;
 async function loadJudgePreset(presetKey) {
   const brandSelect = document.getElementById('inspect-brand-select');
   const copyInput = document.getElementById('inspect-copy-text');
-  const fileInput = document.getElementById('inspect-file-input');
+  const fileInput = document.getElementById('inspect-file') || document.getElementById('inspect-file-input');
 
   if (presetKey === 'nike_compliant') {
     if (brandSelect) {
@@ -3145,15 +3150,30 @@ function runInstantPreflight(file) {
 }
 window.runInstantPreflight = runInstantPreflight;
 
-// Hook pre-flight to dropzone events
+// Hook pre-flight to dropzone events and auto-load preset if present in URL
 document.addEventListener('DOMContentLoaded', () => {
-  const fileInput = document.getElementById('inspect-file-input');
+  const fileInput = document.getElementById('inspect-file') || document.getElementById('inspect-file-input');
   if (fileInput) {
     fileInput.addEventListener('change', () => {
       if (fileInput.files && fileInput.files[0]) {
         runInstantPreflight(fileInput.files[0]);
       }
     });
+  }
+
+  // Auto-detect ?preset=... in URL query string for 1-click evaluator deep-links
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const preset = urlParams.get('preset');
+    if (preset) {
+      setTimeout(() => {
+        if (typeof window.loadJudgePreset === 'function') {
+          window.loadJudgePreset(preset);
+        }
+      }, 500);
+    }
+  } catch (e) {
+    console.debug('Preset auto-load error:', e);
   }
 });
 

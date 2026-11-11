@@ -67,14 +67,32 @@ from backend.app.services.preflight_service import preflight_scanner_service
 
 @router.post("/inspect/preflight-scan")
 async def preflight_scan_creative(
-    file: UploadFile = File(...),
+    file: Optional[UploadFile] = File(default=None),
+    image_url: Optional[str] = Form(default=None),
     brand_id: Optional[str] = Form(default=None)
 ):
     settings.init_directories()
-    if not file.filename:
-        raise HTTPException(status_code=400, detail="Image file required for pre-flight scanning.")
+    target_path = None
 
-    target_path = save_upload_safely(file, settings.UPLOADS_DIR, prefix="preflight")
+    if file and file.filename:
+        target_path = save_upload_safely(file, settings.UPLOADS_DIR, prefix="preflight")
+    elif image_url:
+        clean_name = Path(image_url.split("?")[0]).name
+        local_path = settings.UPLOADS_DIR / clean_name
+        if not local_path.exists():
+            static_sample = settings.STATIC_DIR / "samples" / clean_name
+            if static_sample.exists():
+                local_path = static_sample
+            else:
+                static_direct = settings.STATIC_DIR / clean_name
+                if static_direct.exists():
+                    local_path = static_direct
+        if local_path.exists():
+            target_path = local_path
+
+    if not target_path or not target_path.exists():
+        raise HTTPException(status_code=400, detail="Image file or valid image URL required for pre-flight scanning.")
+
     try:
         return preflight_scanner_service.analyze_image_preflight(target_path, brand_id=brand_id)
     except Exception as exc:

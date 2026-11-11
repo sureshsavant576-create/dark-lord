@@ -12,15 +12,29 @@
 </head>
 <body class="landing-view-active">
 
-  <!-- Top Navigation Bar -->
+    <!-- Top Navigation Bar -->
   <header class="app-topbar">
     <div class="topbar-container">
       <div class="topbar-left-group">
-
         <a href="/" class="brand-brandmark" title="Sanket AI Home">
           <img src="/static/sanket-logo.png" alt="Sanket AI" class="brand-logo-img">
         </a>
       </div>
+
+      <nav class="topbar-nav" aria-label="Main Navigation">
+        <a href="/check-vibe" class="topbar-link">
+          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Check Vibe</span>
+        </a>
+        <a href="/company-portal" class="topbar-link">
+          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/></svg>
+          <span>Company Portal</span>
+        </a>
+        <a href="/account" class="topbar-link">
+          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Company Account</span>
+        </a>
+      </nav>
 
       <div class="topbar-actions">
         <button type="button" class="btn btn-sm btn-ghost" onclick="toggleRoleModal()" data-tooltip="Switch Enterprise Persona">
@@ -31,6 +45,11 @@
         <button type="button" class="btn btn-sm btn-ghost" onclick="toggleSettingsModal()" data-tooltip="Governance & API Settings">
           <svg class="svg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0 2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
+
+        <a href="/check-vibe" class="btn btn-primary-top">
+          <span>Open Studio</span>
+          <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
 
         <button type="button" class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle navigation drawer">
           <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -62,26 +81,352 @@
     </div>
   </div>
 
-  <!-- LANDING PAGE VIEW -->
+    <!-- LANDING PAGE VIEW -->
   <section id="view-landing" class="landing-view">
     <div class="landing-hero-container">
-      <div class="hero-brand-logo-wrap">
-        <img src="/static/sanket-logo.png" alt="Sanket AI" class="hero-brand-logo">
+      <div class="hero-badge-pill">
+        <span class="hero-badge-dot"></span>
+        <span>ENTERPRISE BRAND GOVERNANCE &bull; ROUND 3 FINAL RELEASE</span>
       </div>
 
       <h1 class="hero-headline">
         Autonomous brand governance<br><span class="highlight-text">&amp; creative verification</span>
       </h1>
 
+      <p class="hero-subtitle">
+        Perceptual CIELAB &Delta;E mathematical color enforcement, instant client pre-flight diagnostics, and multimodal AI vibe verification before creative assets enter production.
+      </p>
+
       <div class="hero-cta-group">
         <a href="/check-vibe" class="btn btn-hero-primary">
-          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <span>Launch Check Vibe</span>
         </a>
         <a href="/company-portal" class="btn btn-hero-secondary">
-          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/></svg>
+          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/></svg>
           <span>Register Brand Standard</span>
         </a>
+      </div>
+
+      <!-- Evaluator & Judge 1-Click Fast-Track -->
+      <div class="hero-evaluator-fasttrack">
+        <div class="evaluator-fasttrack-tag">
+          <span class="status-pulse-dot" style="background:#10B981;"></span>
+          <strong>EVALUATOR 1-CLICK FAST-TRACK</strong>
+          <span style="opacity: 0.65; font-size: 0.72rem; margin-left: 0.35rem;">(Zero setup &mdash; loads brand guidelines &amp; creatives):</span>
+        </div>
+        <div class="evaluator-fasttrack-buttons">
+          <a href="/check-vibe?preset=nike_compliant" class="btn-fasttrack-preset">
+            <span class="fasttrack-icon">🚀</span>
+            <div class="fasttrack-text">
+              <strong>Nike Certified</strong>
+              <small>Compliant Copy &bull; Expected Pass</small>
+            </div>
+          </a>
+          <a href="/check-vibe?preset=off_brand_remediate" class="btn-fasttrack-preset fasttrack-warning">
+            <span class="fasttrack-icon">⚠️</span>
+            <div class="fasttrack-text">
+              <strong>Off-Brand Creative</strong>
+              <small>Auto-Fix &amp; Co-Pilot Demo</small>
+            </div>
+          </a>
+          <a href="/check-vibe?preset=grb_heritage" class="btn-fasttrack-preset">
+            <span class="fasttrack-icon">🌿</span>
+            <div class="fasttrack-text">
+              <strong>GRB Heritage</strong>
+              <small>Traditional Food Vibe</small>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- REALISTIC INTERACTIVE PRODUCT SHOWCASE -->
+    <div class="hero-interactive-demo" id="hero-interactive-demo">
+      <div class="terminal-titlebar">
+        <div class="terminal-dots">
+          <span class="terminal-dot dot-red"></span>
+          <span class="terminal-dot dot-amber"></span>
+          <span class="terminal-dot dot-green"></span>
+        </div>
+        <div class="interactive-demo-tabs">
+          <button type="button" class="demo-tab active" id="tab-btn-preflight" onclick="switchHeroTab('preflight')">
+            <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+            <span>Instant Pre-Flight HUD</span>
+          </button>
+          <button type="button" class="demo-tab" id="tab-btn-copilot" onclick="switchHeroTab('copilot')">
+            <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Brand Co-Pilot</span>
+          </button>
+          <button type="button" class="demo-tab" id="tab-btn-remediation" onclick="switchHeroTab('remediation')">
+            <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <span>1-Click Auto-Fix</span>
+          </button>
+        </div>
+        <div class="terminal-label">
+          <span class="status-pulse-dot" style="background:#10B981; width:6px; height:6px;"></span>
+          <span>sanket.live // inspection-pipeline-v3</span>
+        </div>
+      </div>
+
+      <!-- TAB 1: PRE-FLIGHT SCANNER & TELEMETRY -->
+      <div id="hero-pane-preflight" class="hero-demo-pane active">
+        <div class="hero-demo-layout">
+          <!-- Left: Audited Creative Poster Preview with Real HUD Overlay -->
+          <div class="demo-creative-col">
+            <div class="demo-poster-frame">
+              <img src="/static/samples/nike_compliant_poster.png" alt="Nike Compliant Creative" class="demo-poster-img">
+              <div class="demo-scanner-overlay">
+                <div class="demo-overlay-tag tag-temp">
+                  <span class="dot-temp"></span>
+                  <span>Kelvin: 3800K (Warm Ambient)</span>
+                </div>
+                <div class="demo-overlay-tag tag-white">
+                  <span>Whitespace: 85.0% Density</span>
+                </div>
+                <div class="demo-overlay-tag tag-vibe">
+                  <span>Vibe: Stealth Minimalist</span>
+                </div>
+                <div class="demo-overlay-tag tag-cielab">
+                  <span>&Delta;E: 2.1 &bull; Certified Adherent</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Real verified audit card & telemetry -->
+          <div class="demo-telemetry-col">
+            <div class="demo-card-header">
+              <div>
+                <span class="stage-step-pill">Stage 3 &bull; Multimodal Audit Seal</span>
+                <h4 style="margin: 0.3rem 0; font-size: 1.15rem; color: #FFFFFF;">Nike Global Brand Compliance</h4>
+              </div>
+              <span class="t-tag-approved">&#10003; CERTIFIED COMPLIANT</span>
+            </div>
+
+            <div class="demo-metric-list">
+              <div class="demo-metric-item">
+                <div class="demo-metric-header">
+                  <span>CIELAB &Delta;E Perceptual Accuracy</span>
+                  <strong style="color: #10B981;">2.1 &Delta;E (Target &le; 15.0)</strong>
+                </div>
+                <div class="t-metric-bar">
+                  <div class="t-bar-fill" style="width: 96%;"></div>
+                </div>
+              </div>
+
+              <div class="demo-metric-item">
+                <div class="demo-metric-header">
+                  <span>Tone of Voice (Multimodal Reasoning)</span>
+                  <strong style="color: #60A5FA;">Bold, Empowering, Direct</strong>
+                </div>
+                <div class="t-metric-bar">
+                  <div class="t-bar-fill" style="width: 98%; background: linear-gradient(90deg, #3B82F6, #10B981);"></div>
+                </div>
+              </div>
+
+              <div class="demo-metric-item">
+                <div class="demo-metric-header">
+                  <span>Deterministic Lexicon Filter</span>
+                  <strong style="color: #10B981;">0 Banned Words Detected</strong>
+                </div>
+                <div class="t-metric-bar">
+                  <div class="t-bar-fill" style="width: 100%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="demo-audit-seal-box">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span style="font-size: 0.82rem; color: var(--text-main); font-weight: 600;">Cryptographic Verification Hash:</span>
+              </div>
+              <code style="font-size: 0.75rem; color: var(--accent-cyan); word-break: break-all;">sha256_e8a94bc72101df4982a17f6c3bf018a4</code>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+              <a href="/check-vibe?preset=nike_compliant" class="btn btn-sm btn-primary" style="flex: 1; justify-content: center;">
+                <span>Test Nike Preset in Studio</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: BRAND CO-PILOT (AI ASSISTANT & REWRITES) -->
+      <div id="hero-pane-copilot" class="hero-demo-pane hidden">
+        <div class="hero-copilot-mockup">
+          <div class="copilot-mockup-header">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div class="copilot-persona-avatar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12A10 10 0 0 1 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              </div>
+              <div>
+                <strong style="color: #FFFFFF; font-size: 0.92rem;">Nike Brand Co-Pilot (AI Persona)</strong>
+                <span style="display: block; font-size: 0.75rem; color: #10B981;">Online &bull; Grounded in Official Brand Guidelines</span>
+              </div>
+            </div>
+            <span class="stage-step-pill">Improvement 1</span>
+          </div>
+
+          <div class="copilot-chat-history-demo">
+            <div class="demo-chat-msg user-msg">
+              <span class="demo-chat-sender">Creative Submitter</span>
+              <p>Our headline got flagged for passive voice: <em>"Try to run fast and get healthy."</em> How can I make this fit Nike's tone?</p>
+            </div>
+
+            <div class="demo-chat-msg copilot-msg">
+              <span class="demo-chat-sender">Nike Co-Pilot</span>
+              <p>Nike never says <em>"try"</em>. We speak with relentless grit, action verbs, and unyielding empowerment. Here are 3 approved rewrites you can apply in 1 click:</p>
+              <div class="demo-copilot-rewrites">
+                <div class="demo-rewrite-card">
+                  <span class="rewrite-number">01</span>
+                  <div class="rewrite-content">
+                    <p class="rewrite-headline">"Outrun your doubts. Leave yesterday on the asphalt."</p>
+                    <span class="rewrite-rationale">Active imperative verb, high urgency, champions individual determination.</span>
+                  </div>
+                  <a href="/check-vibe?preset=off_brand_remediate" class="btn btn-xs btn-primary">Apply</a>
+                </div>
+                <div class="demo-rewrite-card">
+                  <span class="rewrite-number">02</span>
+                  <div class="rewrite-content">
+                    <p class="rewrite-headline">"Find your cadence. Greatness isn't given &mdash; it's taken."</p>
+                    <span class="rewrite-rationale">Focuses on athletic discipline and relentless pursuit of excellence.</span>
+                  </div>
+                  <a href="/check-vibe?preset=off_brand_remediate" class="btn btn-xs btn-primary">Apply</a>
+                </div>
+                <div class="demo-rewrite-card">
+                  <span class="rewrite-number">03</span>
+                  <div class="rewrite-content">
+                    <p class="rewrite-headline">"Don't wait for permission. Run through the finish line."</p>
+                    <span class="rewrite-rationale">Zero passive qualifiers; adheres to authentic Nike hero narrative.</span>
+                  </div>
+                  <a href="/check-vibe?preset=off_brand_remediate" class="btn btn-xs btn-primary">Apply</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: 1-CLICK GENERATIVE AUTO-REMEDIATION -->
+      <div id="hero-pane-remediation" class="hero-demo-pane hidden">
+        <div class="hero-remediation-mockup">
+          <div class="remediation-mockup-header">
+            <div>
+              <span class="stage-step-pill">Improvement 2 &bull; Perceptual Color Shifting</span>
+              <h4 style="margin: 0.3rem 0; font-size: 1.15rem; color: #FFFFFF;">Before vs. After &Delta;E Color Remapping</h4>
+              <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">Off-brand color clusters detected at &Delta;E = 28.4 programmatically shifted into approved CIELAB centroids.</p>
+            </div>
+            <a href="/check-vibe?preset=off_brand_remediate" class="btn btn-sm btn-primary">
+              <span>Run Auto-Fix In Studio</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          </div>
+
+          <div class="demo-remediation-split">
+            <div class="demo-split-side side-before">
+              <span class="demo-split-badge badge-rejected">&times; Original Off-Brand (&Delta;E 28.4 Fail)</span>
+              <div class="demo-split-visual">
+                <img src="/static/samples/off_brand_poster.png" alt="Off-Brand Poster Before Fix" class="demo-split-img">
+                <div class="demo-color-shift-tag tag-fail">
+                  <span class="swatch-indicator" style="background: #E11D48;"></span>
+                  <span>Non-Compliant Accent: #E11D48</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="demo-split-arrow">
+              <div class="split-arrow-circle">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+              </div>
+              <span style="font-size: 0.72rem; font-family: var(--font-mono); color: #10B981; font-weight: 700;">CIELAB Remap</span>
+            </div>
+
+            <div class="demo-split-side side-after">
+              <span class="demo-split-badge badge-certified">&#10003; Remediated Output (&Delta;E 3.2 Pass)</span>
+              <div class="demo-split-visual">
+                <img src="/static/samples/nike_compliant_poster.png" alt="Certified Remediated Poster After Fix" class="demo-split-img">
+                <div class="demo-color-shift-tag tag-pass">
+                  <span class="swatch-indicator" style="background: #111111;"></span>
+                  <span>Remapped Centroid: #111111 (Nike Black)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- METRICS STRIP (SHOW, DON'T EXPLAIN) -->
+    <div class="hero-metrics-strip">
+      <div class="metric-stat-item">
+        <span class="metric-stat-val">&lt; 35ms</span>
+        <span class="metric-stat-label">Client Pre-Flight Latency</span>
+        <span class="metric-stat-sub">HTML5 Canvas In-Browser</span>
+      </div>
+      <div class="metric-stat-item">
+        <span class="metric-stat-val">&Delta;E &lt; 5.0</span>
+        <span class="metric-stat-label">CIELAB 2000 Accuracy</span>
+        <span class="metric-stat-sub">Deterministic Centroid Math</span>
+      </div>
+      <div class="metric-stat-item">
+        <span class="metric-stat-val">100%</span>
+        <span class="metric-stat-label">Prohibited Claims Filter</span>
+        <span class="metric-stat-sub">Pre-AI Regex Boundary Check</span>
+      </div>
+      <div class="metric-stat-item">
+        <span class="metric-stat-val">48 / 48</span>
+        <span class="metric-stat-label">Automated Tests Passing</span>
+        <span class="metric-stat-sub">Continuous Integration Suite</span>
+      </div>
+    </div>
+
+    <!-- THE THREE ROUND 3 INNOVATIONS (BENTO MODULES) -->
+    <div class="hero-floating-grid">
+      <div class="floating-tile tile-blue" onclick="window.location.href='/check-vibe?preset=nike_compliant'">
+        <div class="tile-icon-box">
+          <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+        </div>
+        <div class="tile-content">
+          <span style="font-size: 0.72rem; font-family: var(--font-mono); color: #60A5FA; font-weight: 700; text-transform: uppercase;">Improvement 3</span>
+          <strong>Instant Pre-Flight Scanner</strong>
+          <p>Instant client-side canvas engine diagnoses color temperatures (Kelvin), negative space ratios, and predicted vibe within 35ms before network upload.</p>
+        </div>
+      </div>
+
+      <div class="floating-tile tile-amber" onclick="window.location.href='/check-vibe?preset=off_brand_remediate'">
+        <div class="tile-icon-box">
+          <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="tile-content">
+          <span style="font-size: 0.72rem; font-family: var(--font-mono); color: #FBBF24; font-weight: 700; text-transform: uppercase;">Improvement 1</span>
+          <strong>Interactive Brand Co-Pilot</strong>
+          <p>Real-time conversational brand assistant grounded in official guidelines. Provides 1-click copy rewrites and active tone guidance to resolve audit flags.</p>
+        </div>
+      </div>
+
+      <div class="floating-tile tile-emerald" onclick="window.location.href='/check-vibe?preset=off_brand_remediate'">
+        <div class="tile-icon-box">
+          <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div class="tile-content">
+          <span style="font-size: 0.72rem; font-family: var(--font-mono); color: #34D399; font-weight: 700; text-transform: uppercase;">Improvement 2</span>
+          <strong>Generative Auto-Remediation</strong>
+          <p>1-Click deterministic color centroid shifting converts off-brand pixels into compliant swatches in CIELAB space, exporting ready-to-publish graphics.</p>
+        </div>
+      </div>
+
+      <div class="floating-tile tile-purple" onclick="window.location.href='/company-portal'">
+        <div class="tile-icon-box">
+          <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/></svg>
+        </div>
+        <div class="tile-content">
+          <span style="font-size: 0.72rem; font-family: var(--font-mono); color: #A78BFA; font-weight: 700; text-transform: uppercase;">Core Standard</span>
+          <strong>Brand DNA Engine</strong>
+          <p>Extract and lock guidelines, color centroids, and acceptable communication tones in seconds with interactive eyedropper and reference asset ingestion.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -281,6 +626,20 @@
 
   <!-- Modal and Interaction Helper Scripts -->
   <script>
+    function switchHeroTab(tabKey) {
+      document.querySelectorAll('.interactive-demo-tabs .demo-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.hero-demo-pane').forEach(p => {
+        p.classList.add('hidden');
+        p.classList.remove('active');
+      });
+      const btn = document.getElementById('tab-btn-' + tabKey);
+      const pane = document.getElementById('hero-pane-' + tabKey);
+      if (btn) btn.classList.add('active');
+      if (pane) {
+        pane.classList.remove('hidden');
+        pane.classList.add('active');
+      }
+    }
     function toggleMobileNav() {
       const drawer = document.getElementById('mobile-nav-drawer');
       if (drawer) drawer.classList.toggle('hidden');

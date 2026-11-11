@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     STORAGE_DIR: Path = Field(default_factory=lambda: Path("data/storage"))
     UPLOADS_DIR: Path = Field(default_factory=lambda: Path("data/storage/uploads"))
     GUIDELINES_DIR: Path = Field(default_factory=lambda: Path("data/storage/guidelines"))
+    STATIC_DIR: Path = Field(default_factory=lambda: Path("backend/app/static"))
     DB_DIR: Path = Field(default_factory=lambda: Path("data/db"))
 
     GEMINI_API_KEY: Optional[str] = Field(default=None, description="Google Gemini API Key")

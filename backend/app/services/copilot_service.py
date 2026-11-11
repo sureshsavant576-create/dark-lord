@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class CopilotChatRequest(BaseModel):
-    brand_id: str
+    brand_id: Optional[str] = None
     message: str
     inspection_id: Optional[str] = None
     copy_text: Optional[str] = None
