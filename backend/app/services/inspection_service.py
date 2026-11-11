@@ -29,6 +29,7 @@ from backend.app.preprocessing.fingerprint_engine import (
 )
 from backend.app.preprocessing.pipeline import PreprocessedContent, preprocessing_pipeline
 from backend.app.services.brand_service import brand_service
+from backend.app.services.knowledge_service import knowledge_service
 
 logger = logging.getLogger(__name__)
 
@@ -270,27 +271,76 @@ class InspectionService:
         elif preprocessed.extracted_text_summary:
             text_content = preprocessed.extracted_text_summary
 
+        # Query Organization-isolated Brand Knowledge Base
+        kb_context = knowledge_service.retrieve_for_content_analysis(
+            org_id=org_id,
+            brand_id=brand_id,
+            copy_text=text_content
+        )
+        active_exceptions = kb_context.get("active_policy_exceptions", [])
+        approved_claims = kb_context.get("approved_promotional_claims", [])
+        term_map = kb_context.get("approved_terminology_map", {})
+
         if text_content and brand.disallowed_elements:
             forbidden_matches = check_forbidden_terms(text_content, brand.disallowed_elements)
             for fm in forbidden_matches:
-                det_score -= 20.0
-                violation_text = f"Forbidden brand term '{fm.forbidden_term}' detected ({fm.occurrences}x)."
-                violations.append(violation_text)
-                corrections.append(f"Remove or replace prohibited term '{fm.forbidden_term}' with an approved alternative.")
-                
-                snippet = fm.context_snippets[0] if fm.context_snippets else ""
-                findings.append(InspectionFinding(
-                    id=f"f-{uuid.uuid4().hex[:6]}",
-                    title=f"Disallowed Terminology: '{fm.forbidden_term}'",
-                    category=FindingCategory.TERMINOLOGY,
-                    source=FindingSource.DETERMINISTIC_CHECK,
-                    severity=FindingSeverity.CRITICAL,
-                    detected_value=f"'{fm.forbidden_term}' ({fm.occurrences} occurrences)",
-                    expected_value="Term disallowed by brand guidelines",
-                    explanation=f"Brand guidelines strictly prohibit the use of '{fm.forbidden_term}'.",
-                    suggested_correction=f"Remove '{fm.forbidden_term}' from creative copy.",
-                    evidence_snippet=snippet
-                ))
+                f_term_lower = fm.forbidden_term.lower()
+                # Check for active policy exception in Knowledge Base
+                matching_exc = next(
+                    (e for e in active_exceptions if f_term_lower in e.get("permitted_phrase", "").lower() or e.get("permitted_phrase", "").lower() in text_content.lower()),
+                    None
+                )
+
+                if matching_exc:
+                    findings.append(InspectionFinding(
+                        id=f"f-{uuid.uuid4().hex[:6]}",
+                        title=f"Policy Exception Applied: '{fm.forbidden_term}'",
+                        category=FindingCategory.POLICY_EXCEPTION,
+                        source=FindingSource.DETERMINISTIC_CHECK,
+                        severity=FindingSeverity.INFO,
+                        detected_value=f"'{fm.forbidden_term}' ({fm.occurrences}x)",
+                        expected_value=f"Exempted under {matching_exc.get('exception_id')}",
+                        explanation=f"Phrase permitted under approved exception '{matching_exc.get('exception_id')}' ({matching_exc.get('campaign_scope')}) signed by {matching_exc.get('approved_by')}.",
+                        suggested_correction="Ensure asset is distributed exclusively within approved campaign scope.",
+                        evidence_snippet=fm.context_snippets[0] if fm.context_snippets else ""
+                    ))
+                else:
+                    det_score -= 20.0
+                    violation_text = f"Forbidden brand term '{fm.forbidden_term}' detected ({fm.occurrences}x)."
+                    violations.append(violation_text)
+                    corrections.append(f"Remove or replace prohibited term '{fm.forbidden_term}' with an approved alternative.")
+                    
+                    snippet = fm.context_snippets[0] if fm.context_snippets else ""
+                    findings.append(InspectionFinding(
+                        id=f"f-{uuid.uuid4().hex[:6]}",
+                        title=f"Disallowed Terminology: '{fm.forbidden_term}'",
+                        category=FindingCategory.TERMINOLOGY,
+                        source=FindingSource.DETERMINISTIC_CHECK,
+                        severity=FindingSeverity.CRITICAL,
+                        detected_value=f"'{fm.forbidden_term}' ({fm.occurrences} occurrences)",
+                        expected_value="Term disallowed by brand guidelines",
+                        explanation=f"Brand guidelines strictly prohibit the use of '{fm.forbidden_term}'.",
+                        suggested_correction=f"Remove '{fm.forbidden_term}' from creative copy.",
+                        evidence_snippet=snippet
+                    ))
+
+        # Check Knowledge Base Approved Promotional Claims with Evidence
+        if text_content and approved_claims:
+            for claim in approved_claims:
+                c_text = claim.get("claim_text", "")
+                if c_text and c_text.lower() in text_content.lower():
+                    matching_chars.append(f"Verified promotional claim: '{c_text}' (Evidence: {claim.get('evidence_source')})")
+                    findings.append(InspectionFinding(
+                        id=f"f-{uuid.uuid4().hex[:6]}",
+                        title=f"Verified Claim: '{c_text}'",
+                        category=FindingCategory.PROMOTIONAL_CLAIM,
+                        source=FindingSource.DETERMINISTIC_CHECK,
+                        severity=FindingSeverity.PASS,
+                        detected_value=c_text,
+                        expected_value=f"Substantiated by {claim.get('evidence_source')}",
+                        explanation=f"Claim is substantiated by verified audit evidence in Brand Knowledge Base (Valid until {claim.get('valid_until', 'verified')}).",
+                        suggested_correction="No correction needed. Claim meets substantiation standards."
+                    ))
 
         if preprocessed.image_metadata:
             meta = preprocessed.image_metadata

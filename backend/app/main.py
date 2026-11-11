@@ -8,6 +8,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from backend.app.api.auth import router as auth_router
 from backend.app.api.brands import router as brands_router
 from backend.app.api.inspections import router as inspections_router
+from backend.app.api.knowledge import router as knowledge_router
+from backend.app.api.reviews import router as reviews_router
 from backend.app.api.system import router as system_router
 from backend.app.core.config import settings
 from backend.app.core.rate_limiter import RateLimitMiddleware
@@ -58,10 +60,19 @@ app.include_router(system_router, prefix=settings.API_V1_PREFIX)
 app.include_router(auth_router, prefix=settings.API_V1_PREFIX)
 app.include_router(brands_router, prefix=settings.API_V1_PREFIX)
 app.include_router(inspections_router, prefix=settings.API_V1_PREFIX)
+app.include_router(knowledge_router, prefix=settings.API_V1_PREFIX)
+app.include_router(reviews_router, prefix=settings.API_V1_PREFIX)
 
 STATIC_DIR = Path(__file__).parent / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
 settings.init_directories()
+
+# Initialize default enterprise knowledge base
+try:
+    from backend.app.services.knowledge_service import knowledge_service
+    knowledge_service.seed_enterprise_knowledge_base("default-org", "apex-cloud")
+except Exception:
+    pass
 
 app.mount("/storage/uploads", StaticFiles(directory=str(settings.UPLOADS_DIR)), name="uploads")
 app.mount("/storage/guidelines", StaticFiles(directory=str(settings.GUIDELINES_DIR)), name="guidelines")

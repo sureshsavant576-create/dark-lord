@@ -19,10 +19,12 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = Field(default=None, description="Google Gemini API Key")
     OPENAI_API_KEY: Optional[str] = Field(default=None, description="OpenAI API Key (optional fallback)")
     HUGGINGFACE_API_KEY: Optional[str] = Field(default=None, description="Hugging Face API Key (optional fallback)")
+    GROQ_API_KEY: Optional[str] = Field(default=None, description="Groq Cloud API Key for vision-capable models")
 
     DEFAULT_VISION_MODEL: str = Field(default="gemini-3.1-flash-lite", description="Default multimodal vision model")
     DEFAULT_TEXT_MODEL: str = Field(default="gemini-3.1-flash-lite", description="Default text reasoning model")
     DEFAULT_EMBEDDING_MODEL: str = Field(default="gemini-embedding-001", description="Default embedding model")
+    GROQ_VISION_MODEL: str = Field(default="llama-3.2-11b-vision-preview", description="Groq cloud-hosted vision model")
 
     MAX_COLOR_DELTA_E: float = Field(default=15.0, description="Max acceptable CIELAB Delta E color deviation")
     MIN_OVERALL_PASS_SCORE: float = Field(default=70.0, description="Minimum overall score for automatic pass")
@@ -30,6 +32,8 @@ class Settings(BaseSettings):
     SUPABASE_URL: Optional[str] = Field(default=None, description="Supabase project URL")
     SUPABASE_KEY: Optional[str] = Field(default=None, description="Supabase API key anon or service role")
     SUPABASE_TABLE: str = Field(default="brand_dna_profiles", description="Supabase table for storing approved Brand DNA profiles")
+    SUPABASE_KNOWLEDGE_TABLE: str = Field(default="brand_knowledge_items", description="Supabase table for Brand Knowledge Base with RLS")
+    SUPABASE_RLS_ENABLED: bool = Field(default=True, description="Enforce Row Level Security on Supabase knowledge queries")
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -48,6 +52,10 @@ class Settings(BaseSettings):
     @property
     def has_openai(self) -> bool:
         return bool(self.OPENAI_API_KEY and self.OPENAI_API_KEY.strip())
+
+    @property
+    def has_groq(self) -> bool:
+        return bool(self.GROQ_API_KEY and self.GROQ_API_KEY.strip())
 
     @property
     def has_huggingface(self) -> bool:
