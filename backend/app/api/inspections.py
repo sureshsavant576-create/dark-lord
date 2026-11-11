@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Optional
 import uuid
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from pydantic import BaseModel, Field
 
 from backend.app.core.auth import (
     UserContext,
@@ -243,9 +244,15 @@ def clear_all_reports(
 # ROUND 3 IMPROVEMENTS: BRAND CO-PILOT, AUTO-REMEDIATION, PRE-FLIGHT
 # =========================================================================
 
-from backend.app.services.copilot_service import (
+from backend.app.models.copilot import (
+    CopilotActionRequest,
     CopilotChatRequest,
     CopilotChatResponse,
+    CopilotStagedReview,
+    RemediationSuggestion,
+)
+from backend.app.models.remediation import RemediationDecisionRequest
+from backend.app.services.copilot_service import (
     brand_copilot_service,
 )
 from backend.app.services.remediation_service import creative_remediation_service
@@ -264,6 +271,42 @@ async def chat_with_brand_copilot(
     except Exception as exc:
         logger.exception("Brand Co-Pilot error: %s", exc)
         raise HTTPException(status_code=500, detail="Brand Co-Pilot encountered an internal processing error.")
+
+
+@router.post("/inspect/{brand_id}/copilot-action")
+async def handle_copilot_action(
+    brand_id: str,
+    payload: CopilotActionRequest
+):
+    try:
+        payload.brand_id = brand_id
+        return brand_copilot_service.process_action(payload)
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
+    except Exception as exc:
+        logger.exception("Brand Co-Pilot action error: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to process Co-Pilot action.")
+
+
+class StageReviewPayload(BaseModel):
+    accepted_suggestions: List[RemediationSuggestion] = Field(default_factory=list)
+    base_copy: str = ""
+
+
+@router.post("/inspect/{brand_id}/copilot-stage-review", response_model=CopilotStagedReview)
+async def stage_copilot_review(
+    brand_id: str,
+    payload: StageReviewPayload
+):
+    try:
+        return brand_copilot_service.stage_review(
+            brand_id=brand_id,
+            accepted_suggestions=payload.accepted_suggestions,
+            base_copy=payload.base_copy
+        )
+    except Exception as exc:
+        logger.exception("Co-Pilot stage review error: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to stage corrections for review.")
 
 
 @router.post("/inspect/{brand_id}/auto-remediate")
@@ -302,6 +345,20 @@ async def auto_remediate_creative(
     except Exception as exc:
         logger.exception("Creative Auto-Remediation failed: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to auto-remediate creative due to an internal processing error.")
+
+
+@router.post("/inspect/{brand_id}/remediation-decision")
+async def handle_remediation_decision(
+    brand_id: str,
+    payload: RemediationDecisionRequest
+):
+    try:
+        payload.brand_id = brand_id
+        return creative_remediation_service.record_decision(payload)
+    except Exception as exc:
+        logger.exception("Remediation decision error: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to record remediation decision.")
+
 
 
 

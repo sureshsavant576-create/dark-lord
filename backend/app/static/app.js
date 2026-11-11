@@ -3223,6 +3223,41 @@ async function triggerAutoRemediation() {
     if (fixedDelta) fixedDelta.textContent = `ΔE ${data.new_delta_e} • ${data.color_compliance_score}% Brand-Certified`;
     if (downloadBtn) downloadBtn.href = data.remediated_image_url;
 
+    // Render Visual Problems Identified
+    const problemsBox = document.getElementById('remed-problems-box');
+    const problemsList = document.getElementById('remed-problems-list');
+    if (problemsBox && problemsList && data.visual_problems_identified && data.visual_problems_identified.length > 0) {
+      problemsList.innerHTML = '';
+      data.visual_problems_identified.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'remed-problem-item';
+        item.innerHTML = `<strong>• [${p.problem_type.toUpperCase()}]:</strong> ${p.description} <small style="color: #94A3B8;">(Target: ${p.target_brand_value})</small>`;
+        problemsList.appendChild(item);
+      });
+      problemsBox.classList.remove('hidden');
+    } else if (problemsBox) {
+      problemsBox.classList.add('hidden');
+    }
+
+    // Render Generative Limitation Notice if present
+    const limNotice = document.getElementById('remed-limitation-notice');
+    const limText = document.getElementById('remed-limitation-text');
+    if (limNotice && limText && data.generative_limitation_notice) {
+      limText.textContent = `⚠️ Limitation Notice: ${data.generative_limitation_notice}`;
+      limNotice.classList.remove('hidden');
+    } else if (limNotice) {
+      limNotice.classList.add('hidden');
+    }
+
+    // Render Disclosure Text
+    const disclosureText = document.getElementById('remed-disclosure-text');
+    if (disclosureText && data.ai_generated_disclosure) {
+      disclosureText.textContent = data.ai_generated_disclosure;
+    }
+
+    // Cache current remediation
+    window.currentRemediationResult = data;
+
     if (swatchesGrid && data.remapped_swatches) {
       swatchesGrid.innerHTML = '';
       data.remapped_swatches.forEach(sw => {
@@ -3257,6 +3292,41 @@ async function triggerAutoRemediation() {
 }
 window.triggerAutoRemediation = triggerAutoRemediation;
 
+async function handleRemediationDecision(decision) {
+  const result = window.currentRemediationResult;
+  if (!result || !result.remediation_id) {
+    closeRemediationModal();
+    return;
+  }
+
+  const brandId = result.brand_id || 'default';
+  try {
+    const res = await fetch(`${API_BASE}/inspect/${encodeURIComponent(brandId)}/remediation-decision`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        remediation_id: result.remediation_id,
+        brand_id: brandId,
+        decision: decision,
+        reviewed_by: "Creator / Art Director"
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+
+    if (decision === 'accept') {
+      toast(`✓ Remediated creative approved! Staged for final compliance certification.`);
+    } else {
+      toast(`✕ Visual remediation rejected. Original design preserved untouched.`);
+    }
+    closeRemediationModal();
+  } catch (err) {
+    toast(`Remediation decision error: ${err.message}`);
+    closeRemediationModal();
+  }
+}
+window.handleRemediationDecision = handleRemediationDecision;
+
 function closeRemediationModal() {
   const modal = document.getElementById('modal-auto-remediation');
   if (modal) modal.classList.add('hidden');
@@ -3264,6 +3334,9 @@ function closeRemediationModal() {
 window.closeRemediationModal = closeRemediationModal;
 
 // 4. Interactive Brand Co-Pilot (Remediation Chatbot)
+let activeCopilotCorrections = [];
+let stagedCopilotCorrections = [];
+
 function initBrandCopilot(reportData) {
   currentAuditData = reportData;
   const brandTitle = document.getElementById('copilot-brand-title');
@@ -3287,16 +3360,18 @@ function initBrandCopilot(reportData) {
     if (isPassing) {
       welcome.innerHTML = `<strong>Hello!</strong> I reviewed your creative. It achieved <strong>${reportData.overall_score}% compliance</strong> with ${brandName} brand standards. Everything looks solid! Ask me if you need alternative headlines, social media captions, or guidelines consultation.`;
     } else {
-      welcome.innerHTML = `<strong>Attention:</strong> I detected ${findingsCount} policy or visual flags in your submission. Let's fix them to get your design certified! You can use our 1-click rewrites below, or ask me directly how to adjust your creative.`;
+      welcome.innerHTML = `<strong>Attention:</strong> I detected ${findingsCount} policy or visual flags in your submission. Let's fix them to get your design certified! Review the granular corrections below, accept individual changes, or ask me directly how to adjust your creative.`;
     }
     messagesList.appendChild(welcome);
   }
 
-  // Pre-fetch copy rewrites if there were findings
+  // Pre-fetch rich copilot corrections and rewrites if there were findings
   if (reportData.brand_id && (reportData.findings || []).length > 0) {
     fetchInitialCopilotRewrites(reportData);
-  } else if (rewritesDeck) {
-    rewritesDeck.classList.add('hidden');
+  } else {
+    if (rewritesDeck) rewritesDeck.classList.add('hidden');
+    const corrDeck = document.getElementById('copilot-corrections-deck');
+    if (corrDeck) corrDeck.classList.add('hidden');
   }
 }
 window.initBrandCopilot = initBrandCopilot;
@@ -3311,7 +3386,7 @@ async function fetchInitialCopilotRewrites(reportData) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         brand_id: reportData.brand_id,
-        message: "Suggest 3 compliant headlines and copy rewrites that fix detected discrepancies",
+        message: "Suggest 3 compliant headlines, terminology corrections, and step-by-step guidance",
         copy_text: copyText,
         discrepancies: discrepancies
       })
@@ -3319,28 +3394,275 @@ async function fetchInitialCopilotRewrites(reportData) {
 
     if (!res.ok) return;
     const data = await res.json();
-
-    const deck = document.getElementById('copilot-rewrites-deck');
-    const list = document.getElementById('copilot-rewrites-list');
-
-    if (deck && list && data.suggested_rewrites && data.suggested_rewrites.length > 0) {
-      list.innerHTML = '';
-      data.suggested_rewrites.forEach((rw, idx) => {
-        const card = document.createElement('div');
-        card.className = 'rewrite-card';
-        card.innerHTML = `
-          <span class="rewrite-text">"${rw}"</span>
-          <button type="button" class="btn-apply-rewrite" onclick="applyCopilotRewrite('${rw.replace(/'/g, "\'")}')">
-            📋 Apply to Creative
-          </button>
-        `;
-        list.appendChild(card);
-      });
-      deck.classList.remove('hidden');
-    }
+    renderCopilotResponseElements(data);
   } catch (e) {
     console.debug("Copilot initial rewrites prefetch:", e);
   }
+}
+
+function renderCopilotResponseElements(data) {
+  // 1. Structured Granular Corrections
+  if (data.structured_corrections && data.structured_corrections.length > 0) {
+    activeCopilotCorrections = data.structured_corrections;
+    const corrDeck = document.getElementById('copilot-corrections-deck');
+    const corrList = document.getElementById('copilot-corrections-list');
+    if (corrDeck && corrList) {
+      corrList.innerHTML = '';
+      data.structured_corrections.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'correction-card';
+        card.id = `card-${c.id}`;
+
+        const typeClass = `tag-${c.type}`;
+        const typeLabel = c.type.replace('_', ' ');
+
+        card.innerHTML = `
+          <div class="correction-header">
+            <span class="correction-type-tag ${typeClass}">${typeLabel}</span>
+            <small style="color: #94A3B8;">${c.guideline_reference || 'Brand Standard'}</small>
+          </div>
+          <div class="diff-grid">
+            <div class="diff-box diff-box-orig">
+              <strong>Original:</strong> "${escapeHtml(c.original_content)}"
+            </div>
+            <div class="diff-box diff-box-corr">
+              <strong>Suggested:</strong> "${escapeHtml(c.suggested_correction)}"
+            </div>
+          </div>
+          <div class="diff-reason">
+            <strong>Reason for correction:</strong> ${escapeHtml(c.reason_for_correction)}
+          </div>
+          <div class="correction-actions" id="actions-${c.id}">
+            <button type="button" class="btn-card-action btn-card-accept" onclick="acceptCopilotCorrection('${c.id}')">
+              ✓ Accept &amp; Stage
+            </button>
+            <button type="button" class="btn-card-action btn-card-reject" onclick="rejectCopilotCorrection('${c.id}')">
+              ✕ Reject
+            </button>
+            <button type="button" class="btn-card-action btn-card-alt" onclick="requestAltCopilotCorrection('${c.id}')">
+              🔄 Alternative
+            </button>
+          </div>
+        `;
+        corrList.appendChild(card);
+      });
+      corrDeck.classList.remove('hidden');
+    }
+  }
+
+  // 2. Step-by-Step Guidance
+  if (data.step_by_step_guidance && data.step_by_step_guidance.length > 0) {
+    const guideDeck = document.getElementById('copilot-guidance-deck');
+    const guideList = document.getElementById('copilot-guidance-list');
+    if (guideDeck && guideList) {
+      guideList.innerHTML = '';
+      data.step_by_step_guidance.forEach(step => {
+        const item = document.createElement('div');
+        item.className = 'guidance-step-card';
+        item.innerHTML = `
+          <div class="step-number-circle">${step.step_number}</div>
+          <div class="step-content">
+            <strong>${escapeHtml(step.action_title)}</strong>
+            <p>${escapeHtml(step.instruction)}</p>
+          </div>
+        `;
+        guideList.appendChild(item);
+      });
+      guideDeck.classList.remove('hidden');
+    }
+  }
+
+  // 3. Fallback Rewrites Deck
+  const deck = document.getElementById('copilot-rewrites-deck');
+  const list = document.getElementById('copilot-rewrites-list');
+  if (deck && list && data.suggested_rewrites && data.suggested_rewrites.length > 0) {
+    list.innerHTML = '';
+    data.suggested_rewrites.forEach((rw) => {
+      const card = document.createElement('div');
+      card.className = 'rewrite-card';
+      card.innerHTML = `
+        <span class="rewrite-text">"${rw}"</span>
+        <button type="button" class="btn-apply-rewrite" onclick="applyCopilotRewrite('${rw.replace(/'/g, "\\'")}')">
+          📋 Apply to Creative
+        </button>
+      `;
+      list.appendChild(card);
+    });
+    deck.classList.remove('hidden');
+  }
+}
+
+async function acceptCopilotCorrection(suggId) {
+  const item = activeCopilotCorrections.find(c => c.id === suggId);
+  if (!item) return;
+
+  const brandSelect = document.getElementById('inspect-brand-select');
+  const brandId = (brandSelect && brandSelect.value) || (currentAuditData && currentAuditData.brand_id) || 'default';
+
+  try {
+    const res = await fetch(`${API_BASE}/inspect/${encodeURIComponent(brandId)}/copilot-action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        brand_id: brandId,
+        suggestion_id: suggId,
+        action: 'accept',
+        suggestion_type: item.type,
+        original_content: item.original_content,
+        suggested_correction: item.suggested_correction
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+
+    // Update UI
+    item.status = 'accepted';
+    if (!stagedCopilotCorrections.some(c => c.id === suggId)) {
+      stagedCopilotCorrections.push(item);
+    }
+
+    const actionsContainer = document.getElementById(`actions-${suggId}`);
+    if (actionsContainer) {
+      actionsContainer.innerHTML = `<span class="badge badge-success">✓ Staged for Review</span>`;
+    }
+
+    renderStagedReviewDrawer();
+    toast("✓ Correction accepted and staged for internal review.");
+  } catch (err) {
+    toast(`Action error: ${err.message}`);
+  }
+}
+window.acceptCopilotCorrection = acceptCopilotCorrection;
+
+async function rejectCopilotCorrection(suggId) {
+  const item = activeCopilotCorrections.find(c => c.id === suggId);
+  const brandSelect = document.getElementById('inspect-brand-select');
+  const brandId = (brandSelect && brandSelect.value) || (currentAuditData && currentAuditData.brand_id) || 'default';
+
+  try {
+    await fetch(`${API_BASE}/inspect/${encodeURIComponent(brandId)}/copilot-action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        brand_id: brandId,
+        suggestion_id: suggId,
+        action: 'reject'
+      })
+    });
+
+    stagedCopilotCorrections = stagedCopilotCorrections.filter(c => c.id !== suggId);
+    const card = document.getElementById(`card-${suggId}`);
+    if (card) {
+      card.style.opacity = '0.5';
+      const actions = document.getElementById(`actions-${suggId}`);
+      if (actions) actions.innerHTML = `<span class="badge" style="background: rgba(239,68,68,0.2); color: #FCA5A5;">✕ Rejected</span>`;
+    }
+    renderStagedReviewDrawer();
+    toast("Correction rejected. Original creator content preserved.");
+  } catch (err) {
+    toast(`Action error: ${err.message}`);
+  }
+}
+window.rejectCopilotCorrection = rejectCopilotCorrection;
+
+async function requestAltCopilotCorrection(suggId) {
+  const item = activeCopilotCorrections.find(c => c.id === suggId);
+  const prompt = item
+    ? `Generate a differentiated alternative for: "${item.original_content}" in brand voice`
+    : `Suggest another alternative option`;
+  await sendCopilotMessage(prompt);
+}
+window.requestAltCopilotCorrection = requestAltCopilotCorrection;
+
+function renderStagedReviewDrawer() {
+  const drawer = document.getElementById('copilot-staged-review-drawer');
+  const list = document.getElementById('copilot-staged-items-list');
+  const countLabel = document.getElementById('staged-count-label');
+  if (!drawer || !list) return;
+
+  if (stagedCopilotCorrections.length === 0) {
+    drawer.classList.add('hidden');
+    return;
+  }
+
+  countLabel.textContent = `${stagedCopilotCorrections.length} Accepted Change${stagedCopilotCorrections.length > 1 ? 's' : ''} Staged`;
+  list.innerHTML = '';
+
+  stagedCopilotCorrections.forEach(c => {
+    const pill = document.createElement('div');
+    pill.className = 'staged-item-pill';
+    pill.innerHTML = `
+      <div>
+        <span class="staged-item-type">[${c.type.replace('_', ' ')}]</span>
+        <span>"${escapeHtml(c.suggested_correction)}"</span>
+      </div>
+      <button type="button" class="btn-clear-staged" onclick="rejectCopilotCorrection('${c.id}')" title="Remove">&times;</button>
+    `;
+    list.appendChild(pill);
+  });
+
+  drawer.classList.remove('hidden');
+}
+
+function clearStagedCorrections() {
+  stagedCopilotCorrections = [];
+  renderStagedReviewDrawer();
+  toast("Staged corrections cleared.");
+}
+window.clearStagedCorrections = clearStagedCorrections;
+
+function reAuditWithStagedCopy() {
+  if (stagedCopilotCorrections.length === 0) {
+    toast("No accepted corrections staged yet.");
+    return;
+  }
+
+  const copyInput = document.getElementById('inspect-copy-text');
+  if (!copyInput) return;
+
+  let currentText = copyInput.value;
+  stagedCopilotCorrections.forEach(c => {
+    if (c.type === 'terminology_correction') {
+      const reg = new RegExp(c.original_content, 'gi');
+      currentText = currentText.replace(reg, c.suggested_correction);
+    } else {
+      currentText = c.suggested_correction;
+    }
+  });
+
+  copyInput.value = currentText;
+  copyInput.dispatchEvent(new Event('input'));
+  toast("✓ Loaded staged copy. Re-auditing creative...");
+
+  // Trigger form submit
+  const form = document.getElementById('inspect-form');
+  if (form) {
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+  }
+}
+window.reAuditWithStagedCopy = reAuditWithStagedCopy;
+
+function copyStagedDraftToClipboard() {
+  const copyInput = document.getElementById('inspect-copy-text');
+  let textToCopy = (copyInput && copyInput.value) || '';
+
+  stagedCopilotCorrections.forEach(c => {
+    textToCopy = c.suggested_correction;
+  });
+
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    toast("📋 Staged copy draft copied to clipboard!");
+  }).catch(() => {});
+}
+window.copyStagedDraftToClipboard = copyStagedDraftToClipboard;
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 async function handleCopilotSubmit(e) {
@@ -3397,27 +3719,7 @@ async function sendCopilotMessage(userText) {
     const data = await res.json();
 
     typing.innerHTML = `<strong>${data.brand_persona || 'Brand Guardian'}:</strong><br>${data.reply.replace(/\n/g, '<br>')}`;
-
-    // Update rewrites deck if rewrites returned
-    if (data.suggested_rewrites && data.suggested_rewrites.length > 0) {
-      const deck = document.getElementById('copilot-rewrites-deck');
-      const list = document.getElementById('copilot-rewrites-list');
-      if (deck && list) {
-        list.innerHTML = '';
-        data.suggested_rewrites.forEach(rw => {
-          const card = document.createElement('div');
-          card.className = 'rewrite-card';
-          card.innerHTML = `
-            <span class="rewrite-text">"${rw}"</span>
-            <button type="button" class="btn-apply-rewrite" onclick="applyCopilotRewrite('${rw.replace(/'/g, "\'")}')">
-              📋 Apply to Creative
-            </button>
-          `;
-          list.appendChild(card);
-        });
-        deck.classList.remove('hidden');
-      }
-    }
+    renderCopilotResponseElements(data);
   } catch (err) {
     typing.innerHTML = `<em>Notice:</em> I'm currently referencing local ${brandId.toUpperCase()} brand guidelines. Please check approved colors and avoid prohibited promotional claims.`;
   }

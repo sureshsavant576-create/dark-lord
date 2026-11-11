@@ -60,6 +60,23 @@ from backend.app.models.accessibility import (
     AccessibilityReport,
     AccessibilitySeverity,
 )
+from backend.app.models.copilot import (
+    CopilotActionRequest,
+    CopilotChatRequest,
+    CopilotChatResponse,
+    CopilotStagedReview,
+    RemediationSuggestion,
+    StepByStepGuidance,
+    SuggestionStatus,
+    SuggestionType,
+)
+from backend.app.models.remediation import (
+    AppliedCorrection,
+    RemediationDecisionRequest,
+    VisualProblem,
+    VisualProblemType,
+    VisualRemediationResult,
+)
 
 __all__ = [
     "BrandProfile",

@@ -6,7 +6,7 @@
   <title>Check Vibe — Multimodal Creative Inspection & Verification | Sanket AI</title>
   <link rel="icon" type="image/svg+xml" href="/static/brand/favicon.svg">
   <link rel="alternate icon" type="image/png" href="/static/emblem.png">
-  <link rel="stylesheet" href="/static/style.css?v=26.0">
+  <link rel="stylesheet" href="/static/style.css?v=27.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -612,10 +612,51 @@
                       <!-- Chat log -->
                       <div id="copilot-messages-list" class="copilot-messages-list"></div>
 
+                      <!-- Staged Corrections Review Drawer (Requirement: Accepted changes must be reviewed before submission; never auto-published) -->
+                      <div id="copilot-staged-review-drawer" class="copilot-staged-drawer hidden">
+                        <div class="staged-drawer-header">
+                          <div class="staged-title">
+                            <span class="staged-badge">STAGED FOR REVIEW</span>
+                            <strong id="staged-count-label">0 Accepted Changes Staged</strong>
+                          </div>
+                          <button type="button" class="btn-clear-staged" onclick="clearStagedCorrections()">Clear All</button>
+                        </div>
+                        <div class="staged-governance-notice">
+                          <span>🔒</span>
+                          <small>Accepted changes are staged for internal creator review before submission. Content will <strong>NOT</strong> be published automatically.</small>
+                        </div>
+                        <div id="copilot-staged-items-list" class="copilot-staged-items-list"></div>
+                        <div class="staged-drawer-actions">
+                          <button type="button" class="btn btn-primary btn-sm" onclick="reAuditWithStagedCopy()">
+                            ⚡ Re-Audit Creative with Staged Changes
+                          </button>
+                          <button type="button" class="btn btn-outline btn-sm" onclick="copyStagedDraftToClipboard()">
+                            📋 Copy Finalized Copy
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Structured Granular Corrections Deck (Original vs Suggested vs Reason + Accept/Reject) -->
+                      <div id="copilot-corrections-deck" class="copilot-corrections-deck hidden">
+                        <div class="deck-header">
+                          <span class="deck-title">🎯 Granular Brand Remediation Suggestions:</span>
+                          <small class="deck-sub">Review each correction individually. Accept or reject to stage changes.</small>
+                        </div>
+                        <div id="copilot-corrections-list" class="copilot-corrections-list"></div>
+                      </div>
+
+                      <!-- Step-by-Step Correction Guidance Deck -->
+                      <div id="copilot-guidance-deck" class="copilot-guidance-deck hidden">
+                        <div class="deck-header">
+                          <span class="deck-title">📋 Step-by-Step Certification Roadmap:</span>
+                        </div>
+                        <div id="copilot-guidance-list" class="copilot-guidance-list"></div>
+                      </div>
+
                       <!-- Suggested Rewrites Deck -->
                       <div id="copilot-rewrites-deck" class="copilot-rewrites-deck hidden">
                         <div class="deck-header">
-                          <span>✨ 1-Click Certified Copy Rewrites:</span>
+                          <span>✨ Certified Copy Rewrites:</span>
                         </div>
                         <div id="copilot-rewrites-list" class="copilot-rewrites-list"></div>
                       </div>
@@ -630,6 +671,9 @@
                         </button>
                         <button type="button" class="quick-chip" onclick="sendCopilotQuickPrompt('Rewrite this ad copy to match brand personality')">
                           <span>✨</span> Rewrite ad copy
+                        </button>
+                        <button type="button" class="quick-chip" onclick="sendCopilotQuickPrompt('Correct terminology according to brand standards')">
+                          <span>📖</span> Correct terminology
                         </button>
                         <button type="button" class="quick-chip" onclick="sendCopilotQuickPrompt('Explain step-by-step how to get certified')">
                           <span>📋</span> Step-by-step guidance
@@ -900,19 +944,40 @@
     }
   </script>
 
-  <script src="/static/app.js?v=26.0"></script>
+  <script src="/static/app.js?v=27.0"></script>
 
   <!-- Auto-Remediation Split Comparison Modal (Round 3 Improvement 2) -->
   <div id="modal-auto-remediation" class="modal-backdrop hidden" onclick="if(event.target===this)closeRemediationModal()">
     <div class="modal-dialog modal-remediation-dialog">
       <div class="modal-header">
         <div class="modal-title-wrap">
-          <span class="modal-badge-remed">✨ 1-Click Generative Auto-Remediation</span>
-          <h3 id="remed-modal-title">Creative Color Shift &amp; Palette Remapping</h3>
+          <span class="modal-badge-remed">✨ AI-Assisted Visual Correction (Auto-Fix)</span>
+          <h3 id="remed-modal-title">Creative Color Shift &amp; Saliency-Preserved Remapping</h3>
         </div>
         <button type="button" class="btn-close-modal" onclick="closeRemediationModal()" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body">
+        <!-- Visual Problems Identified Banner -->
+        <div id="remed-problems-box" class="remed-problems-box hidden">
+          <div class="box-title">
+            <span>🔍 Visual Problems Identified:</span>
+          </div>
+          <div id="remed-problems-list" class="remed-problems-list"></div>
+        </div>
+
+        <!-- Preserved Elements & Generative Limitation Notice -->
+        <div class="remed-preservation-banner">
+          <div class="preservation-items">
+            <span class="pres-pill">🛡️ Text &amp; Typography Preserved</span>
+            <span class="pres-pill">🛡️ Logo &amp; Brand Marks Preserved</span>
+            <span class="pres-pill">🛡️ Product Contours Protected</span>
+          </div>
+          <div id="remed-limitation-notice" class="remed-limitation-notice hidden">
+            <small id="remed-limitation-text"></small>
+          </div>
+        </div>
+
+        <!-- Side-by-side comparison grid -->
         <div class="remediation-comparison-grid">
           <div class="comparison-column">
             <span class="comp-col-label label-before">Original Submission (Off-Brand)</span>
@@ -935,17 +1000,31 @@
             </div>
           </div>
         </div>
+
         <div class="remediation-palette-shifts">
           <strong>Color Centroids Remapped:</strong>
           <div id="remed-swatches-grid" class="remed-swatches-grid"></div>
         </div>
+
+        <!-- Applied AI Changes & Human Approval Disclosure -->
+        <div class="remed-disclosure-footer">
+          <span class="disclosure-badge">AI-GENERATED VARIATION</span>
+          <p id="remed-disclosure-text" class="disclosure-text">
+            Original image remains untouched. Corrected version is saved separately and requires creator approval before submission.
+          </p>
+        </div>
       </div>
       <div class="modal-footer">
-        <a id="btn-download-remediated" href="#" download="brand_certified_creative.png" class="btn btn-primary btn-large">
+        <button type="button" class="btn btn-success" id="btn-accept-remediation" onclick="handleRemediationDecision('accept')">
+          ✓ Accept Correction (Stage for Review)
+        </button>
+        <button type="button" class="btn btn-outline" id="btn-reject-remediation" onclick="handleRemediationDecision('reject')">
+          ✕ Reject / Revert
+        </button>
+        <a id="btn-download-remediated" href="#" download="brand_certified_creative.png" class="btn btn-primary">
           <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Download Certified Graphic</span>
+          <span>Download</span>
         </a>
-        <button type="button" class="btn btn-outline" onclick="closeRemediationModal()">Done</button>
       </div>
     </div>
   </div>
