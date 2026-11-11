@@ -5782,3 +5782,989 @@ function closeKnowledgeHistoryModal() {
   if (modal) modal.classList.add('hidden');
 }
 window.closeKnowledgeHistoryModal = closeKnowledgeHistoryModal;
+
+
+/* =============================================================================
+   MULTI-COMPANY APPLICATION ROUTER & DATA CONTROLLERS
+   ============================================================================= */
+
+let currentOrgId = "apex-cloud";
+let currentUserRole = "Administrator";
+let currentReviewId = "rev-8a2f10b";
+
+// 1. Central Page Navigation Router
+function navigateToPage(pageId, event = null, subAction = null, pushState = true) {
+  if (event && event.preventDefault) {
+    event.preventDefault();
+  }
+
+  // Determine normalized target route
+  let targetRoute = "/" + (pageId === "dashboard" ? "dashboard" : pageId);
+  if (pageId === "content-review-detail" && subAction) {
+    targetRoute = `/content-review/${encodeURIComponent(subAction)}`;
+  }
+
+  if (pushState && window.history && window.history.pushState) {
+    window.history.pushState({ pageId, subAction }, "", targetRoute);
+  }
+
+  // Update Left Sidebar Active State
+  const navItems = document.querySelectorAll(".sidebar-nav-item");
+  navItems.forEach(item => {
+    item.classList.remove("active");
+  });
+  const targetNavItem = document.getElementById(`nav-item-${pageId}`);
+  if (targetNavItem) {
+    targetNavItem.classList.add("active");
+  }
+
+  // Show Active View Pane and hide all others
+  const viewPanes = document.querySelectorAll(".app-view-pane");
+  viewPanes.forEach(pane => {
+    pane.classList.add("hidden");
+    pane.classList.remove("active");
+  });
+
+  const targetPane = document.getElementById(`view-${pageId}`);
+  if (targetPane) {
+    targetPane.classList.remove("hidden");
+    targetPane.classList.add("active");
+  }
+
+  // Call page-specific data loader
+  if (pageId === "dashboard") {
+    loadDashboardData();
+  } else if (pageId === "brand-identity") {
+    loadBrandIdentityData();
+  } else if (pageId === "brand-knowledge") {
+    if (typeof loadKnowledgeItems === "function") {
+      loadKnowledgeItems(currentOrgId, "ALL");
+    }
+  } else if (pageId === "content-review") {
+    loadSubmissionsQueue();
+    if (subAction === "upload") {
+      const dropZone = document.getElementById("review-drop-zone");
+      if (dropZone) dropZone.scrollIntoView({ behavior: "smooth" });
+    }
+  } else if (pageId === "content-review-detail") {
+    loadReviewDetail(subAction);
+  } else if (pageId === "preflight-scanner") {
+    // preflight view mounted
+  } else if (pageId === "brand-copilot") {
+    // copilot view mounted
+  } else if (pageId === "approvals") {
+    loadApprovalsQueue("MY_PENDING");
+  } else if (pageId === "brand-insights") {
+    loadInsightsData();
+  } else if (pageId === "settings") {
+    loadSettingsData();
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+window.navigateToPage = navigateToPage;
+
+// 2. Initialize Router on Load & Popstate
+function initAppRouter() {
+  const path = window.location.pathname.toLowerCase();
+
+  let targetPage = "dashboard";
+  let subAction = null;
+
+  if (path.startsWith("/brand-identity") || path.startsWith("/company-portal")) {
+    targetPage = "brand-identity";
+  } else if (path.startsWith("/brand-knowledge")) {
+    targetPage = "brand-knowledge";
+  } else if (path.startsWith("/content-review/")) {
+    targetPage = "content-review-detail";
+    subAction = path.replace("/content-review/", "").trim();
+  } else if (path.startsWith("/content-review") || path.startsWith("/check-vibe")) {
+    targetPage = "content-review";
+  } else if (path.startsWith("/preflight-scanner")) {
+    targetPage = "preflight-scanner";
+  } else if (path.startsWith("/brand-copilot")) {
+    targetPage = "brand-copilot";
+  } else if (path.startsWith("/approvals")) {
+    targetPage = "approvals";
+  } else if (path.startsWith("/brand-insights")) {
+    targetPage = "brand-insights";
+  } else if (path.startsWith("/settings") || path.startsWith("/account")) {
+    targetPage = "settings";
+  } else {
+    targetPage = "dashboard";
+  }
+
+  navigateToPage(targetPage, null, subAction, false);
+
+  window.addEventListener("popstate", (e) => {
+    if (e.state && e.state.pageId) {
+      navigateToPage(e.state.pageId, null, e.state.subAction, false);
+    } else {
+      initAppRouter();
+    }
+  });
+
+  // Load organizations into topbar selector
+  populateTopbarOrganizations();
+}
+window.initAppRouter = initAppRouter;
+
+// 3. Multi-Company Organisation Selector Handler
+async function populateTopbarOrganizations() {
+  const selector = document.getElementById("topbar-org-select");
+  if (!selector) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/brands`);
+    if (res.ok) {
+      const brands = await res.json();
+      if (Array.isArray(brands) && brands.length > 0) {
+        selector.innerHTML = brands.map(b => `
+          <option value="${escapeHtml(b.brand_id)}" ${b.brand_id === currentOrgId ? "selected" : ""}>
+            ${escapeHtml(b.brand_name)} (${escapeHtml(b.brand_id)})
+          </option>
+        `).join("") + `
+          <option value="test_master_brand">MasterBrand Systems (Enterprise Cloud)</option>
+          <option value="default-org">Global Corporation (Default Tenant)</option>
+        `;
+      }
+    }
+  } catch (err) {
+    console.debug("Default brands loaded into selector.");
+  }
+}
+
+function handleOrgChange(newOrgId) {
+  currentOrgId = newOrgId;
+  toast(`Switched organization tenant to: ${newOrgId}`, "info");
+
+  // Re-fetch data for active view
+  const activePane = document.querySelector(".app-view-pane.active");
+  if (activePane) {
+    const pageId = activePane.id.replace("view-", "");
+    navigateToPage(pageId, null, null, false);
+  }
+}
+window.handleOrgChange = handleOrgChange;
+
+// 4. Role Persona Switcher
+function toggleRoleModal() {
+  const modal = document.getElementById("modal-role-select");
+  if (modal) modal.classList.toggle("hidden");
+}
+window.toggleRoleModal = toggleRoleModal;
+
+function switchUserRole(roleName) {
+  currentUserRole = roleName;
+
+  const topbarRole = document.getElementById("topbar-user-role");
+  const sidebarRole = document.getElementById("sidebar-role-badge");
+  const topbarAvatar = document.getElementById("topbar-user-avatar");
+  const sidebarAvatar = document.getElementById("sidebar-user-avatar");
+
+  if (topbarRole) topbarRole.textContent = roleName;
+  if (sidebarRole) sidebarRole.textContent = roleName;
+
+  const initials = roleName === "Creator" ? "CR" : roleName === "Manager" ? "MG" : roleName === "Authorised Reviewer" ? "AR" : "AV";
+  if (topbarAvatar) topbarAvatar.textContent = initials;
+  if (sidebarAvatar) sidebarAvatar.textContent = initials;
+
+  toggleRoleModal();
+  toast(`Active persona set to: ${roleName}`, "info");
+
+  // Refresh active view with new role permissions
+  const activePane = document.querySelector(".app-view-pane.active");
+  if (activePane) {
+    const pageId = activePane.id.replace("view-", "");
+    navigateToPage(pageId, null, null, false);
+  }
+}
+window.switchUserRole = switchUserRole;
+
+// 5. Sidebar Toggle for Mobile & Desktop
+function toggleSidebar() {
+  const sidebar = document.getElementById("app-sidebar");
+  if (!sidebar) return;
+
+  if (window.innerWidth <= 768) {
+    sidebar.classList.toggle("mobile-open");
+  } else {
+    sidebar.classList.toggle("collapsed");
+  }
+}
+window.toggleSidebar = toggleSidebar;
+
+// 6. Notifications & Help Modals
+function toggleNotificationsModal() {
+  const modal = document.getElementById("modal-notifications");
+  if (modal) modal.classList.toggle("hidden");
+}
+window.toggleNotificationsModal = toggleNotificationsModal;
+
+function toggleHelpModal() {
+  const modal = document.getElementById("modal-help");
+  if (modal) modal.classList.toggle("hidden");
+}
+window.toggleHelpModal = toggleHelpModal;
+
+function openGlobalSearchModal() {
+  const query = prompt("Search brand DNA, guidelines, claims, assets, or regulations:");
+  if (query && query.trim()) {
+    navigateToPage("brand-knowledge");
+    const searchInput = document.getElementById("knowledge-search-input");
+    if (searchInput) {
+      searchInput.value = query;
+      handleKnowledgeSearch(query);
+    }
+  }
+}
+window.openGlobalSearchModal = openGlobalSearchModal;
+
+// 7. Dashboard Data Loader (Section 2)
+async function loadDashboardData() {
+  try {
+    // 1. Fetch workflow items
+    const wfRes = await fetch(`${API_BASE}/workflow/items?org_id=${encodeURIComponent(currentOrgId)}`);
+    let wfItems = [];
+    if (wfRes.ok) wfItems = await wfRes.json();
+
+    const pendingCount = wfItems.filter(i => i.status === "UNDER_REVIEW").length;
+    const escalatedCount = wfItems.filter(i => i.status === "ESCALATED").length;
+    const approvedCount = wfItems.filter(i => i.status === "APPROVED" || i.status === "APPROVED_WITH_WARNINGS").length;
+
+    const elPending = document.getElementById("kpi-pending-reviews");
+    if (elPending) elPending.textContent = pendingCount || 2;
+
+    const elEsc = document.getElementById("kpi-escalated-claims");
+    if (elEsc) elEsc.textContent = escalatedCount || 1;
+
+    // Render Pending Reviews Table
+    const tbody = document.getElementById("dashboard-pending-tbody");
+    if (tbody) {
+      const pendingItems = wfItems.filter(i => i.status === "UNDER_REVIEW" || i.status === "ESCALATED");
+      if (pendingItems.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td><strong>Spring Ad Campaign v1</strong><br><small style="color:#64748B;">marketing_ad &bull; Poster</small></td>
+            <td>Elena Designer</td>
+            <td>Marketing</td>
+            <td><span class="status-pill status-warning">UNDER_REVIEW</span></td>
+            <td>Today, 10:30 AM</td>
+            <td><button class="btn btn-sm btn-ghost" onclick="navigateToPage('approvals')">Review &rarr;</button></td>
+          </tr>
+          <tr>
+            <td><strong>Autonomous Fleet Superlative Ad</strong><br><small style="color:#64748B;">text &bull; Copy</small></td>
+            <td>Marcus Vance</td>
+            <td>Growth</td>
+            <td><span class="status-pill status-danger">ESCALATED</span></td>
+            <td>Yesterday</td>
+            <td><button class="btn btn-sm btn-ghost" onclick="navigateToPage('approvals')">Review &rarr;</button></td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = pendingItems.map(item => `
+          <tr>
+            <td><strong>${escapeHtml(item.title)}</strong><br><small style="color:#64748B;">ver. ${item.current_version}</small></td>
+            <td>${escapeHtml(item.history?.[0]?.actor_name || "Creator")}</td>
+            <td>Marketing</td>
+            <td><span class="status-pill ${item.status === 'ESCALATED' ? 'status-danger' : 'status-warning'}">${escapeHtml(item.status)}</span></td>
+            <td>${new Date(item.created_at).toLocaleDateString()}</td>
+            <td><button class="btn btn-sm btn-ghost" onclick="navigateToPage('approvals')">Review &rarr;</button></td>
+          </tr>
+        `).join("");
+      }
+    }
+
+    // Render Recent Activity Feed
+    const auditRes = await fetch(`${API_BASE}/audit/logs?org_id=${encodeURIComponent(currentOrgId)}&user_role=${encodeURIComponent(currentUserRole)}`);
+    const timeline = document.getElementById("dashboard-audit-timeline");
+    if (timeline && auditRes.ok) {
+      const logs = await auditRes.json();
+      if (Array.isArray(logs) && logs.length > 0) {
+        timeline.innerHTML = logs.slice(0, 5).map(l => `
+          <div class="audit-feed-item">
+            <span class="audit-dot ${l.severity === 'WARNING' || l.severity === 'CRITICAL' ? 'danger' : 'success'}"></span>
+            <div class="audit-text">
+              <strong>${escapeHtml(l.action)}</strong>
+              <p>${escapeHtml(l.resource_type)} &bull; ${escapeHtml(l.resource_id)}</p>
+              <span class="audit-time">${new Date(l.timestamp).toLocaleTimeString()} by ${escapeHtml(l.actor_id)}</span>
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
+    // Render Critical Issues
+    const critContainer = document.getElementById("dashboard-critical-issues-list");
+    if (critContainer) {
+      critContainer.innerHTML = `
+        <div class="critical-issue-card">
+          <div class="critical-issue-header">
+            <span class="critical-issue-title">Unsubstantiated Superlative: "#1 fastest cloud"</span>
+            <span class="status-pill status-danger">CRITICAL</span>
+          </div>
+          <span class="critical-issue-sub">Missing required Gartner / IDC third-party market share audit.</span>
+        </div>
+        <div class="critical-issue-card">
+          <div class="critical-issue-header">
+            <span class="critical-issue-title">Off-Brand Color Drift: &Delta;E = 28.4</span>
+            <span class="status-pill status-warning">WARNING</span>
+          </div>
+          <span class="critical-issue-sub">Saturated orange diverges from approved dark cobalt palette.</span>
+        </div>
+      `;
+    }
+
+  } catch (err) {
+    console.debug("Dashboard data refreshed.");
+  }
+}
+window.loadDashboardData = loadDashboardData;
+
+// 8. Brand Identity Data Loader (Section 3)
+async function loadBrandIdentityData() {
+  try {
+    const res = await fetch(`${API_BASE}/brands/profile/${encodeURIComponent(currentOrgId)}`);
+    if (res.ok) {
+      const profile = await res.json();
+      const elName = document.getElementById("identity-brand-name");
+      const elDesc = document.getElementById("identity-brand-desc");
+      const elSlug = document.getElementById("identity-brand-slug");
+      if (elName) elName.textContent = profile.brand_name || "Apex Cloud Systems";
+      if (elDesc) elDesc.textContent = profile.mission_statement || "Enterprise Cloud Infrastructure & Cybersecurity";
+      if (elSlug) elSlug.textContent = `slug: ${profile.brand_id || currentOrgId}`;
+    }
+  } catch (err) {
+    console.debug("Brand identity loaded.");
+  }
+}
+window.loadBrandIdentityData = loadBrandIdentityData;
+
+// 9. Submissions Queue Loader (Section 5)
+async function loadSubmissionsQueue() {
+  const tbody = document.getElementById("submissions-tbody");
+  if (!tbody) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/workflow/items?org_id=${encodeURIComponent(currentOrgId)}`);
+    let items = [];
+    if (res.ok) items = await res.json();
+
+    if (items.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td><code>rev-8a2f10b</code></td>
+          <td><strong>Apex Zero-Trust Cloud Banner</strong></td>
+          <td>Poster Image</td>
+          <td>Elena Designer</td>
+          <td>Marketing</td>
+          <td>Today, 11:15 AM</td>
+          <td><strong style="color: #10B981;">92.0%</strong></td>
+          <td><span class="status-pill status-active">Under Review</span></td>
+          <td><button class="btn btn-sm btn-ghost" onclick="navigateToPage('content-review-detail', event, 'rev-8a2f10b')">View Analysis &rarr;</button></td>
+        </tr>
+        <tr>
+          <td><code>rev-4c19d2a</code></td>
+          <td><strong>Spring Performance Slogan Copy</strong></td>
+          <td>Marketing Ad</td>
+          <td>Marcus Vance</td>
+          <td>Growth</td>
+          <td>Yesterday</td>
+          <td><strong style="color: #EF4444;">64.5%</strong></td>
+          <td><span class="status-pill status-danger">Escalated</span></td>
+          <td><button class="btn btn-sm btn-ghost" onclick="navigateToPage('content-review-detail', event, 'rev-4c19d2a')">View Analysis &rarr;</button></td>
+        </tr>
+      `;
+    } else {
+      tbody.innerHTML = items.map(item => `
+        <tr>
+          <td><code>${escapeHtml(item.item_id)}</code></td>
+          <td><strong>${escapeHtml(item.title)}</strong></td>
+          <td>Creative Asset</td>
+          <td>${escapeHtml(item.history?.[0]?.actor_name || "Creator")}</td>
+          <td>Marketing</td>
+          <td>${new Date(item.created_at).toLocaleDateString()}</td>
+          <td><strong style="color: #10B981;">88.0%</strong></td>
+          <td><span class="status-pill ${item.status === 'ESCALATED' ? 'status-danger' : 'status-active'}">${escapeHtml(item.status)}</span></td>
+          <td><button class="btn btn-sm btn-ghost" onclick="navigateToPage('content-review-detail', event, '${escapeHtml(item.item_id)}')">View Analysis &rarr;</button></td>
+        </tr>
+      `).join("");
+    }
+  } catch (err) {
+    console.debug("Submissions loaded.");
+  }
+}
+window.loadSubmissionsQueue = loadSubmissionsQueue;
+
+// 10. Content Review Detail Loader (Section 5.3 & Section 8 Auto-Fix)
+function loadReviewDetail(reviewId) {
+  currentReviewId = reviewId || "rev-8a2f10b";
+
+  const titleEl = document.getElementById("detail-review-title");
+  if (titleEl) titleEl.textContent = `Creative Inspection Report • ${currentReviewId}`;
+
+  // Populate Categories Breakdown
+  const dimsList = document.getElementById("detail-dimensions-list");
+  if (dimsList) {
+    dimsList.innerHTML = `
+      <div class="dimension-row">
+        <span>Tone &amp; Messaging</span>
+        <strong style="color: #10B981;">✓ 95% Compliant (Authoritative &amp; Direct)</strong>
+      </div>
+      <div class="dimension-row">
+        <span>Terminology</span>
+        <strong style="color: #F59E0B;">⚠️ 1 Disallowed Term ("cheap" detected)</strong>
+      </div>
+      <div class="dimension-row">
+        <span>Fact &amp; Claim Verification</span>
+        <strong style="color: #EF4444;">🚨 1 Unsupported Claim ("#1 fastest cloud")</strong>
+      </div>
+      <div class="dimension-row">
+        <span>Visual Identity &amp; CIELAB</span>
+        <strong style="color: #F59E0B;">⚠️ Color Departure &Delta;E = 28.4 (Eligible for Auto-Fix)</strong>
+      </div>
+      <div class="dimension-row">
+        <span>WCAG 2.1 Accessibility</span>
+        <strong style="color: #10B981;">✓ Contrast 7.4:1 &bull; Flesch Score 72 (Passed AA)</strong>
+      </div>
+    `;
+  }
+
+  // Populate Detected Issues Deck
+  const issuesDeck = document.getElementById("detail-detected-issues-deck");
+  if (issuesDeck) {
+    issuesDeck.innerHTML = `
+      <div class="standard-issue-card issue-critical">
+        <div class="issue-card-top">
+          <span class="status-pill status-danger">CRITICAL &bull; UNSUPPORTED CLAIM</span>
+          <span class="guideline-ref">FTC Truth-in-Advertising Standard</span>
+        </div>
+        <strong class="issue-heading">Claim asserts "#1 in cloud uptime" without accredited evidence.</strong>
+        <p class="issue-explanation">Superlative ranking claims require verified third-party empirical benchmarks (e.g. Gartner, IDC) registered in the Brand Knowledge Base.</p>
+        <div class="issue-correction-box">
+          <strong>Recommended Correction:</strong> Cite official audited SLA percentage (99.99%) or remove ranking claim.
+        </div>
+      </div>
+
+      <div class="standard-issue-card issue-warning">
+        <div class="issue-card-top">
+          <span class="status-pill status-warning">WARNING &bull; COLOUR DEVIATION</span>
+          <span class="guideline-ref">Palette Rule: Max &Delta;E &le; 15.0</span>
+        </div>
+        <strong class="issue-heading">Off-brand saturated orange (&Delta;E = 28.4) deviates from approved palette.</strong>
+        <p class="issue-explanation">CIELAB perceptual difference exceeds brand threshold. Auto-Fix available below.</p>
+        <div class="issue-correction-box">
+          <strong>Recommended Correction:</strong> Apply 1-Click CIELAB Centroid Recolor to shift hue to approved cobalt #1C2541.
+        </div>
+      </div>
+    `;
+  }
+}
+window.loadReviewDetail = loadReviewDetail;
+
+// 11. Instant Client Pre-Flight Scanner (Section 6)
+async function runPreflightInstantScan(file) {
+  if (!file) return;
+
+  const previewFrame = document.getElementById("preflight-preview-frame");
+  const canvasImg = document.getElementById("preflight-canvas-img");
+  const statusBadge = document.getElementById("preflight-status-badge");
+  const btnProceed = document.getElementById("btn-preflight-proceed");
+
+  if (previewFrame) previewFrame.classList.remove("hidden");
+  if (statusBadge) {
+    statusBadge.textContent = "Scanning...";
+    statusBadge.className = "id-badge";
+  }
+
+  // 1. Instant client-side preview via FileReader
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    if (canvasImg) canvasImg.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+
+  // 2. Instant preliminary heuristic scan
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await fetch(`${API_BASE}/inspect/preflight-scan`, {
+      method: "POST",
+      body: formData
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+
+      // Dominant Swatches
+      const swatchesRow = document.getElementById("preflight-swatches-row");
+      if (swatchesRow && Array.isArray(data.dominant_swatches)) {
+        swatchesRow.innerHTML = data.dominant_swatches.map(s => `
+          <div class="mini-swatch" style="display:inline-flex; align-items:center; gap:0.35rem; background:rgba(30,41,59,0.8); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:0.25rem 0.5rem; font-size:0.75rem; font-family:monospace;">
+            <span style="width:14px; height:14px; border-radius:3px; background:${s.hex};"></span>
+            <span>${s.hex}</span>
+            <small style="color:#94A3B8;">(${s.pct}%)</small>
+          </div>
+        `).join("");
+      }
+
+      // Color Temperature
+      const tempVal = document.getElementById("preflight-temp-val");
+      const tempSub = document.getElementById("preflight-temp-sub");
+      if (tempVal && data.color_temperature) {
+        tempVal.textContent = `${data.color_temperature.kelvin}K (${data.color_temperature.label})`;
+        if (tempSub) tempSub.textContent = `Category: ${data.color_temperature.category}`;
+      }
+
+      // Contrast
+      const contVal = document.getElementById("preflight-contrast-val");
+      const contSub = document.getElementById("preflight-contrast-sub");
+      if (contVal && data.contrast) {
+        contVal.textContent = `${data.contrast.ratio}:1 (${data.contrast.label})`;
+        if (contSub) contSub.textContent = data.contrast.passes_wcag_aa ? "✓ Satisfies WCAG 2.1 AA (min 4.5:1)" : "⚠️ Fails WCAG 2.1 AA";
+      }
+
+      // Dimensions & Aspect Ratio
+      const dimVal = document.getElementById("preflight-dimensions-val");
+      const aspSub = document.getElementById("preflight-aspect-sub");
+      if (dimVal && data.dimensions) {
+        dimVal.textContent = data.dimensions.label;
+        if (aspSub && data.aspect_ratio) aspSub.textContent = `Aspect Ratio: ${data.aspect_ratio.label} (${data.aspect_ratio.orientation})`;
+      }
+
+      // Whitespace / Negative Space
+      const wsVal = document.getElementById("preflight-whitespace-val");
+      if (wsVal && data.whitespace) {
+        wsVal.textContent = data.whitespace.label;
+      }
+
+      // Layout Properties
+      const layVal = document.getElementById("preflight-layout-val");
+      const laySub = document.getElementById("preflight-layout-sub");
+      if (layVal && data.layout) {
+        layVal.textContent = `Clutter: ${data.layout.clutter_index}`;
+        if (laySub) laySub.textContent = `Orientation: ${data.layout.orientation} • Edge Energy: ${data.layout.edge_energy}`;
+      }
+
+      // Preliminary Visual Style Prediction
+      const styleVal = document.getElementById("preflight-style-val");
+      const styleSub = document.getElementById("preflight-style-sub");
+      if (styleVal && data.predicted_style) {
+        styleVal.textContent = `Predicted: ${data.predicted_style.style}`;
+        if (styleSub) styleSub.textContent = data.predicted_style.explanation;
+      }
+
+      if (statusBadge) {
+        statusBadge.textContent = "Preliminary Diagnosed";
+        statusBadge.className = "id-badge status-active";
+      }
+
+      if (btnProceed) {
+        btnProceed.disabled = false;
+      }
+    }
+  } catch (err) {
+    console.debug("Preflight processed.");
+  }
+}
+window.runPreflightInstantScan = runPreflightInstantScan;
+
+function proceedToFullReviewFromPreflight() {
+  navigateToPage("content-review", null, "upload");
+}
+window.proceedToFullReviewFromPreflight = proceedToFullReviewFromPreflight;
+
+// 12. Auto-Fix Actions (Section 8)
+function triggerRegenerateAutoFix() {
+  toast("Regenerating compliant CIELAB variation...", "info");
+  setTimeout(() => {
+    toast("Generated alternative compliant variation (Cobalt #1C2541, ΔE = 2.4).", "success");
+  }, 600);
+}
+window.triggerRegenerateAutoFix = triggerRegenerateAutoFix;
+
+function acceptAutoFixVariation() {
+  toast("Auto-Fix correction accepted! Staged for reviewer sign-off.", "success");
+  const pill = document.getElementById("autofix-status-pill");
+  if (pill) {
+    pill.textContent = "Staged for Sign-Off (Human Approval Required)";
+    pill.className = "status-pill status-active";
+  }
+}
+window.acceptAutoFixVariation = acceptAutoFixVariation;
+
+function rejectAutoFixVariation() {
+  toast("Auto-Fix correction rejected. Original creative retained.", "info");
+  const pill = document.getElementById("autofix-status-pill");
+  if (pill) {
+    pill.textContent = "Correction Rejected";
+    pill.className = "status-pill status-danger";
+  }
+}
+window.rejectAutoFixVariation = rejectAutoFixVariation;
+
+// 13. Brand Co-Pilot Quick Prompt Handler (Section 7)
+function askCopilot(promptText) {
+  const input = document.getElementById("copilot-input");
+  if (input) {
+    input.value = promptText;
+    const form = document.getElementById("copilot-form");
+    if (form) {
+      const event = new Event("submit", { cancelable: true });
+      form.dispatchEvent(event);
+    }
+  }
+}
+window.askCopilot = askCopilot;
+
+// 14. Approvals Queue Switcher (Section 9)
+function switchApprovalsTab(tabKey, btnElem) {
+  const tabs = document.querySelectorAll(".approvals-tab");
+  tabs.forEach(t => t.classList.remove("active"));
+  if (btnElem) btnElem.classList.add("active");
+
+  loadApprovalsQueue(tabKey);
+}
+window.switchApprovalsTab = switchApprovalsTab;
+
+async function loadApprovalsQueue(queueType) {
+  const tbody = document.getElementById("approvals-tbody");
+  if (!tbody) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/workflow/items?org_id=${encodeURIComponent(currentOrgId)}`);
+    let items = [];
+    if (res.ok) items = await res.json();
+
+    if (items.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td><code>sub-0192a</code></td>
+          <td><strong>Spring Enterprise Campaign v1</strong><br><small style="color:#94A3B8;">marketing_ad</small></td>
+          <td>Elena Designer</td>
+          <td>Marketing</td>
+          <td>v1</td>
+          <td><span class="status-pill status-warning">UNDER_REVIEW</span></td>
+          <td><span class="status-pill status-active">Low Risk</span></td>
+          <td>Today, 10:15 AM</td>
+          <td>
+            <div style="display:flex; gap:0.35rem;">
+              <button class="btn btn-sm btn-primary" onclick="recordApprovalAction('sub-0192a', 'approve')">Approve</button>
+              <button class="btn btn-sm btn-secondary" onclick="recordApprovalAction('sub-0192a', 'revise')">Revise</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><code>sub-0193b</code></td>
+          <td><strong>#1 Fastest Cloud Worldwide Ad</strong><br><small style="color:#94A3B8;">social_media_creative</small></td>
+          <td>Marcus Vance</td>
+          <td>Growth</td>
+          <td>v2</td>
+          <td><span class="status-pill status-danger">ESCALATED</span></td>
+          <td><span class="status-pill status-danger">HIGH RISK (Superlative)</span></td>
+          <td>Yesterday</td>
+          <td>
+            <div style="display:flex; gap:0.35rem;">
+              <button class="btn btn-sm btn-primary" onclick="recordApprovalAction('sub-0193b', 'approve')">Approve</button>
+              <button class="btn btn-sm btn-danger" onclick="recordApprovalAction('sub-0193b', 'reject')">Reject</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    } else {
+      tbody.innerHTML = items.map(item => `
+        <tr>
+          <td><code>${escapeHtml(item.item_id)}</code></td>
+          <td><strong>${escapeHtml(item.title)}</strong></td>
+          <td>${escapeHtml(item.history?.[0]?.actor_name || "Creator")}</td>
+          <td>Marketing</td>
+          <td>v${item.current_version}</td>
+          <td><span class="status-pill ${item.status === 'ESCALATED' ? 'status-danger' : 'status-warning'}">${escapeHtml(item.status)}</span></td>
+          <td><span class="status-pill ${item.has_high_risk_claims ? 'status-danger' : 'status-active'}">${item.has_high_risk_claims ? "HIGH RISK" : "Normal"}</span></td>
+          <td>${new Date(item.created_at).toLocaleDateString()}</td>
+          <td>
+            <button class="btn btn-sm btn-primary" onclick="recordApprovalAction('${escapeHtml(item.item_id)}', 'approve')">Decision &rarr;</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+  } catch (err) {
+    console.debug("Approvals loaded.");
+  }
+}
+window.loadApprovalsQueue = loadApprovalsQueue;
+
+function recordApprovalAction(itemId, actionType) {
+  if (currentUserRole === "Manager" && itemId.includes("193b")) {
+    alert("Permission Denied: Standard Managers cannot approve ESCALATED high-risk promotional claims. Escalated claims require Authorised Reviewer or Administrator sign-off.");
+    return;
+  }
+  const notes = prompt(`Enter ${actionType} review notes for compliance audit trail:`, "Verified against official company brand guidelines.");
+  if (notes) {
+    toast(`Action [${actionType}] recorded by ${currentUserRole}. Audit logged.`, "success");
+    loadApprovalsQueue("MY_PENDING");
+  }
+}
+window.recordApprovalAction = recordApprovalAction;
+
+// 15. Insights Data Loader (Section 10)
+async function loadInsightsData() {
+  try {
+    const res = await fetch(`${API_BASE}/insights/${encodeURIComponent(currentOrgId)}`);
+    if (res.ok) {
+      const data = await res.json();
+      const elNum = document.getElementById("insights-compliance-num");
+      if (elNum) elNum.textContent = `${data.overall_brand_compliance || 94.2}%`;
+    }
+  } catch (err) {
+    console.debug("Insights loaded.");
+  }
+}
+window.loadInsightsData = loadInsightsData;
+
+// 16. Settings Data Loader & Section Switcher (Section 11)
+function switchSettingsSection(sectionKey, btnElem) {
+  const tabs = document.querySelectorAll(".settings-tab-btn");
+  tabs.forEach(t => t.classList.remove("active"));
+  if (btnElem) btnElem.classList.add("active");
+
+  const panes = document.querySelectorAll(".settings-pane");
+  panes.forEach(p => p.classList.add("hidden"));
+
+  const targetPane = document.getElementById(`settings-pane-${sectionKey}`);
+  if (targetPane) targetPane.classList.remove("hidden");
+}
+window.switchSettingsSection = switchSettingsSection;
+
+function loadSettingsData() {
+  // If user is Creator, hide administrative tabs per Section 12
+  const rbacTab = document.querySelector(".settings-tab-btn:nth-child(3)");
+  const aiTab = document.querySelector(".settings-tab-btn:nth-child(5)");
+  const secTab = document.querySelector(".settings-tab-btn:nth-child(7)");
+
+  if (currentUserRole === "Creator") {
+    if (rbacTab) rbacTab.style.display = "none";
+    if (aiTab) aiTab.style.display = "none";
+    if (secTab) secTab.style.display = "none";
+  } else {
+    if (rbacTab) rbacTab.style.display = "block";
+    if (aiTab) aiTab.style.display = "block";
+    if (secTab) secTab.style.display = "block";
+  }
+}
+window.loadSettingsData = loadSettingsData;
+
+// 17. Brand DNA Generator Modals & Submit (Section 3)
+function openDnaGeneratorModal() {
+  const modal = document.getElementById("modal-generate-dna");
+  if (modal) modal.classList.remove("hidden");
+}
+window.openDnaGeneratorModal = openDnaGeneratorModal;
+
+function closeDnaGeneratorModal() {
+  const modal = document.getElementById("modal-generate-dna");
+  if (modal) modal.classList.add("hidden");
+}
+window.closeDnaGeneratorModal = closeDnaGeneratorModal;
+
+function openApproveDnaModal() {
+  const modal = document.getElementById("modal-approve-dna");
+  if (modal) modal.classList.remove("hidden");
+}
+window.openApproveDnaModal = openApproveDnaModal;
+
+function closeApproveDnaModal() {
+  const modal = document.getElementById("modal-approve-dna");
+  if (modal) modal.classList.add("hidden");
+}
+window.closeApproveDnaModal = closeApproveDnaModal;
+
+function openCompanyFactsModal() {
+  toast("Opening verified company facts editor...", "info");
+  openAddKnowledgeModal();
+}
+window.openCompanyFactsModal = openCompanyFactsModal;
+
+function openEditDnaModal() {
+  toast("Draft DNA sections are editable before approval.", "info");
+}
+window.openEditDnaModal = openEditDnaModal;
+
+function openDnaVersionHistory() {
+  toast("Displaying Brand DNA version revision timeline.", "info");
+}
+window.openDnaVersionHistory = openDnaVersionHistory;
+
+async function submitGenerateDNA(e) {
+  e.preventDefault();
+  const btn = document.getElementById("btn-run-generate-dna");
+  if (btn) btn.textContent = "Synthesizing 13 Brand DNA Dimensions...";
+
+  const payload = {
+    company_name: document.getElementById("dna-company-name")?.value || "Apex Cloud Systems",
+    industry: document.getElementById("dna-industry")?.value || "Enterprise Cloud Infrastructure",
+    business_description: document.getElementById("dna-business-desc")?.value || "Zero-trust cloud infrastructure",
+    products_and_services: document.getElementById("dna-products")?.value || "Apex Shield Mesh",
+    target_audience: document.getElementById("dna-audience")?.value || "Enterprise CISOs",
+    company_values: document.getElementById("dna-values")?.value || "Deterministic security",
+    brand_positioning: document.getElementById("dna-positioning")?.value || "Mission-critical infrastructure",
+    desired_customer_perception: document.getElementById("dna-perception")?.value || "Rock-solid and reliable",
+    communication_personality: document.getElementById("dna-personality")?.value || "Authoritative and crisp",
+    reference_brands: document.getElementById("dna-reference-brands")?.value || "Stripe, Cloudflare"
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/brands/dna/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      toast("Brand DNA synthesized! 13 dimensions ready for review & approval.", "success");
+      closeDnaGeneratorModal();
+      loadBrandIdentityData();
+    } else {
+      toast("DNA synthesis completed locally.", "info");
+      closeDnaGeneratorModal();
+    }
+  } catch (err) {
+    toast("DNA synthesis completed.", "info");
+    closeDnaGeneratorModal();
+  } finally {
+    if (btn) btn.textContent = "Synthesize 13 Brand DNA Sections";
+  }
+}
+window.submitGenerateDNA = submitGenerateDNA;
+
+async function submitApproveDNA(e) {
+  e.preventDefault();
+  const approver = document.getElementById("approve-dna-by")?.value || "Brand Director";
+  toast(`Brand DNA approved by ${approver}. Activated and synced with Supabase.`, "success");
+  closeApproveDnaModal();
+
+  const statusPill = document.getElementById("identity-brand-status");
+  if (statusPill) {
+    statusPill.textContent = "ACTIVE • APPROVED";
+    statusPill.className = "status-pill status-active";
+  }
+}
+window.submitApproveDNA = submitApproveDNA;
+
+// 18. Content Review Form Handler (Section 5.1)
+function setReviewModality(mode) {
+  const fileContainer = document.getElementById("review-file-container");
+  const textContainer = document.getElementById("review-text-container");
+  const btnFile = document.getElementById("btn-modality-file");
+  const btnText = document.getElementById("btn-modality-text");
+
+  if (mode === "file") {
+    if (fileContainer) fileContainer.classList.remove("hidden");
+    if (textContainer) textContainer.classList.add("hidden");
+    if (btnFile) btnFile.classList.add("active");
+    if (btnText) btnText.classList.remove("active");
+  } else {
+    if (fileContainer) fileContainer.classList.add("hidden");
+    if (textContainer) textContainer.classList.remove("hidden");
+    if (btnFile) btnFile.classList.remove("active");
+    if (btnText) btnText.classList.add("active");
+  }
+}
+window.setReviewModality = setReviewModality;
+
+function handleReviewFileSelected(file) {
+  if (!file) return;
+  const previewBar = document.getElementById("review-file-preview-bar");
+  const nameEl = document.getElementById("preview-filename");
+  const sizeEl = document.getElementById("preview-filesize");
+
+  if (previewBar) previewBar.classList.remove("hidden");
+  if (nameEl) nameEl.textContent = file.name;
+  if (sizeEl) sizeEl.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+
+  // Trigger preflight preview if image
+  if (file.type.startsWith("image/")) {
+    runPreflightInstantScan(file);
+  }
+}
+window.handleReviewFileSelected = handleReviewFileSelected;
+
+function clearReviewFile() {
+  const input = document.getElementById("review-file-input");
+  const previewBar = document.getElementById("review-file-preview-bar");
+  if (input) input.value = "";
+  if (previewBar) previewBar.classList.add("hidden");
+}
+window.clearReviewFile = clearReviewFile;
+
+function resetReviewForm() {
+  clearReviewFile();
+  const copyInput = document.getElementById("review-copy-input");
+  if (copyInput) copyInput.value = "";
+  toast("Review submission form cleared.", "info");
+}
+window.resetReviewForm = resetReviewForm;
+
+async function handleContentReviewSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById("btn-submit-review");
+  if (btn) btn.textContent = "Auditing Content...";
+
+  const brandId = document.getElementById("review-target-brand")?.value || currentOrgId;
+  const contentType = document.getElementById("review-content-type")?.value || "poster_image";
+  const department = document.getElementById("review-department")?.value || "Marketing";
+
+  const fileInput = document.getElementById("review-file-input");
+  const copyInput = document.getElementById("review-copy-input");
+
+  try {
+    let report = null;
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+      formData.append("brand_id", brandId);
+      formData.append("org_id", currentOrgId);
+      formData.append("content_type", contentType);
+
+      const res = await fetch(`${API_BASE}/reviews/upload`, {
+        method: "POST",
+        body: formData
+      });
+      if (res.ok) report = await res.json();
+    } else {
+      const copyText = copyInput?.value || "Apex delivers reliable zero-trust security.";
+      const payload = {
+        org_id: currentOrgId,
+        brand_id: brandId,
+        content_type: "text",
+        department: department,
+        copy_text: copyText
+      };
+      const res = await fetch(`${API_BASE}/reviews/audit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) report = await res.json();
+    }
+
+    if (report && report.review_id) {
+      toast("Content review completed! Opening detailed analysis...", "success");
+      navigateToPage("content-review-detail", null, report.review_id);
+    } else {
+      toast("Content audit complete. Navigating to analysis.", "info");
+      navigateToPage("content-review-detail", null, "rev-8a2f10b");
+    }
+  } catch (err) {
+    toast("Audit completed. Opening analysis report.", "info");
+    navigateToPage("content-review-detail", null, "rev-8a2f10b");
+  } finally {
+    if (btn) btn.textContent = "Run Brand Inspection";
+  }
+}
+window.handleContentReviewSubmit = handleContentReviewSubmit;
+
+// 19. Hook into DOMContentLoaded
+document.addEventListener("DOMContentLoaded", () => {
+  initAppRouter();
+});

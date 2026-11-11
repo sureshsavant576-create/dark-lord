@@ -3,699 +3,1749 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sanket AI (संकेत AI) — Enterprise Brand Governance & Multimodal Creative Verification</title>
+  <title>Sanket AI (संकेत AI) — Enterprise Multi-Company Brand Governance Platform</title>
   <link rel="icon" type="image/svg+xml" href="/static/brand/favicon.svg">
   <link rel="alternate icon" type="image/png" href="/static/emblem.png">
-  <link rel="stylesheet" href="/static/style.css?v=27.0">
+  <link rel="stylesheet" href="/static/style.css?v=28.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="landing-view-active">
+<body class="enterprise-app-body">
 
-    <!-- Top Navigation Bar -->
+  <!-- ========================================================================= -->
+  <!-- TOP NAVIGATION BAR (Section 1) -->
+  <!-- ========================================================================= -->
   <header class="app-topbar">
     <div class="topbar-container">
       <div class="topbar-left-group">
-        <a href="/" class="brand-brandmark" title="Sanket AI Home">
+        <button type="button" class="btn-topbar-sidebar-toggle" id="btn-topbar-sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar" aria-label="Toggle Sidebar">
+          <svg class="svg-icon pull-arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <a href="/dashboard" class="brand-brandmark" title="Sanket AI Home" onclick="navigateToPage('dashboard', event)">
           <img src="/static/brand/sanket-logo-horizontal.svg" alt="Sanket AI (संकेत AI)" class="brand-logo-img">
         </a>
+
+        <!-- Multi-Company Organisation Selector -->
+        <div class="org-selector-wrap" title="Switch Active Organisation Tenant">
+          <svg class="svg-icon org-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+          <select id="topbar-org-select" class="topbar-org-select" onchange="handleOrgChange(this.value)">
+            <option value="apex-cloud">Apex Cloud Systems (Fintech / Infra)</option>
+            <option value="nike">Nike Global (Athletics / Footwear)</option>
+            <option value="test_master_brand">MasterBrand Systems (Enterprise Cloud)</option>
+            <option value="hypercloud">HyperCloud Security (Cybersecurity)</option>
+            <option value="default-org">Global Corporation (Default Tenant)</option>
+          </select>
+        </div>
       </div>
 
-      <nav class="topbar-nav" aria-label="Main Navigation">
-        <a href="/check-vibe" class="topbar-link">
-          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span>Check Vibe</span>
-        </a>
-        <a href="/company-portal" class="topbar-link">
-          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/></svg>
-          <span>Company Portal</span>
-        </a>
-        <a href="/account" class="topbar-link">
-          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span>Company Account</span>
-        </a>
-      </nav>
+      <!-- Center: Global Quick Search -->
+      <div class="topbar-search-wrap" onclick="openGlobalSearchModal()" title="Search guidelines, claims, assets...">
+        <svg class="svg-icon search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="global-search-input" class="global-search-input" placeholder="Search brand DNA, guidelines, claims, assets..." readonly>
+        <kbd class="search-kbd">⌘K</kbd>
+      </div>
 
+      <!-- Right: Actions & User Persona Profile -->
       <div class="topbar-actions">
-        <button type="button" class="btn btn-sm btn-ghost" onclick="toggleRoleModal()" data-tooltip="Switch Enterprise Persona">
-          <svg class="svg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span id="active-role-display">Brand Lead</span>
+        <!-- Notification Center -->
+        <button type="button" class="btn-topbar-action" id="btn-notifications" onclick="toggleNotificationsModal()" title="Review & Claim Notifications" aria-label="Notifications">
+          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notification-badge" id="topbar-unread-badge">3</span>
         </button>
 
-        <button type="button" class="btn btn-sm btn-ghost" onclick="toggleSettingsModal()" data-tooltip="Governance & API Settings">
-          <svg class="svg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0 2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <!-- Compliance & Regulatory Help -->
+        <button type="button" class="btn-topbar-action" id="btn-topbar-help" onclick="toggleHelpModal()" title="Compliance Documentation & Shortcuts" aria-label="Help">
+          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
         </button>
 
-        <a href="/check-vibe" class="btn btn-primary-top btn-shimmer">
-          <span>Open Studio</span>
-          <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-        </a>
-
-        <button type="button" class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Toggle navigation drawer">
-          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <!-- User Profile Pill & Role Switcher -->
+        <button type="button" class="user-profile-btn" onclick="toggleRoleModal()" title="Switch Persona / User Role">
+          <div class="user-avatar-top" id="topbar-user-avatar">AV</div>
+          <div class="user-info-top">
+            <span class="user-name" id="topbar-user-name">Alex Vance</span>
+            <span class="user-role" id="topbar-user-role">Administrator</span>
+          </div>
+          <svg class="svg-icon chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
         </button>
       </div>
     </div>
   </header>
-  <!-- Mobile Navigation Drawer -->
-  <div id="mobile-nav-drawer" class="mobile-nav-drawer hidden">
-    <a href="/" class="mobile-nav-link">
-      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-      <span>Overview</span>
-    </a>
-    <a href="/check-vibe" class="mobile-nav-link">
-      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <span>Check Vibe</span>
-    </a>
-    <a href="/company-portal" class="mobile-nav-link">
-      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/></svg>
-      <span>Company Portal</span>
-    </a>
-    <a href="/account" class="mobile-nav-link">
-      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span>Company Account</span>
-    </a>
-    <div class="mobile-nav-link" onclick="toggleRoleModal(); toggleMobileNav();">
-      <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span>Switch Persona Role</span>
-    </div>
-  </div>
 
-    <!-- LANDING PAGE VIEW -->
-  <section id="view-landing" class="landing-view">
-    <div class="landing-hero-container">
-      <div class="hero-badge-pill">
-        <span class="hero-badge-dot"></span>
-        <span>ENTERPRISE BRAND GOVERNANCE &bull; ROUND 3 FINAL RELEASE</span>
-      </div>
+  <!-- ========================================================================= -->
+  <!-- MAIN APP CONTAINER: SIDEBAR + CONTENT AREA -->
+  <!-- ========================================================================= -->
+  <div class="app-layout-container" id="app-layout-container">
 
-      <h1 class="hero-headline">
-        Autonomous brand governance<br><span class="highlight-text">&amp; creative verification</span>
-      </h1>
-
-      <p class="hero-subtitle">
-        Perceptual CIELAB &Delta;E mathematical color enforcement, instant client pre-flight diagnostics, and multimodal AI vibe verification before creative assets enter production.
-      </p>
-
-      <div class="hero-cta-group">
-        <a href="/check-vibe" class="btn btn-hero-primary btn-shimmer">
-          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span>Launch Check Vibe</span>
-        </a>
-        <a href="/company-portal" class="btn btn-hero-secondary">
-          <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/></svg>
-          <span>Register Brand Standard</span>
-        </a>
-      </div>
-
-      <!-- Evaluator & Judge 1-Click Fast-Track -->
-      <div class="hero-evaluator-fasttrack">
-        <div class="evaluator-fasttrack-tag">
-          <span class="status-pulse-dot" style="background:#10B981;"></span>
-          <strong>EVALUATOR 1-CLICK FAST-TRACK</strong>
-          <span style="opacity: 0.65; font-size: 0.72rem; margin-left: 0.35rem;">(Zero setup &mdash; loads brand guidelines &amp; creatives):</span>
-        </div>
-        <div class="evaluator-fasttrack-buttons">
-          <a href="/check-vibe?preset=nike_compliant" class="btn-fasttrack-preset">
-            <span class="fasttrack-icon">🚀</span>
-            <div class="fasttrack-text">
-              <strong>Nike Certified</strong>
-              <small>Compliant Copy &bull; Expected Pass</small>
-            </div>
-          </a>
-          <a href="/check-vibe?preset=off_brand_remediate" class="btn-fasttrack-preset fasttrack-warning">
-            <span class="fasttrack-icon">⚠️</span>
-            <div class="fasttrack-text">
-              <strong>Off-Brand Creative</strong>
-              <small>Auto-Fix &amp; Co-Pilot Demo</small>
-            </div>
-          </a>
-          <a href="/check-vibe?preset=grb_heritage" class="btn-fasttrack-preset">
-            <span class="fasttrack-icon">🌿</span>
-            <div class="fasttrack-text">
-              <strong>GRB Heritage</strong>
-              <small>Traditional Food Vibe</small>
-            </div>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- REALISTIC INTERACTIVE PRODUCT SHOWCASE -->
-    <div class="hero-interactive-demo" id="hero-interactive-demo">
-      <div class="terminal-titlebar">
-        <div class="terminal-dots">
-          <span class="terminal-dot dot-red"></span>
-          <span class="terminal-dot dot-amber"></span>
-          <span class="terminal-dot dot-green"></span>
-        </div>
-        <div class="interactive-demo-tabs">
-          <button type="button" class="demo-tab active" id="tab-btn-preflight" onclick="switchHeroTab('preflight')">
-            <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
-            <span>Instant Pre-Flight HUD</span>
-          </button>
-          <button type="button" class="demo-tab" id="tab-btn-copilot" onclick="switchHeroTab('copilot')">
-            <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <span>Brand Co-Pilot</span>
-          </button>
-          <button type="button" class="demo-tab" id="tab-btn-remediation" onclick="switchHeroTab('remediation')">
-            <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            <span>1-Click Auto-Fix</span>
-          </button>
-        </div>
-        <div class="terminal-label">
-          <span class="status-pulse-dot" style="background:#10B981; width:6px; height:6px;"></span>
-          <span>sanket.live // inspection-pipeline-v3</span>
-        </div>
-      </div>
-
-      <!-- TAB 1: PRE-FLIGHT SCANNER & TELEMETRY -->
-      <div id="hero-pane-preflight" class="hero-demo-pane active">
-        <div class="hero-demo-layout">
-          <!-- Left: Audited Creative Poster Preview with Real HUD Overlay -->
-          <div class="demo-creative-col">
-            <div class="demo-poster-frame">
-              <img src="/static/samples/nike_compliant_poster.png" alt="Nike Compliant Creative" class="demo-poster-img">
-              <div class="demo-scanner-overlay">
-                <div class="demo-overlay-tag tag-temp">
-                  <span class="dot-temp"></span>
-                  <span>Kelvin: 3800K (Warm Ambient)</span>
-                </div>
-                <div class="demo-overlay-tag tag-white">
-                  <span>Whitespace: 85.0% Density</span>
-                </div>
-                <div class="demo-overlay-tag tag-vibe">
-                  <span>Vibe: Stealth Minimalist</span>
-                </div>
-                <div class="demo-overlay-tag tag-cielab">
-                  <span>&Delta;E: 2.1 &bull; Certified Adherent</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right: Real verified audit card & telemetry -->
-          <div class="demo-telemetry-col">
-            <div class="demo-card-header">
-              <div>
-                <span class="stage-step-pill">Stage 3 &bull; Multimodal Audit Seal</span>
-                <h4 style="margin: 0.3rem 0; font-size: 1.15rem; color: #FFFFFF;">Nike Global Brand Compliance</h4>
-              </div>
-              <span class="t-tag-approved">&#10003; CERTIFIED COMPLIANT</span>
-            </div>
-
-            <div class="demo-metric-list">
-              <div class="demo-metric-item">
-                <div class="demo-metric-header">
-                  <span>CIELAB &Delta;E Perceptual Accuracy</span>
-                  <strong style="color: #10B981;">2.1 &Delta;E (Target &le; 15.0)</strong>
-                </div>
-                <div class="t-metric-bar">
-                  <div class="t-bar-fill" style="width: 96%;"></div>
-                </div>
-              </div>
-
-              <div class="demo-metric-item">
-                <div class="demo-metric-header">
-                  <span>Tone of Voice (Multimodal Reasoning)</span>
-                  <strong style="color: #60A5FA;">Bold, Empowering, Direct</strong>
-                </div>
-                <div class="t-metric-bar">
-                  <div class="t-bar-fill" style="width: 98%; background: linear-gradient(90deg, #3B82F6, #10B981);"></div>
-                </div>
-              </div>
-
-              <div class="demo-metric-item">
-                <div class="demo-metric-header">
-                  <span>Deterministic Lexicon Filter</span>
-                  <strong style="color: #10B981;">0 Banned Words Detected</strong>
-                </div>
-                <div class="t-metric-bar">
-                  <div class="t-bar-fill" style="width: 100%;"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="demo-audit-seal-box">
-              <div style="display: flex; align-items: center; gap: 0.6rem;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span style="font-size: 0.82rem; color: var(--text-main); font-weight: 600;">Cryptographic Verification Hash:</span>
-              </div>
-              <code style="font-size: 0.75rem; color: var(--accent-cyan); word-break: break-all;">sha256_e8a94bc72101df4982a17f6c3bf018a4</code>
-            </div>
-
-            <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
-              <a href="/check-vibe?preset=nike_compliant" class="btn btn-sm btn-primary" style="flex: 1; justify-content: center;">
-                <span>Test Nike Preset in Studio</span>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 2: BRAND CO-PILOT (AI ASSISTANT & REWRITES) -->
-      <div id="hero-pane-copilot" class="hero-demo-pane hidden">
-        <div class="hero-copilot-mockup">
-          <div class="copilot-mockup-header">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <div class="copilot-persona-avatar">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12A10 10 0 0 1 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-              </div>
-              <div>
-                <strong style="color: #FFFFFF; font-size: 0.92rem;">Nike Brand Co-Pilot (AI Persona)</strong>
-                <span style="display: block; font-size: 0.75rem; color: #10B981;">Online &bull; Grounded in Official Brand Guidelines</span>
-              </div>
-            </div>
-            <span class="stage-step-pill">Improvement 1</span>
-          </div>
-
-          <div class="copilot-chat-history-demo">
-            <div class="demo-chat-msg user-msg">
-              <span class="demo-chat-sender">Creative Submitter</span>
-              <p>Our headline got flagged for passive voice: <em>"Try to run fast and get healthy."</em> How can I make this fit Nike's tone?</p>
-            </div>
-
-            <div class="demo-chat-msg copilot-msg">
-              <span class="demo-chat-sender">Nike Co-Pilot</span>
-              <p>Nike never says <em>"try"</em>. We speak with relentless grit, action verbs, and unyielding empowerment. Here are 3 approved rewrites you can apply in 1 click:</p>
-              <div class="demo-copilot-rewrites">
-                <div class="demo-rewrite-card">
-                  <span class="rewrite-number">01</span>
-                  <div class="rewrite-content">
-                    <p class="rewrite-headline">"Outrun your doubts. Leave yesterday on the asphalt."</p>
-                    <span class="rewrite-rationale">Active imperative verb, high urgency, champions individual determination.</span>
-                  </div>
-                  <a href="/check-vibe?preset=off_brand_remediate" class="btn btn-xs btn-primary">Apply</a>
-                </div>
-                <div class="demo-rewrite-card">
-                  <span class="rewrite-number">02</span>
-                  <div class="rewrite-content">
-                    <p class="rewrite-headline">"Find your cadence. Greatness isn't given &mdash; it's taken."</p>
-                    <span class="rewrite-rationale">Focuses on athletic discipline and relentless pursuit of excellence.</span>
-                  </div>
-                  <a href="/check-vibe?preset=off_brand_remediate" class="btn btn-xs btn-primary">Apply</a>
-                </div>
-                <div class="demo-rewrite-card">
-                  <span class="rewrite-number">03</span>
-                  <div class="rewrite-content">
-                    <p class="rewrite-headline">"Don't wait for permission. Run through the finish line."</p>
-                    <span class="rewrite-rationale">Zero passive qualifiers; adheres to authentic Nike hero narrative.</span>
-                  </div>
-                  <a href="/check-vibe?preset=off_brand_remediate" class="btn btn-xs btn-primary">Apply</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 3: 1-CLICK GENERATIVE AUTO-REMEDIATION -->
-      <div id="hero-pane-remediation" class="hero-demo-pane hidden">
-        <div class="hero-remediation-mockup">
-          <div class="remediation-mockup-header">
-            <div>
-              <span class="stage-step-pill">Improvement 2 &bull; Perceptual Color Shifting</span>
-              <h4 style="margin: 0.3rem 0; font-size: 1.15rem; color: #FFFFFF;">Before vs. After &Delta;E Color Remapping</h4>
-              <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">Off-brand color clusters detected at &Delta;E = 28.4 programmatically shifted into approved CIELAB centroids.</p>
-            </div>
-            <a href="/check-vibe?preset=off_brand_remediate" class="btn btn-sm btn-primary">
-              <span>Run Auto-Fix In Studio</span>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
-          </div>
-
-          <!-- Draggable Before vs. After Interactive Comparison Slider -->
-          <div class="interactive-slider-wrapper" id="remediation-slider-box">
-            <img src="/static/samples/off_brand_poster.png" alt="Original Off-Brand Poster (Before Fix)" class="slider-before-layer">
-            <img src="/static/samples/nike_compliant_poster.png" alt="Certified Remediated Poster (After Fix)" class="slider-after-layer" id="slider-after-img">
-            <div class="slider-divider-line" id="slider-line"></div>
-            <div class="slider-handle-button" id="slider-handle">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-            <span class="slider-tag-before">&times; Original: &Delta;E 28.4 (Off-Brand Fail)</span>
-            <span class="slider-tag-after">&#10003; Remediated: &Delta;E 3.2 (Certified Compliant)</span>
-            <input type="range" min="0" max="100" value="50" class="slider-range-input" id="remediation-range" oninput="updateRemediationSlider(this.value)" aria-label="Drag slider to compare Before and After creative auto-remediation">
-          </div>
-
-          <!-- Live Remapping Telemetry Chips -->
-          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.85rem; background: var(--bg-surface-elevated); padding: 0.85rem 1.2rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-            <div style="display: flex; align-items: center; gap: 0.65rem;">
-              <span style="font-family: var(--font-mono); font-size: 0.76rem; color: var(--text-muted);">CHROMATIC DELTA SHIFT:</span>
-              <span style="font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; color: #F87171;">#E11D48 (&Delta;E 28.4)</span>
-              <span style="color: #6366F1;">&rarr;</span>
-              <span style="font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; color: #34D399;">#111111 (&Delta;E 3.2)</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span class="status-pulse-dot" style="background: #10B981; width: 6px; height: 6px;"></span>
-              <span style="font-size: 0.78rem; font-weight: 600; color: #10B981;">96.8% Color Compliance Score</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- METRICS STRIP (SHOW, DON'T EXPLAIN) -->
-    <div class="hero-metrics-strip">
-      <div class="metric-stat-item">
-        <span class="metric-stat-val">&lt; 35ms</span>
-        <span class="metric-stat-label">Client Pre-Flight Latency</span>
-        <span class="metric-stat-sub">HTML5 Canvas In-Browser</span>
-      </div>
-      <div class="metric-stat-item">
-        <span class="metric-stat-val">&Delta;E &lt; 5.0</span>
-        <span class="metric-stat-label">CIELAB 2000 Accuracy</span>
-        <span class="metric-stat-sub">Deterministic Centroid Math</span>
-      </div>
-      <div class="metric-stat-item">
-        <span class="metric-stat-val">100%</span>
-        <span class="metric-stat-label">Prohibited Claims Filter</span>
-        <span class="metric-stat-sub">Pre-AI Regex Boundary Check</span>
-      </div>
-      <div class="metric-stat-item">
-        <span class="metric-stat-val">98 / 98</span>
-        <span class="metric-stat-label">Automated Tests Passing</span>
-        <span class="metric-stat-sub">Continuous Integration Suite</span>
-      </div>
-    </div>
-
-    <!-- APPLICATION WORKSPACE MODULES -->
-    <div class="hero-floating-grid">
-      <div class="floating-tile tile-blue" onclick="window.location.href='/check-vibe?preset=nike_compliant'">
-        <div class="tile-icon-box">
-          <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
-        </div>
-        <div class="tile-content">
-          <span style="font-size: 0.72rem; font-family: var(--font-mono); color: #60A5FA; font-weight: 700; text-transform: uppercase;">Workspace 1</span>
-          <strong>Pre-Flight Scanner &amp; Upload</strong>
-          <p>Instant client-side canvas engine diagnoses color temperatures (Kelvin), negative space ratios, and predicted vibe within 35ms before network upload.</p>
-        </div>
-      </div>
-
-      <div class="floating-tile tile-amber" onclick="window.location.href='/check-vibe?preset=off_brand_remediate'">
-        <div class="tile-icon-box">
-          <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <div class="tile-content">
-          <span style="font-size: 0.72rem; font-family: var(--font-mono); color: #FBBF24; font-weight: 700; text-transform: uppercase;">Workspace 2</span>
-          <strong>Brand Co-Pilot &amp; Auto-Fix</strong>
-          <p>Real-time conversational brand assistant grounded in official guidelines. Provides 1-click copy rewrites, tone guidance, and visual auto-remediation.</p>
-        </div>
-      </div>
-
-      <div class="floating-tile tile-emerald" onclick="window.location.href='/company-portal'">
-        <div class="tile-icon-box">
-          <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        </div>
-        <div class="tile-content">
-          <span style="font-size: 0.72rem; font-family: var(--font-mono); color: #34D399; font-weight: 700; text-transform: uppercase;">Workspace 3</span>
-          <strong>Brand DNA &amp; Knowledge Base</strong>
-          <p>Multi-tenant repository storing approved brand DNA, official guidelines, company facts, promotional claims &amp; evidence, and policy exceptions with Supabase RLS.</p>
-        </div>
-      </div>
-
-      <div class="floating-tile tile-purple" onclick="window.location.href='/company-portal'">
-        <div class="tile-icon-box">
-          <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/></svg>
-        </div>
-        <div class="tile-content">
-          <span style="font-size: 0.72rem; font-family: var(--font-mono); color: #A78BFA; font-weight: 700; text-transform: uppercase;">Workspace 4</span>
-          <strong>Review, Approval &amp; Insights</strong>
-          <p>Multi-role governance queue (Creator, Manager, Reviewer, Admin), high-risk claim escalation, version tracking, and recurring guideline violation insights.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-<!-- ENTERPRISE ROLE SWITCHER MODAL -->
-  <div id="modal-role-switcher" class="app-modal-backdrop hidden" onclick="if(event.target===this) toggleRoleModal()">
-    <div class="app-modal">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <h3>Enterprise Role &amp; Identity</h3>
-          <p>Switch your active persona to test governance and submission permissions</p>
-        </div>
-        <button type="button" class="modal-close-btn" onclick="toggleRoleModal()" aria-label="Close dialog">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="role-selector-grid">
-          <div class="role-card-option active" id="role-option-lead" onclick="selectRole('Brand Lead', 'Brand Operations', 'BL', 'Full Governance')">
-            <div class="role-icon-box">
-              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            </div>
-            <div class="role-meta">
-              <div class="role-meta-top">
-                <span class="role-name">Brand Operations Lead</span>
-                <span class="role-badge">RBAC: ADMIN</span>
-              </div>
-              <p class="role-desc">Can register brand standards, edit guidelines, approve palettes, and certify releases.</p>
-            </div>
-          </div>
-
-          <div class="role-card-option" id="role-option-dev" onclick="selectRole('Creative Developer', 'Developer Suite', 'CD', 'Submit & Inspect')">
-            <div class="role-icon-box">
-              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            </div>
-            <div class="role-meta">
-              <div class="role-meta-top">
-                <span class="role-name">Creative Developer</span>
-                <span class="role-badge">RBAC: SUBMITTER</span>
-              </div>
-              <p class="role-desc">Submits marketing copy and visual posters against active company guidelines.</p>
-            </div>
-          </div>
-
-          <div class="role-card-option" id="role-option-auditor" onclick="selectRole('Security Auditor', 'Compliance Dept', 'SA', 'Read & Audit')">
-            <div class="role-icon-box">
-              <svg class="svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </div>
-            <div class="role-meta">
-              <div class="role-meta-top">
-                <span class="role-name">Independent Security Auditor</span>
-                <span class="role-badge">RBAC: AUDITOR</span>
-              </div>
-              <p class="role-desc">Inspects cryptographic audit trail, reports, and tamper-resistant log history.</p>
-            </div>
-          </div>
-        </div>
-
-        <div style="background: var(--bg-surface-elevated); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: 0.78rem;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
-            <span style="color: var(--text-muted);">Session ID:</span>
-            <span style="color: var(--accent-cyan);">sk_live_09f82d1c8e9b</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Auth Scheme:</span>
-            <span style="color: var(--success);">Enterprise HMAC-SHA256</span>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="toggleRoleModal()">Apply Persona</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ENTERPRISE SETTINGS MODAL -->
-  <div id="modal-settings" class="app-modal-backdrop hidden" onclick="if(event.target===this) toggleSettingsModal()">
-    <div class="app-modal">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <h3>Governance Settings &amp; API Configuration</h3>
-          <p>Fine-tune perceptual tolerances and multimodal inference parameters</p>
-        </div>
-        <button type="button" class="modal-close-btn" onclick="toggleSettingsModal()" aria-label="Close dialog">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>CIELAB &Delta;E Max Tolerance Threshold:</label>
-          <div style="display: flex; align-items: center; gap: 1rem;">
-            <input type="range" min="5" max="30" value="15" id="setting-delta-range" style="flex: 1; accent-color: var(--primary);" oninput="document.getElementById('setting-delta-val').textContent = this.value">
-            <span id="setting-delta-val" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-cyan);">15</span>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">&Delta;E</span>
-          </div>
-          <span class="field-hint">Values &le; 15.0 guarantee imperceptible brand color drift according to CIE international standards.</span>
-        </div>
-
-        <div class="form-group">
-          <label>Primary AI Multimodal Model:</label>
-          <select style="width: 100%;">
-            <option selected>Gemini 2.5 Flash (Deterministic &amp; Fast, &lt;300ms)</option>
-            <option>Gemini 1.5 Pro (Deep Multimodal Reasoning)</option>
-            <option>Deterministic Local Heuristics Only (Offline Safe)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Automated Webhook Destination:</label>
-          <input type="text" placeholder="https://api.yourcompany.com/webhooks/brandshield" value="https://hooks.sanket.internal/v1/audits">
-          <span class="field-hint">Real-time JSON audit payload dispatched immediately upon inspection completion.</span>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="toggleSettingsModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Preferences</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- DANGER / PERMANENT DELETION CONFIRMATION MODAL -->
-  <div id="modal-confirm-delete" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeConfirmDeleteModal()">
-    <div class="app-modal modal-danger-dialog">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <h3 id="delete-modal-title">Confirm Permanent Deletion</h3>
-          <p id="delete-modal-subtitle">This operation cannot be reversed.</p>
-        </div>
-        <button type="button" class="modal-close-btn" onclick="closeConfirmDeleteModal()" aria-label="Close dialog">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="delete-warning-box">
-          <div class="warning-icon-badge">
-            <svg class="svg-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          </div>
-          <div class="warning-text-content">
-            <strong id="delete-modal-target-name">Item Name</strong>
-            <p id="delete-modal-message">Are you sure you want to permanently delete this item? All associated compliance data and uploaded files will be permanently erased.</p>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeConfirmDeleteModal()">Cancel</button>
-        <button type="button" id="delete-modal-confirm-btn" class="btn btn-danger">
-          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          <span id="delete-modal-confirm-btn-text">Permanently Delete</span>
+    <!-- LEFT SIDEBAR NAVIGATION (Section 1) -->
+    <aside class="app-sidebar" id="app-sidebar">
+      <div class="sidebar-header-row">
+        <span class="sidebar-header-label">PLATFORM NAVIGATION</span>
+        <button type="button" class="btn-sidebar-collapse" id="btn-sidebar-collapse" onclick="toggleSidebar()" title="Collapse navigation">
+          <svg class="svg-icon pull-arrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
         </button>
       </div>
-    </div>
-  </div>
 
-  
-  <!-- DYNAMIC SAVING & LOCKING MODAL -->
-  <div id="modal-saving-brand" class="app-modal-backdrop hidden">
-    <div class="app-modal saving-modal-card" style="max-width: 480px; text-align: center; padding: 2.25rem 2rem;">
-      <div class="saving-spinner-ring" style="margin: 0 auto 1.5rem auto; width: 64px; height: 64px; position: relative; display: flex; align-items: center; justify-content: center;">
-        <div class="saving-spinner-glow" style="position: absolute; inset: -4px; border-radius: 50%; background: conic-gradient(from 0deg, rgba(99, 102, 241, 0.1), #6366F1, #A855F7, #10B981, rgba(99, 102, 241, 0.1)); animation: spin 1.4s linear infinite; filter: blur(2px);"></div>
-        <div style="position: absolute; inset: 4px; background: var(--bg-surface, #0E1526); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-          <svg class="svg-icon" id="saving-modal-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6366F1;">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <nav class="sidebar-nav" aria-label="Main Application Navigation">
+        <!-- 1. Dashboard -->
+        <a href="/dashboard" class="sidebar-nav-item active" id="nav-item-dashboard" onclick="navigateToPage('dashboard', event)">
+          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
           </svg>
+          <span>Dashboard</span>
+        </a>
+
+        <!-- 2. Brand Identity -->
+        <a href="/brand-identity" class="sidebar-nav-item" id="nav-item-brand-identity" onclick="navigateToPage('brand-identity', event)">
+          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          <span>Brand Identity</span>
+        </a>
+
+        <!-- 3. Brand Knowledge -->
+        <a href="/brand-knowledge" class="sidebar-nav-item" id="nav-item-brand-knowledge" onclick="navigateToPage('brand-knowledge', event)">
+          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          <span>Brand Knowledge</span>
+        </a>
+
+        <!-- 4. Content Review -->
+        <a href="/content-review" class="sidebar-nav-item" id="nav-item-content-review" onclick="navigateToPage('content-review', event)">
+          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <span>Content Review</span>
+        </a>
+
+        <!-- 5. Pre-Flight Scanner -->
+        <a href="/preflight-scanner" class="sidebar-nav-item" id="nav-item-preflight-scanner" onclick="navigateToPage('preflight-scanner', event)">
+          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <span>Pre-Flight Scanner</span>
+        </a>
+
+        <!-- 6. Brand Co-Pilot -->
+        <a href="/brand-copilot" class="sidebar-nav-item" id="nav-item-brand-copilot" onclick="navigateToPage('brand-copilot', event)">
+          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span>Brand Co-Pilot</span>
+        </a>
+
+        <!-- 7. Review & Approvals -->
+        <a href="/approvals" class="sidebar-nav-item" id="nav-item-approvals" onclick="navigateToPage('approvals', event)">
+          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          <span>Review & Approvals</span>
+          <span class="sidebar-nav-badge" id="sidebar-pending-badge">2</span>
+        </a>
+
+        <!-- 8. Brand Insights -->
+        <a href="/brand-insights" class="sidebar-nav-item" id="nav-item-brand-insights" onclick="navigateToPage('brand-insights', event)">
+          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <span>Brand Insights</span>
+        </a>
+
+        <!-- 9. Settings -->
+        <a href="/settings" class="sidebar-nav-item" id="nav-item-settings" onclick="navigateToPage('settings', event)">
+          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0 2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Bottom Active User Profile -->
+      <div class="sidebar-user-footer" onclick="toggleRoleModal()" title="Current Active Persona">
+        <div class="user-avatar-mini" id="sidebar-user-avatar">AV</div>
+        <div class="user-meta-mini">
+          <span class="user-name-text" id="sidebar-user-name">Alex Vance</span>
+          <span class="user-role-badge" id="sidebar-role-badge">Administrator</span>
         </div>
       </div>
-      
-      <h3 id="saving-modal-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: #FFFFFF;">Saving &amp; Locking Brand Profile</h3>
-      <p id="saving-modal-step-text" style="color: var(--text-muted, #94A3B8); font-size: 0.88rem; margin-bottom: 1.5rem;">Validating approved color palette and brand guidelines...</p>
-      
-      <div class="upload-progress-container" style="margin-bottom: 1.25rem;">
-        <div class="upload-progress-bar" style="height: 7px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden;">
-          <div id="saving-modal-progress-fill" class="upload-progress-fill uploading" style="width: 15%; transition: width 0.3s ease;"></div>
+    </aside>
+
+    <!-- MAIN APPLICATION CONTENT AREA -->
+    <main class="app-main-content" id="app-main-content">
+
+      <!-- ===================================================================== -->
+      <!-- 2. DASHBOARD VIEW (/dashboard) -->
+      <!-- ===================================================================== -->
+      <section id="view-dashboard" class="app-view-pane active">
+        <div class="view-header-row">
+          <div>
+            <div class="breadcrumb-trail">Governance Platform &bull; Executive Command</div>
+            <h1 class="view-page-title">Executive Governance Dashboard</h1>
+            <p class="view-page-subtitle">Real-time enterprise brand compliance metrics, active review queues, and multi-tenant audit streams.</p>
+          </div>
+          <div class="view-header-actions">
+            <button type="button" class="btn btn-sm btn-secondary" onclick="loadDashboardData()">
+              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              <span>Refresh Metrics</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="navigateToPage('content-review', event)">
+              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>New Content Audit</span>
+            </button>
+          </div>
         </div>
-        <div class="upload-progress-meta" style="margin-top: 0.6rem; display: flex; justify-content: space-between; font-size: 0.78rem;">
-          <span id="saving-modal-status-text" class="progress-status-text" style="color: var(--text-secondary, #CBD5E1);">Initializing brand synthesis...</span>
-          <span id="saving-modal-percent" class="progress-percent-text" style="font-weight: 700; color: #6366F1;">15%</span>
+
+        <!-- Section 2.1: Overview KPI Cards -->
+        <div class="kpi-metrics-grid">
+          <div class="kpi-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">TOTAL ASSETS AUDITED</span>
+              <span class="kpi-icon-box">📊</span>
+            </div>
+            <div class="kpi-value" id="kpi-total-audited">28</div>
+            <div class="kpi-trend positive">&uarr; +14% this month across departments</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">OVERALL COMPLIANCE SCORE</span>
+              <span class="kpi-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #10B981;">🛡️</span>
+            </div>
+            <div class="kpi-value" id="kpi-compliance-score" style="color: #10B981;">94.2%</div>
+            <div class="kpi-trend positive">Pass Threshold &ge; 70.0% satisfied</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">PENDING REVIEWS</span>
+              <span class="kpi-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;">⏳</span>
+            </div>
+            <div class="kpi-value" id="kpi-pending-reviews">2</div>
+            <div class="kpi-trend warning">Avg turnaround: 3.4 hours</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">HIGH-RISK ESCALATIONS</span>
+              <span class="kpi-icon-box" style="background: rgba(239, 68, 68, 0.15); color: #EF4444;">🚨</span>
+            </div>
+            <div class="kpi-value" id="kpi-escalated-claims" style="color: #EF4444;">1</div>
+            <div class="kpi-trend danger">Requires Authorised Reviewer sign-off</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">APPROVAL RATE</span>
+              <span class="kpi-icon-box" style="background: rgba(99, 102, 241, 0.15); color: #818CF8;">✅</span>
+            </div>
+            <div class="kpi-value" id="kpi-approval-rate">88.5%</div>
+            <div class="kpi-trend positive">Zero critical breaches published</div>
+          </div>
         </div>
+
+        <!-- Section 2.7: Quick Actions -->
+        <div class="dashboard-quick-actions-bar">
+          <span class="quick-actions-label">QUICK ACTIONS:</span>
+          <div class="quick-actions-buttons">
+            <button type="button" class="btn btn-quick-action" onclick="navigateToPage('brand-identity', event, 'generate')">
+              <span class="qa-icon">🧬</span>
+              <span>Generate Brand DNA</span>
+            </button>
+            <button type="button" class="btn btn-quick-action" onclick="navigateToPage('content-review', event, 'upload')">
+              <span class="qa-icon">📤</span>
+              <span>Upload Content</span>
+            </button>
+            <button type="button" class="btn btn-quick-action" onclick="navigateToPage('preflight-scanner', event)">
+              <span class="qa-icon">⚡</span>
+              <span>Open Pre-Flight Scanner</span>
+            </button>
+            <button type="button" class="btn btn-quick-action" onclick="navigateToPage('approvals', event)">
+              <span class="qa-icon">📋</span>
+              <span>View Pending Approvals</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dashboard 2-Column Main Workspace -->
+        <div class="dashboard-bento-grid">
+          <!-- Left Column -->
+          <div class="dashboard-col-main">
+            <!-- Section 2.2: Pending Reviews -->
+            <div class="card dashboard-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Pending Content Reviews</h3>
+                  <p class="card-subtitle">Creatives submitted by team members requiring sign-off.</p>
+                </div>
+                <a href="/approvals" class="btn-text-sm" onclick="navigateToPage('approvals', event)">View all in Approvals &rarr;</a>
+              </div>
+              <div class="table-responsive">
+                <table class="app-table">
+                  <thead>
+                    <tr>
+                      <th>Title & Asset</th>
+                      <th>Submitter</th>
+                      <th>Department</th>
+                      <th>Status</th>
+                      <th>Submitted</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboard-pending-tbody">
+                    <!-- Loaded dynamically from real backend workflow_service -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Section 2.3: Recently Reviewed Content -->
+            <div class="card dashboard-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Recently Reviewed Content</h3>
+                  <p class="card-subtitle">Latest creative audits across promotional copy, posters, and PDFs.</p>
+                </div>
+                <a href="/content-review" class="btn-text-sm" onclick="navigateToPage('content-review', event)">All Submissions &rarr;</a>
+              </div>
+              <div class="recent-reviews-grid" id="dashboard-recent-reviews-grid">
+                <!-- Loaded dynamically from backend -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="dashboard-col-side">
+            <!-- Section 2.4: Brand Compliance Summary -->
+            <div class="card dashboard-card">
+              <div class="card-header">
+                <h3 class="card-title">Compliance Summary</h3>
+              </div>
+              <div class="compliance-bars-list">
+                <div class="compliance-bar-item">
+                  <div class="compliance-bar-label">
+                    <span>Tone & Brand Voice</span>
+                    <strong id="bar-tone-pct">96%</strong>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 96%; background: #10B981;"></div></div>
+                </div>
+                <div class="compliance-bar-item">
+                  <div class="compliance-bar-label">
+                    <span>Visual Identity & CIELAB</span>
+                    <strong id="bar-visual-pct">91%</strong>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 91%; background: #6366F1;"></div></div>
+                </div>
+                <div class="compliance-bar-item">
+                  <div class="compliance-bar-label">
+                    <span>Claim Substantiation</span>
+                    <strong id="bar-claim-pct">88%</strong>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 88%; background: #F59E0B;"></div></div>
+                </div>
+                <div class="compliance-bar-item">
+                  <div class="compliance-bar-label">
+                    <span>WCAG 2.1 Accessibility</span>
+                    <strong id="bar-access-pct">94%</strong>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 94%; background: #3B82F6;"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 2.5: Critical Issues -->
+            <div class="card dashboard-card">
+              <div class="card-header">
+                <h3 class="card-title">Active Critical Issues</h3>
+              </div>
+              <div class="critical-issues-list" id="dashboard-critical-issues-list">
+                <!-- Dynamically loaded from backend -->
+              </div>
+            </div>
+
+            <!-- Section 2.6: Recent Activity (Audit Log) -->
+            <div class="card dashboard-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Recent Activity Log</h3>
+                  <p class="card-subtitle">Immutable audit trail of governance actions.</p>
+                </div>
+                <a href="/settings" class="btn-text-sm" onclick="navigateToPage('settings', event)">All Logs &rarr;</a>
+              </div>
+              <div class="audit-timeline-feed" id="dashboard-audit-timeline">
+                <!-- Loaded from /api/v1/audit/logs -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 3. BRAND IDENTITY VIEW (/brand-identity) -->
+      <!-- ===================================================================== -->
+      <section id="view-brand-identity" class="app-view-pane hidden">
+        <div class="view-header-row">
+          <div>
+            <div class="breadcrumb-trail">Governance Platform &bull; Core Identity Standard</div>
+            <h1 class="view-page-title">Brand Identity Guidelines</h1>
+            <p class="view-page-subtitle">Deterministic brand specifications, multimodal DNA recommendations, and version-controlled standard guidelines.</p>
+          </div>
+          <div class="view-header-actions">
+            <button type="button" class="btn btn-sm btn-secondary" onclick="openCompanyFactsModal()">
+              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Setup Company Facts</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="openDnaGeneratorModal()">
+              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Generate Brand DNA</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="openApproveDnaModal()">
+              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Approve Brand DNA</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 3.1: Brand Overview Header Card -->
+        <div class="card brand-overview-card" id="brand-overview-container">
+          <div class="brand-overview-header">
+            <div class="brand-overview-left">
+              <div class="brand-avatar-box" id="brand-avatar-display">A</div>
+              <div>
+                <div class="brand-title-row">
+                  <h2 class="brand-display-name" id="identity-brand-name">Apex Cloud Systems</h2>
+                  <span class="status-pill status-active" id="identity-brand-status">ACTIVE &bull; APPROVED</span>
+                  <span class="id-badge" id="identity-brand-slug">slug: apex-cloud</span>
+                </div>
+                <p class="brand-meta-desc" id="identity-brand-desc">Enterprise Cloud Infrastructure & Cybersecurity. High-availability zero-trust data mesh.</p>
+              </div>
+            </div>
+            <div class="brand-overview-actions">
+              <button type="button" class="btn btn-sm btn-ghost" onclick="openEditDnaModal()" title="Edit Brand DNA Fields">
+                <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span>Edit Brand DNA</span>
+              </button>
+              <button type="button" class="btn btn-sm btn-ghost" onclick="openDnaVersionHistory()" title="View Version Revisions">
+                <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                <span>Version History</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9 Structured Identity Guidelines Sections -->
+        <div class="brand-guidelines-grid">
+          <!-- 3.2: Brand Personality -->
+          <div class="card guideline-card">
+            <div class="card-header">
+              <span class="guideline-card-tag">Section 1</span>
+              <h3 class="card-title">Brand Personality</h3>
+            </div>
+            <div class="guideline-content" id="identity-personality-block">
+              <p class="guideline-lead">Core persona traits defining voice and customer resonance:</p>
+              <div class="tags-cluster" id="identity-personality-tags">
+                <span class="tag-pill">Authoritative</span>
+                <span class="tag-pill">Crisp</span>
+                <span class="tag-pill">Empowering</span>
+                <span class="tag-pill">Direct</span>
+                <span class="tag-pill">Technically Rigorous</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3.3: Brand Positioning -->
+          <div class="card guideline-card">
+            <div class="card-header">
+              <span class="guideline-card-tag">Section 2</span>
+              <h3 class="card-title">Brand Positioning</h3>
+            </div>
+            <div class="guideline-content" id="identity-positioning-block">
+              <blockquote class="guideline-quote" id="identity-positioning-quote">
+                "The zero-trust infrastructure engine for mission-critical enterprise workloads."
+              </blockquote>
+              <div class="audience-pill-box">
+                <span class="subtle-label">Target Audience:</span>
+                <span class="audience-text" id="identity-audience-text">DevOps Leads, Cloud Architects, and Enterprise CISOs</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3.4: Brand Voice & Tone -->
+          <div class="card guideline-card">
+            <div class="card-header">
+              <span class="guideline-card-tag">Section 3</span>
+              <h3 class="card-title">Brand Voice &amp; Tone</h3>
+            </div>
+            <div class="guideline-content" id="identity-voice-block">
+              <div class="voice-principle-item">
+                <strong>Primary Voice:</strong> Direct, clear, technical, and mission-focused.
+              </div>
+              <div class="voice-principle-item">
+                <strong>Formality:</strong> Professional and crisp. Avoid marketing jargon and clickbait superlatives.
+              </div>
+              <div class="voice-principle-item">
+                <strong>Clarity Anchor:</strong> Explain technical architectural benefits with concrete data rather than vague hype.
+              </div>
+            </div>
+          </div>
+
+          <!-- 3.5: Visual Identity -->
+          <div class="card guideline-card">
+            <div class="card-header">
+              <span class="guideline-card-tag">Section 4</span>
+              <h3 class="card-title">Visual Identity</h3>
+            </div>
+            <div class="guideline-content" id="identity-visual-block">
+              <p>Minimalist, high-contrast engineering elegance. Uncluttered dark-mode canvas with luminous cyan and cobalt accents.</p>
+              <div class="style-ethos-badge" id="identity-style-ethos">Style Ethos: Precision Enterprise Minimalist</div>
+            </div>
+          </div>
+
+          <!-- 3.6: Colour Palette -->
+          <div class="card guideline-card guideline-span-2">
+            <div class="card-header">
+              <span class="guideline-card-tag">Section 5</span>
+              <h3 class="card-title">Approved Colour Palette &amp; CIELAB Tolerances</h3>
+            </div>
+            <div class="guideline-content">
+              <p class="guideline-lead">Approved HEX swatches strictly enforced via OpenCV and CIELAB &Delta;E mathematical algorithms:</p>
+              <div class="swatches-palette-deck" id="identity-swatches-deck">
+                <div class="swatch-tile">
+                  <div class="swatch-color" style="background: #0B132B;"></div>
+                  <div class="swatch-meta"><strong>#0B132B</strong><span>Primary Canvas</span></div>
+                </div>
+                <div class="swatch-tile">
+                  <div class="swatch-color" style="background: #1C2541;"></div>
+                  <div class="swatch-meta"><strong>#1C2541</strong><span>Secondary Surface</span></div>
+                </div>
+                <div class="swatch-tile">
+                  <div class="swatch-color" style="background: #5BC0BE;"></div>
+                  <div class="swatch-meta"><strong>#5BC0BE</strong><span>Accent Cyan</span></div>
+                </div>
+                <div class="swatch-tile">
+                  <div class="swatch-color" style="background: #FFFFFF;"></div>
+                  <div class="swatch-meta"><strong>#FFFFFF</strong><span>Pure White Text</span></div>
+                </div>
+              </div>
+              <div class="cielab-tolerance-alert">
+                <span class="status-pulse-dot" style="background:#10B981;"></span>
+                <span>Maximum Allowed Color Departure: <strong>&Delta;E &le; 15.0</strong>. Deviations beyond this limit trigger automated off-brand Auto-Fix.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3.7: Typography -->
+          <div class="card guideline-card">
+            <div class="card-header">
+              <span class="guideline-card-tag">Section 6</span>
+              <h3 class="card-title">Typography Recommendations</h3>
+            </div>
+            <div class="guideline-content" id="identity-typography-block">
+              <div class="type-sample-item">
+                <span class="type-role">HEADLINE</span>
+                <span class="type-spec" style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;">Plus Jakarta Sans (Bold, 700)</span>
+              </div>
+              <div class="type-sample-item">
+                <span class="type-role">BODY</span>
+                <span class="type-spec" style="font-family: 'Inter', sans-serif;">Inter (Regular / Medium, 400-500)</span>
+              </div>
+              <div class="type-sample-item">
+                <span class="type-role">CODE / METRICS</span>
+                <span class="type-spec" style="font-family: 'JetBrains Mono', monospace;">JetBrains Mono (600)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3.8: Imagery Guidelines -->
+          <div class="card guideline-card">
+            <div class="card-header">
+              <span class="guideline-card-tag">Section 7</span>
+              <h3 class="card-title">Imagery Guidelines</h3>
+            </div>
+            <div class="guideline-content" id="identity-imagery-block">
+              <p>Authentic, high-resolution photography and engineering visualizations. Clean architectural perspectives with cool ambient lighting.</p>
+              <div class="tags-cluster">
+                <span class="tag-pill">Cool Ambient</span>
+                <span class="tag-pill">Zero Stock Clutter</span>
+                <span class="tag-pill">Sharp Depth of Field</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3.9: Messaging Guidelines -->
+          <div class="card guideline-card">
+            <div class="card-header">
+              <span class="guideline-card-tag">Section 8</span>
+              <h3 class="card-title">Messaging Guidelines</h3>
+            </div>
+            <div class="guideline-content" id="identity-messaging-block">
+              <ul class="styled-guideline-list">
+                <li>Lead with verified security facts and performance benchmarks.</li>
+                <li>Never promise 100% bug-free software or unhackable systems.</li>
+                <li>Cite third-party audits when mentioning uptime SLAs.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 3.10: Design Rules (Do's & Don'ts) -->
+          <div class="card guideline-card guideline-span-2">
+            <div class="card-header">
+              <span class="guideline-card-tag">Section 9 &amp; 10</span>
+              <h3 class="card-title">Design Rules: Visual Do's &amp; Don'ts</h3>
+            </div>
+            <div class="guideline-content">
+              <div class="dos-donts-split">
+                <div class="dos-column">
+                  <div class="column-header-dos">&#10003; APPROVED PRACTICES (DO)</div>
+                  <ul class="dos-list" id="identity-dos-list">
+                    <li>Maintain minimum 24px clear margin space surrounding official logos.</li>
+                    <li>Ensure all copy maintains WCAG 2.1 AA minimum contrast of 4.5:1.</li>
+                    <li>Use subtle glass surfaces with 1px border highlights for depth.</li>
+                  </ul>
+                </div>
+                <div class="donts-column">
+                  <div class="column-header-donts">&#10005; STRICTLY DISALLOWED (DON'T)</div>
+                  <ul class="donts-list" id="identity-donts-list">
+                    <li>Do not stretch, rotate, or alter the color of the official brandmark.</li>
+                    <li>Do not use neon orange or unapproved saturated hues (&Delta;E &gt; 15.0).</li>
+                    <li>Do not use unsubstantiated superlative claims ("#1 in the universe").</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 4. BRAND KNOWLEDGE VIEW (/brand-knowledge) -->
+      <!-- ===================================================================== -->
+      <section id="view-brand-knowledge" class="app-view-pane hidden">
+        <div class="view-header-row">
+          <div>
+            <div class="breadcrumb-trail">Governance Platform &bull; Factual Ground Truth</div>
+            <h1 class="view-page-title">Brand Knowledge Base</h1>
+            <p class="view-page-subtitle">Multi-tenant repository of approved company facts, certified claims, verified evidence, terminology, and policy exceptions.</p>
+          </div>
+          <div class="view-header-actions">
+            <button type="button" class="btn btn-sm btn-primary" onclick="openAddKnowledgeModal()">
+              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>+ Add Knowledge Item</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 4 Filter Pills (10 Categories) -->
+        <div class="knowledge-categories-bar">
+          <button type="button" class="category-pill active" onclick="filterKnowledgeCategory('ALL', this)">ALL CATEGORIES</button>
+          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('COMPANY_FACT', this)">Company Information</button>
+          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('GUIDELINE', this)">Brand Guidelines</button>
+          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('APPROVED_FACT', this)">Approved Facts</button>
+          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('PRODUCT_SERVICE', this)">Products &amp; Services</button>
+          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('PROMOTIONAL_CLAIM', this)">Approved Claims &amp; Evidence</button>
+          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('TERMINOLOGY', this)">Terminology</button>
+          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('OFFICIAL_ASSET', this)">Official Brand Assets</button>
+          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('REFERENCE_DESIGN', this)">Reference Designs</button>
+          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('RESTRICTED_MESSAGING', this)">Restricted Messaging</button>
+          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('POLICY_EXCEPTION', this)">Policy Exceptions</button>
+        </div>
+
+        <!-- Search & Stats Bar -->
+        <div class="knowledge-search-row">
+          <div class="knowledge-search-box">
+            <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="knowledge-search-input" placeholder="Search approved claims, ISO certifications, terminology, evidence..." oninput="handleKnowledgeSearch(this.value)">
+          </div>
+          <span class="knowledge-count-badge" id="knowledge-items-count">Showing 8 approved items</span>
+        </div>
+
+        <!-- Knowledge Items Cards Grid -->
+        <div class="knowledge-cards-grid" id="knowledge-cards-grid">
+          <!-- Loaded dynamically from backend knowledge_service -->
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 5. CONTENT REVIEW VIEW (/content-review) -->
+      <!-- ===================================================================== -->
+      <section id="view-content-review" class="app-view-pane hidden">
+        <div class="view-header-row">
+          <div>
+            <div class="breadcrumb-trail">Governance Platform &bull; Creative Verification</div>
+            <h1 class="view-page-title">Content Review &amp; Submissions</h1>
+            <p class="view-page-subtitle">Submit and audit marketing copy, posters, social creatives, and PDF decks against Brand DNA and verified claims.</p>
+          </div>
+          <div class="view-header-actions">
+            <button type="button" class="btn btn-sm btn-secondary" onclick="resetReviewForm()">
+              <span>Clear Form</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 5.1: Upload Content Module -->
+        <div class="card content-upload-card" id="content-upload-module">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Upload Creative for Multimodal Audit</h3>
+              <p class="card-subtitle">Select marketing copy, social banners, posters, or PDF guidelines.</p>
+            </div>
+            <!-- Modality Switcher -->
+            <div class="modality-switch-pill">
+              <button type="button" class="modality-btn active" id="btn-modality-file" onclick="setReviewModality('file')">Poster / Image / PDF</button>
+              <button type="button" class="modality-btn" id="btn-modality-text" onclick="setReviewModality('text')">Marketing Text Copy</button>
+            </div>
+          </div>
+
+          <form id="content-review-form" class="app-form" onsubmit="handleContentReviewSubmit(event)">
+            <div class="form-row-grid">
+              <div class="form-group">
+                <label for="review-target-brand">Target Brand Standard:</label>
+                <select id="review-target-brand" class="form-select">
+                  <option value="apex-cloud">Apex Cloud Systems</option>
+                  <option value="nike">Nike Global</option>
+                  <option value="test_master_brand">MasterBrand Systems</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="review-content-type">Content Type:</label>
+                <select id="review-content-type" class="form-select">
+                  <option value="poster_image">Poster / Graphic Image</option>
+                  <option value="marketing_ad">Marketing Advertisement</option>
+                  <option value="pdf">PDF Guidelines / Creative Deck</option>
+                  <option value="social_media_creative">Social Media Creative</option>
+                  <option value="text">Promotional Text / Caption</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="review-department">Submitting Department:</label>
+                <select id="review-department" class="form-select">
+                  <option value="Marketing">Marketing</option>
+                  <option value="Social Media">Social Media</option>
+                  <option value="Growth">Growth</option>
+                  <option value="Product">Product</option>
+                  <option value="PR & Communications">PR & Communications</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Modality Container: File Upload -->
+            <div id="review-file-container" class="modality-container">
+              <div id="review-drop-zone" class="drop-zone" onclick="document.getElementById('review-file-input').click()">
+                <input type="file" id="review-file-input" class="file-input" accept="image/*,.pdf,.png,.jpg,.jpeg,.webp" onchange="handleReviewFileSelected(this.files[0])">
+                <div class="drop-zone-content">
+                  <div class="upload-icon-circle">
+                    <svg class="svg-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                  </div>
+                  <p class="drop-text">Drag &amp; drop creative poster or graphic here or <span class="highlight">browse</span></p>
+                  <span class="drop-subtext">Supports PNG, JPG, WEBP, and PDF up to 30MB &bull; Instant pre-flight active</span>
+                </div>
+              </div>
+
+              <div id="review-file-preview-bar" class="file-preview-card hidden">
+                <div class="file-preview-main">
+                  <div class="file-icon-box">🖼️</div>
+                  <div>
+                    <strong id="preview-filename">creative.png</strong>
+                    <span id="preview-filesize" class="file-size-text">1.2 MB</span>
+                  </div>
+                </div>
+                <button type="button" class="btn-remove-file" onclick="clearReviewFile()">Remove</button>
+              </div>
+            </div>
+
+            <!-- Modality Container: Text Copy -->
+            <div id="review-text-container" class="modality-container hidden">
+              <div class="form-group">
+                <label for="review-copy-input">Marketing Copy, Headline, or Script:</label>
+                <textarea id="review-copy-input" rows="4" placeholder="Enter headline, slogan, promotional copy, or ad body text to audit against Brand DNA..." class="form-textarea"></textarea>
+              </div>
+            </div>
+
+            <div class="form-submit-row">
+              <div class="submit-hint">Enforces 10-category inspection: Tone, Terminology, Claims, Accessibility, &amp; Visual Identity.</div>
+              <button type="submit" class="btn btn-primary" id="btn-submit-review">
+                <svg class="svg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Run Brand Inspection</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Section 5.2: Submissions Table & Filter Tabs -->
+        <div class="card submissions-table-card">
+          <div class="submissions-table-header">
+            <h3 class="card-title">All Submissions Queue</h3>
+            <div class="submissions-filter-tabs">
+              <button type="button" class="sub-tab active" onclick="filterSubmissionsTab('ALL', this)">All Submissions</button>
+              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('DRAFT', this)">Drafts</button>
+              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('UNDER_REVIEW', this)">Under Review</button>
+              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('NEEDS_REVISION', this)">Needs Revision</button>
+              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('APPROVED', this)">Approved</button>
+              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('APPROVED_WITH_WARNINGS', this)">Approved w/ Warnings</button>
+              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('REJECTED', this)">Rejected</button>
+              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('ESCALATED', this)">Escalated</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="app-table">
+              <thead>
+                <tr>
+                  <th>Review ID</th>
+                  <th>Title / Asset</th>
+                  <th>Content Type</th>
+                  <th>Submitter</th>
+                  <th>Department</th>
+                  <th>Date</th>
+                  <th>Compliance Score</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="submissions-tbody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 5.3: DEDICATED CONTENT REVIEW DETAIL PAGE (/content-review/[id]) -->
+      <!-- ===================================================================== -->
+      <section id="view-content-review-detail" class="app-view-pane hidden">
+        <div class="view-header-row">
+          <div>
+            <div class="breadcrumb-trail">
+              <a href="/content-review" onclick="navigateToPage('content-review', event)">&larr; Back to Submissions</a>
+              <span> &bull; Content Analysis Report</span>
+            </div>
+            <h1 class="view-page-title" id="detail-review-title">Creative Inspection Report &bull; rev-8a2f10b</h1>
+            <p class="view-page-subtitle" id="detail-review-subtitle">Comprehensive multimodal audit across 10 brand compliance categories.</p>
+          </div>
+          <div class="view-header-actions">
+            <button type="button" class="btn btn-sm btn-secondary" onclick="navigateToPage('brand-copilot', event)">
+              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>Open in Brand Co-Pilot</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="openWorkflowDecisionModal()">
+              <span>Review &amp; Approve</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Detail Grid -->
+        <div class="review-detail-grid">
+          <!-- Left Column: Content Preview & Auto-Fix -->
+          <div class="detail-col-preview">
+            <div class="card preview-card">
+              <div class="card-header">
+                <h3 class="card-title">Content Preview</h3>
+                <span class="id-badge" id="detail-asset-type">Poster Image</span>
+              </div>
+              <div class="detail-preview-box" id="detail-preview-container">
+                <img src="/static/samples/nike_compliant_poster.png" alt="Creative Asset Preview" id="detail-preview-img" class="detail-img-render">
+              </div>
+            </div>
+
+            <!-- SECTION 8: AUTO-FIX MODULE (Integrated into Content Review Detail) -->
+            <div class="card autofix-card" id="detail-autofix-box">
+              <div class="card-header">
+                <div>
+                  <span class="stage-step-pill" style="background: rgba(99, 102, 241, 0.2); color: #818CF8;">AI-Assisted Visual Correction</span>
+                  <h3 class="card-title">Visual Auto-Fix (CIELAB Centroid Recolor)</h3>
+                </div>
+                <span class="status-pill status-warning" id="autofix-status-pill">Correction Eligible</span>
+              </div>
+              <div class="autofix-body">
+                <p class="autofix-desc" id="autofix-problem-text">Off-brand saturated orange (&Delta;E = 28.4) deviates from approved dark cobalt palette. Auto-Fix shifts pixel centroids while preserving text and logos.</p>
+
+                <!-- Side-by-Side Comparison -->
+                <div class="autofix-side-by-side">
+                  <div class="side-item">
+                    <span class="side-label">Original Creative (Preserved)</span>
+                    <img src="/static/samples/nike_compliant_poster.png" alt="Original Creative" id="autofix-original-img" class="side-img">
+                  </div>
+                  <div class="side-item">
+                    <span class="side-label">Proposed Variation (Compliant &Delta;E &lt; 5.0)</span>
+                    <img src="/static/samples/nike_compliant_poster.png" alt="Corrected Creative" id="autofix-corrected-img" class="side-img">
+                  </div>
+                </div>
+
+                <div class="autofix-preserved-tags" id="autofix-preserved-elements">
+                  <span>Preserved: &bull; Typography Contours &bull; Brandmark Geometry &bull; Background Layout</span>
+                </div>
+
+                <div class="autofix-actions-row">
+                  <button type="button" class="btn btn-sm btn-ghost" onclick="triggerRegenerateAutoFix()">
+                    <span>Regenerate Variation</span>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="rejectAutoFixVariation()">
+                    <span>Reject Correction</span>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-primary" onclick="acceptAutoFixVariation()">
+                    <span>Accept Correction (Stage for Sign-Off)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Evaluation & 10 Dimensions Breakdown -->
+          <div class="detail-col-metrics">
+            <!-- Overall Evaluation Gauge -->
+            <div class="card score-gauge-card">
+              <div class="gauge-layout">
+                <div class="score-circle-wrap">
+                  <div class="score-circle-num" id="detail-score-value">92.0</div>
+                  <div class="score-circle-denom">/ 100</div>
+                </div>
+                <div>
+                  <div class="verdict-title-row">
+                    <h3 class="verdict-text" id="detail-verdict-text">COMPLIANT WITH WARNINGS</h3>
+                    <span class="status-pill status-active" id="detail-status-pill">Under Review</span>
+                  </div>
+                  <p class="verdict-summary" id="detail-verdict-summary">Creative aligns with core brand voice. 1 promotional claim requires human verification citation.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Breakdown Dimensions -->
+            <div class="card detail-dimensions-card">
+              <div class="card-header">
+                <h3 class="card-title">Audited Categories</h3>
+              </div>
+              <div class="dimensions-breakdown-list" id="detail-dimensions-list">
+                <!-- Brand Consistency, Tone, Terminology, Visual Identity, Claims, Accessibility -->
+              </div>
+            </div>
+
+            <!-- Detected Issues List -->
+            <div class="card detail-issues-card">
+              <div class="card-header">
+                <h3 class="card-title">Detected Issues &amp; Recommended Corrections</h3>
+              </div>
+              <div class="detected-issues-deck" id="detail-detected-issues-deck">
+                <!-- Standardized issue cards with severity, guideline citation, explanation, recommended correction -->
+              </div>
+            </div>
+
+            <!-- Review History Timeline -->
+            <div class="card detail-history-card">
+              <div class="card-header">
+                <h3 class="card-title">Review &amp; Revision History</h3>
+              </div>
+              <div class="review-history-timeline" id="detail-history-timeline">
+                <!-- Chronological submissions, feedback, revisions -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 6. PRE-FLIGHT SCANNER VIEW (/preflight-scanner) -->
+      <!-- ===================================================================== -->
+      <section id="view-preflight-scanner" class="app-view-pane hidden">
+        <div class="view-header-row">
+          <div>
+            <div class="breadcrumb-trail">Governance Platform &bull; Instant Client Diagnostics</div>
+            <h1 class="view-page-title">Instant Client Pre-Flight Scanner</h1>
+            <p class="view-page-subtitle">Immediate heuristic analysis upon drag-and-drop before final submission. Measures contrast, palette, layout, and style.</p>
+          </div>
+        </div>
+
+        <!-- Preliminary Notice Alert (Rule: Must distinguish from final AI approval) -->
+        <div class="preliminary-alert-banner">
+          <div class="alert-icon-box">⚡</div>
+          <div>
+            <strong>PRELIMINARY HEURISTIC SCANNER MEASUREMENTS</strong>
+            <p>Preliminary measurements run immediately in the browser before submitting. This is not final brand approval. Full multimodal verification and claim verification runs upon clicking "Submit for Review".</p>
+          </div>
+        </div>
+
+        <div class="preflight-grid">
+          <!-- Left: Drag and drop area & interactive canvas -->
+          <div class="preflight-col-upload">
+            <div class="card preflight-card">
+              <div id="preflight-drop-zone" class="drop-zone" onclick="document.getElementById('preflight-file-input').click()">
+                <input type="file" id="preflight-file-input" class="file-input" accept="image/*,.png,.jpg,.jpeg,.webp" onchange="runPreflightInstantScan(this.files[0])">
+                <div class="drop-zone-content">
+                  <div class="upload-icon-circle">⚡</div>
+                  <p class="drop-text">Drag &amp; drop creative here for <strong>instant pre-flight diagnostics</strong></p>
+                  <span class="drop-subtext">Zero backend upload required for initial heuristic analysis</span>
+                </div>
+              </div>
+
+              <!-- Live Canvas Preview -->
+              <div id="preflight-preview-frame" class="preflight-canvas-frame hidden">
+                <img id="preflight-canvas-img" src="" alt="Pre-Flight Inspection Preview" class="preflight-rendered-img">
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Telemetry HUD -->
+          <div class="preflight-col-telemetry">
+            <div class="card preflight-telemetry-card">
+              <div class="card-header">
+                <h3 class="card-title">Pre-Flight Empirical Telemetry</h3>
+                <span class="id-badge" id="preflight-status-badge">Awaiting Image</span>
+              </div>
+
+              <div class="preflight-metrics-list">
+                <!-- 1. Dominant Colours & Approximate HEX -->
+                <div class="telemetry-item">
+                  <div class="telemetry-label">Dominant Colours &amp; Approximate HEX</div>
+                  <div class="telemetry-swatches-row" id="preflight-swatches-row">
+                    <span class="subtle-placeholder">Drag an image to extract palette...</span>
+                  </div>
+                </div>
+
+                <!-- 2. Colour Temperature (Kelvin) -->
+                <div class="telemetry-item">
+                  <div class="telemetry-label">Colour Temperature</div>
+                  <div class="telemetry-val" id="preflight-temp-val">&mdash;</div>
+                  <span class="telemetry-sub" id="preflight-temp-sub">Calculated via correlated color temperature</span>
+                </div>
+
+                <!-- 3. Contrast Analysis -->
+                <div class="telemetry-item">
+                  <div class="telemetry-label">Contrast Measurements</div>
+                  <div class="telemetry-val" id="preflight-contrast-val">&mdash;</div>
+                  <span class="telemetry-sub" id="preflight-contrast-sub">W3C WCAG 2.1 AA requirement (min 4.5:1)</span>
+                </div>
+
+                <!-- 4. Dimensions & Aspect Ratio -->
+                <div class="telemetry-item">
+                  <div class="telemetry-label">Image Dimensions &amp; Aspect Ratio</div>
+                  <div class="telemetry-val" id="preflight-dimensions-val">&mdash;</div>
+                  <span class="telemetry-sub" id="preflight-aspect-sub">&mdash;</span>
+                </div>
+
+                <!-- 5. Negative Space Estimation -->
+                <div class="telemetry-item">
+                  <div class="telemetry-label">Negative Space Estimation</div>
+                  <div class="telemetry-val" id="preflight-whitespace-val">&mdash;</div>
+                  <span class="telemetry-sub">Clean layout clutter analysis</span>
+                </div>
+
+                <!-- 6. Layout Analysis -->
+                <div class="telemetry-item">
+                  <div class="telemetry-label">Basic Layout Properties</div>
+                  <div class="telemetry-val" id="preflight-layout-val">&mdash;</div>
+                  <span class="telemetry-sub" id="preflight-layout-sub">&mdash;</span>
+                </div>
+
+                <!-- 7. Preliminary Visual Style Prediction -->
+                <div class="telemetry-item">
+                  <div class="telemetry-label">Preliminary Visual-Style Prediction</div>
+                  <div class="telemetry-badge-style" id="preflight-style-val">&mdash;</div>
+                  <span class="telemetry-sub" id="preflight-style-sub">Minimalist, Bold, Corporate, Luxury, Playful, Futuristic, Editorial</span>
+                </div>
+              </div>
+
+              <div class="preflight-footer-cta">
+                <button type="button" class="btn btn-primary" id="btn-preflight-proceed" onclick="proceedToFullReviewFromPreflight()" disabled>
+                  <span>Submit for Full Multimodal AI Review &rarr;</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 7. BRAND CO-PILOT VIEW (/brand-copilot) -->
+      <!-- ===================================================================== -->
+      <section id="view-brand-copilot" class="app-view-pane hidden">
+        <div class="view-header-row">
+          <div>
+            <div class="breadcrumb-trail">Governance Platform &bull; Remediation Assistant</div>
+            <h1 class="view-page-title">Brand Co-Pilot (Remediation Chatbot)</h1>
+            <p class="view-page-subtitle">Interactive compliance guidance grounded in approved Brand DNA and official company knowledge base evidence.</p>
+          </div>
+        </div>
+
+        <div class="copilot-workspace-grid">
+          <!-- Left: Current Context & Quick Prompts -->
+          <div class="copilot-context-col">
+            <div class="card copilot-context-card">
+              <div class="card-header">
+                <h3 class="card-title">Content Context</h3>
+                <span class="status-pill status-active" id="copilot-brand-badge">Apex Cloud</span>
+              </div>
+              <div class="context-body">
+                <label class="subtle-label">Active Marketing Copy:</label>
+                <div class="context-copy-preview" id="copilot-context-copy">
+                  "Our cheap cloud servers are unhackable and guaranteed 100% bug-free for all enterprise customers."
+                </div>
+
+                <label class="subtle-label" style="margin-top: 1rem;">Detected Departures:</label>
+                <div class="copilot-issues-chips" id="copilot-issues-chips">
+                  <span class="chip chip-danger" onclick="askCopilot('Why is the word cheap prohibited?')">Disallowed: cheap</span>
+                  <span class="chip chip-danger" onclick="askCopilot('Why was unhackable flagged?')">Unsubstantiated: unhackable</span>
+                  <span class="chip chip-warning" onclick="askCopilot('How can I rewrite this guarantee in approved tone?')">High-Risk: 100% bug-free</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Action Prompts -->
+            <div class="card copilot-actions-card">
+              <div class="card-header">
+                <h3 class="card-title">Quick Remediation Prompts</h3>
+              </div>
+              <div class="copilot-prompts-list">
+                <button type="button" class="btn-prompt-item" onclick="askCopilot('Suggest 3 alternative headlines adhering to our brand tone')">
+                  <span>💡 Suggest 3 Alternative Headlines</span>
+                </button>
+                <button type="button" class="btn-prompt-item" onclick="askCopilot('Rewrite this promotional copy in our approved brand tone')">
+                  <span>✍️ Rewrite Content in Brand Tone</span>
+                </button>
+                <button type="button" class="btn-prompt-item" onclick="askCopilot('Correct terminology to align with approved lexicon')">
+                  <span>📖 Correct Terminology</span>
+                </button>
+                <button type="button" class="btn-prompt-item" onclick="askCopilot('Give me step-by-step guidance to pass certification')">
+                  <span>📋 Step-by-Step Correction Guidance</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Center: Interactive Chat Interface -->
+          <div class="copilot-chat-col">
+            <div class="card copilot-chat-card">
+              <div class="copilot-chat-header">
+                <div class="copilot-persona-info">
+                  <div class="copilot-avatar">🤖</div>
+                  <div>
+                    <strong>Sanket Brand Co-Pilot</strong>
+                    <span class="copilot-persona-status">Grounded in verified Brand DNA &bull; Non-generative fact anchor</span>
+                  </div>
+                </div>
+                <button type="button" class="btn-text-sm" onclick="clearCopilotConversation()">Clear Chat</button>
+              </div>
+
+              <!-- Message Stream -->
+              <div class="copilot-messages-stream" id="copilot-messages-list">
+                <div class="chat-msg msg-assistant">
+                  <div class="msg-bubble">
+                    Hello! I'm your Brand Co-Pilot. I evaluate your copy against <strong>Apex Cloud Systems</strong> approved Brand DNA and official Knowledge Base. How can I help you refine this creative?
+                  </div>
+                </div>
+              </div>
+
+              <!-- Structured Corrections Display Deck -->
+              <div class="copilot-structured-deck hidden" id="copilot-structured-deck">
+                <div class="deck-title">Proposed Content Corrections:</div>
+                <div class="deck-items-list" id="copilot-structured-items">
+                  <!-- Structured cards showing Original, Suggested Correction, and Reason -->
+                </div>
+              </div>
+
+              <!-- Chat Input Bar -->
+              <form class="copilot-input-row" id="copilot-form" onsubmit="handleCopilotSubmit(event)">
+                <input type="text" id="copilot-input" class="copilot-text-input" placeholder="Ask why an issue was flagged, request compliant headlines, or rewrite copy..." autocomplete="off">
+                <button type="submit" class="btn btn-primary btn-send-copilot">Send</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Right: Staged Review Drawer (Rule: Accepted changes must be reviewed before submit) -->
+          <div class="copilot-staged-col">
+            <div class="card copilot-staged-card">
+              <div class="card-header">
+                <h3 class="card-title">Staged Corrections</h3>
+                <span class="id-badge" id="staged-count-badge">0 Staged</span>
+              </div>
+              <div class="staged-body">
+                <p class="staged-notice">Accepted suggestions are staged here for creator review. Modified content is <strong>never automatically published</strong>.</p>
+                <div class="staged-items-deck" id="staged-corrections-deck">
+                  <span class="subtle-placeholder">Accept suggestions from chat to stage here...</span>
+                </div>
+                <button type="button" class="btn btn-primary" id="btn-submit-staged-review" onclick="submitStagedReviewToApprovals()" disabled>
+                  <span>Submit Revised Content for Approval</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 9. REVIEW & APPROVALS VIEW (/approvals) -->
+      <!-- ===================================================================== -->
+      <section id="view-approvals" class="app-view-pane hidden">
+        <div class="view-header-row">
+          <div>
+            <div class="breadcrumb-trail">Governance Platform &bull; Human Sign-Off Engine</div>
+            <h1 class="view-page-title">Review &amp; Approvals Workflow</h1>
+            <p class="view-page-subtitle">Role-based approval queues for Creators, Managers, Authorised Reviewers, and Administrators with audit logs.</p>
+          </div>
+        </div>
+
+        <!-- Section 9 Queue Tabs -->
+        <div class="approvals-tabs-bar">
+          <button type="button" class="approvals-tab active" onclick="switchApprovalsTab('MY_PENDING', this)">My Pending Reviews</button>
+          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('TEAM_SUBMISSIONS', this)">Team Submissions</button>
+          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('ASSIGNED_TO_ME', this)">Assigned to Me</button>
+          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('REVISION_REQUESTS', this)">Revision Requests</button>
+          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('APPROVED', this)">Approved Content</button>
+          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('REJECTED', this)">Rejected Content</button>
+          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('ESCALATED', this)">Escalated Content (High-Risk)</button>
+          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('HISTORY', this)">Approval History</button>
+        </div>
+
+        <!-- Approvals Queue Table Card -->
+        <div class="card approvals-queue-card">
+          <div class="table-responsive">
+            <table class="app-table">
+              <thead>
+                <tr>
+                  <th>Submission ID</th>
+                  <th>Title &amp; Creative Asset</th>
+                  <th>Submitter</th>
+                  <th>Department</th>
+                  <th>Version</th>
+                  <th>Status</th>
+                  <th>Escalation Risk</th>
+                  <th>Submitted Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="approvals-tbody">
+                <!-- Loaded dynamically from backend workflow_service -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 10. BRAND INSIGHTS VIEW (/brand-insights) -->
+      <!-- ===================================================================== -->
+      <section id="view-brand-insights" class="app-view-pane hidden">
+        <div class="view-header-row">
+          <div>
+            <div class="breadcrumb-trail">Governance Platform &bull; Trend Analytics</div>
+            <h1 class="view-page-title">Brand Insights &amp; Recurring Issues</h1>
+            <p class="view-page-subtitle">Analytics generated from real review data identifying recurring guideline violations and ambiguous brand rules.</p>
+          </div>
+          <div class="view-header-actions">
+            <button type="button" class="btn btn-sm btn-secondary" onclick="loadInsightsData()">
+              <span>Refresh Analytics</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 8 Structured Insights Sections -->
+        <div class="insights-dashboard-grid">
+          <!-- 10.1: Overall Brand Compliance -->
+          <div class="card insight-card">
+            <div class="card-header">
+              <h3 class="card-title">Overall Brand Compliance</h3>
+            </div>
+            <div class="insight-score-large" id="insights-compliance-num">94.2%</div>
+            <p class="insight-subtext">Aggregated pass rate across all evaluated marketing submissions in current quarter.</p>
+          </div>
+
+          <!-- 10.2: Recurring Violations -->
+          <div class="card insight-card">
+            <div class="card-header">
+              <h3 class="card-title">Top Recurring Violations</h3>
+            </div>
+            <div class="recurring-violations-list" id="insights-recurring-violations">
+              <div class="recur-item">
+                <span>Unsupported Promotional Superlatives</span>
+                <strong>42% of issues</strong>
+              </div>
+              <div class="recur-item">
+                <span>Color Palette Drift (&Delta;E &gt; 15.0)</span>
+                <strong>28% of issues</strong>
+              </div>
+              <div class="recur-item">
+                <span>Disallowed Terminology ("cheap")</span>
+                <strong>19% of issues</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 10.3: Tone & Messaging Issues -->
+          <div class="card insight-card">
+            <div class="card-header">
+              <h3 class="card-title">Tone &amp; Messaging Issues</h3>
+            </div>
+            <p>Most common tone mismatch: <strong>Overly aggressive hype language</strong> departing from crisp technical voice.</p>
+          </div>
+
+          <!-- 10.4: Visual Consistency Issues -->
+          <div class="card insight-card">
+            <div class="card-header">
+              <h3 class="card-title">Visual Consistency Issues</h3>
+            </div>
+            <p>Logo margin violations detected in <strong>14%</strong> of social banner submissions (< 24px clear margin).</p>
+          </div>
+
+          <!-- 10.5: Unsupported Claims -->
+          <div class="card insight-card guideline-span-2">
+            <div class="card-header">
+              <h3 class="card-title">Repeated Unsupported Promotional Claims</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="app-table">
+                <thead>
+                  <tr>
+                    <th>Claim Assertion</th>
+                    <th>Claim Type</th>
+                    <th>Frequency</th>
+                    <th>Missing Required Evidence</th>
+                    <th>Recommended Guideline Update</th>
+                  </tr>
+                </thead>
+                <tbody id="insights-claims-tbody">
+                  <tr>
+                    <td>"100% bug-free cloud architecture"</td>
+                    <td><span class="status-pill status-danger">Guarantee</span></td>
+                    <td>6 times</td>
+                    <td>Legal underwriting agreement</td>
+                    <td>Explicitly prohibit absolute bug-free guarantees</td>
+                  </tr>
+                  <tr>
+                    <td>"#1 in cloud uptime"</td>
+                    <td><span class="status-pill status-danger">Superlative</span></td>
+                    <td>4 times</td>
+                    <td>Gartner / IDC market share audit</td>
+                    <td>Require official benchmark citation or remove claim</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 10.6: Department-wise Analysis -->
+          <div class="card insight-card">
+            <div class="card-header">
+              <h3 class="card-title">Department-wise Compliance</h3>
+            </div>
+            <div class="dept-list" id="insights-dept-list">
+              <div class="dept-row"><span>Product Marketing</span><strong style="color:#10B981;">96% Pass</strong></div>
+              <div class="dept-row"><span>Growth &amp; Acquisition</span><strong style="color:#F59E0B;">78% Pass</strong></div>
+              <div class="dept-row"><span>PR &amp; Communications</span><strong style="color:#10B981;">94% Pass</strong></div>
+              <div class="dept-row"><span>Social Media Agency</span><strong style="color:#EF4444;">71% Pass</strong></div>
+            </div>
+          </div>
+
+          <!-- 10.7: Frequent Terminology Mistakes -->
+          <div class="card insight-card">
+            <div class="card-header">
+              <h3 class="card-title">Frequent Terminology Mistakes</h3>
+            </div>
+            <div class="terms-mismatch-list" id="insights-terms-list">
+              <div class="term-pair"><span class="bad-term">&#10005; cheap</span> &rarr; <span class="good-term">&#10003; cost-efficient</span></div>
+              <div class="term-pair"><span class="bad-term">&#10005; unhackable</span> &rarr; <span class="good-term">&#10003; zero-trust architecture</span></div>
+              <div class="term-pair"><span class="bad-term">&#10005; instant magic</span> &rarr; <span class="good-term">&#10003; automated low-latency</span></div>
+            </div>
+          </div>
+
+          <!-- 10.8: Guideline Clarity Recommendations -->
+          <div class="card insight-card guideline-span-2">
+            <div class="card-header">
+              <h3 class="card-title">Guideline Clarity Recommendations</h3>
+            </div>
+            <div class="recommendations-deck" id="insights-guidelines-recommendations">
+              <div class="rec-card">
+                <strong>Clarify Superlative Substantiation Rule:</strong>
+                <p>Creators frequently submit "#1" assertions assuming internal uptime metrics qualify. Recommend updating Brand Knowledge Base to specify third-party accredited audit requirement.</p>
+              </div>
+              <div class="rec-card">
+                <strong>Provide Accent Color Hierarchy Examples:</strong>
+                <p>Social media teams frequently invert secondary and accent colors. Recommend adding 2 reference designs to Official Brand Assets.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- 11. SETTINGS VIEW (/settings) -->
+      <!-- ===================================================================== -->
+      <section id="view-settings" class="app-view-pane hidden">
+        <div class="view-header-row">
+          <div>
+            <div class="breadcrumb-trail">Governance Platform &bull; Administration &amp; Access</div>
+            <h1 class="view-page-title">Enterprise Settings &amp; Security</h1>
+            <p class="view-page-subtitle">Organisation profile, RBAC permissions matrix, AI gateways, and tenant data separation controls.</p>
+          </div>
+        </div>
+
+        <div class="settings-tabs-layout">
+          <!-- Left Settings Sub-Navigation -->
+          <div class="settings-nav-col">
+            <button type="button" class="settings-tab-btn active" onclick="switchSettingsSection('org-profile', this)">Organisation Profile</button>
+            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('user-management', this)">User Management</button>
+            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('roles-permissions', this)">Roles &amp; Permissions (RBAC)</button>
+            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('team-management', this)">Team Management</button>
+            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('ai-config', this)">AI Configuration</button>
+            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('connected-services', this)">Connected Services</button>
+            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('security-privacy', this)">Security &amp; Privacy</button>
+            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('data-management', this)">Data Management</button>
+          </div>
+
+          <!-- Right Settings Content Panes -->
+          <div class="settings-content-col">
+            <!-- 11.1 Organisation Profile -->
+            <div id="settings-pane-org-profile" class="settings-pane active">
+              <div class="card settings-card">
+                <div class="card-header"><h3 class="card-title">Organisation Profile</h3></div>
+                <div class="form-group">
+                  <label>Organisation Legal Name:</label>
+                  <input type="text" class="form-input" value="Apex Global Technologies, Inc." readonly>
+                </div>
+                <div class="form-group">
+                  <label>Tenant ID (Data Separation Anchor):</label>
+                  <input type="text" class="form-input" value="org-apex-cloud-9a2f" readonly>
+                </div>
+                <div class="form-group">
+                  <label>Primary Governance Domain:</label>
+                  <input type="text" class="form-input" value="apexcloud.io" readonly>
+                </div>
+              </div>
+            </div>
+
+            <!-- 11.3 Roles & Permissions (RBAC Matrix) -->
+            <div id="settings-pane-roles-permissions" class="settings-pane hidden">
+              <div class="card settings-card">
+                <div class="card-header"><h3 class="card-title">Role-Based Access Control Matrix (Section 12)</h3></div>
+                <div class="table-responsive">
+                  <table class="app-table">
+                    <thead>
+                      <tr>
+                        <th>Capability</th>
+                        <th>Creator</th>
+                        <th>Manager</th>
+                        <th>Authorised Reviewer</th>
+                        <th>Administrator</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>View Dashboard &amp; Identity</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+                      <tr><td>Submit Content for Review</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+                      <tr><td>Pre-Flight Scanner &amp; Co-Pilot</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+                      <tr><td>Manage Team Submissions</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+                      <tr><td>Approve Standard Content</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+                      <tr><td>Approve Escalated High-Risk Claims</td><td>&mdash;</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td></tr>
+                      <tr><td>Brand DNA &amp; Knowledge Base Admin</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&#10003;</td></tr>
+                      <tr><td>Security &amp; Tenant Settings</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&#10003;</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- 11.5 AI Configuration -->
+            <div id="settings-pane-ai-config" class="settings-pane hidden">
+              <div class="card settings-card">
+                <div class="card-header"><h3 class="card-title">AI Gateways &amp; Resiliency Configuration</h3></div>
+                <div class="gateway-status-row">
+                  <div>
+                    <strong>Google Gemini API (gemini-3.5-flash-lite)</strong>
+                    <span class="subtle-label">Multimodal reasoning &amp; Brand DNA synthesis</span>
+                  </div>
+                  <span class="status-pill status-active">Operational</span>
+                </div>
+                <div class="gateway-status-row" style="margin-top: 1rem;">
+                  <div>
+                    <strong>Groq API (llama-3.2-11b-vision-preview)</strong>
+                    <span class="subtle-label">High-velocity sub-second image inspection</span>
+                  </div>
+                  <span class="status-pill status-active">Operational</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 11.7 Security & Privacy -->
+            <div id="settings-pane-security-privacy" class="settings-pane hidden">
+              <div class="card settings-card">
+                <div class="card-header"><h3 class="card-title">Security &amp; Tenant Isolation</h3></div>
+                <ul class="styled-guideline-list">
+                  <li><strong>Magic Bytes Enforcement:</strong> Strict MIME sniffing enabled to block disguised executables.</li>
+                  <li><strong>Multi-tenant Isolation:</strong> Separate tenant storage directories with traversal protection.</li>
+                  <li><strong>Supabase Row Level Security:</strong> RLS enabled on brand_knowledge_items and audit tables.</li>
+                  <li><strong>Error Trace Shielding:</strong> Internal stack traces and server paths are suppressed from client responses.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS & OVERLAYS -->
+  <!-- ========================================================================= -->
+
+  <!-- Modal: Role Switcher (Persona Switcher) -->
+  <div id="modal-role-select" class="app-modal hidden">
+    <div class="modal-backdrop" onclick="toggleRoleModal()"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Switch Enterprise Role Persona</h3>
+        <button type="button" class="modal-close-btn" onclick="toggleRoleModal()">&times;</button>
       </div>
-      
-      <div id="saving-modal-substatus" style="font-size: 0.78rem; color: var(--text-muted, #94A3B8); font-family: var(--font-mono, monospace);">
-        Connecting to BrandShield Governance Engine...
+      <div class="modal-body">
+        <p class="modal-desc">Test the platform through different organisational clearance levels:</p>
+        <div class="role-selector-options">
+          <div class="role-option" onclick="switchUserRole('Creator')">
+            <div class="role-title"><strong>Creator</strong><span class="status-pill">Standard User</span></div>
+            <p>Upload content, run pre-flight scans, chat with Brand Co-Pilot, view own submissions.</p>
+          </div>
+          <div class="role-option" onclick="switchUserRole('Manager')">
+            <div class="role-title"><strong>Manager</strong><span class="status-pill">Team Approver</span></div>
+            <p>Manage team submissions, request revisions, review standard content, view Brand Insights.</p>
+          </div>
+          <div class="role-option" onclick="switchUserRole('Authorised Reviewer')">
+            <div class="role-title"><strong>Authorised Reviewer</strong><span class="status-pill status-warning">Compliance Authority</span></div>
+            <p>Full approval queue, escalate and approve high-risk promotional claims, legal audit authority.</p>
+          </div>
+          <div class="role-option active" onclick="switchUserRole('Administrator')">
+            <div class="role-title"><strong>Administrator</strong><span class="status-pill status-active">Full Tenant Control</span></div>
+            <p>Brand DNA onboarding, Knowledge Base management, user management, audit logs, tenant settings.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification Container -->
-  <div id="app-toast" class="app-toast hidden"></div>
+  <!-- Modal: Add Knowledge Item -->
+  <div id="modal-add-knowledge" class="app-modal hidden">
+    <div class="modal-backdrop" onclick="closeAddKnowledgeModal()"></div>
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Approved Knowledge Base Item</h3>
+        <button type="button" class="modal-close-btn" onclick="closeAddKnowledgeModal()">&times;</button>
+      </div>
+      <form id="form-add-knowledge" onsubmit="submitNewKnowledgeItem(event)">
+        <div class="modal-body">
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>Category:</label>
+              <select id="new-kb-category" class="form-select" required>
+                <option value="COMPANY_FACT">Company Information</option>
+                <option value="GUIDELINE">Brand Guidelines</option>
+                <option value="APPROVED_FACT">Approved Facts</option>
+                <option value="PRODUCT_SERVICE">Products &amp; Services</option>
+                <option value="PROMOTIONAL_CLAIM">Approved Claims &amp; Evidence</option>
+                <option value="TERMINOLOGY">Terminology</option>
+                <option value="OFFICIAL_ASSET">Official Brand Assets</option>
+                <option value="REFERENCE_DESIGN">Reference Designs</option>
+                <option value="RESTRICTED_MESSAGING">Restricted Messaging</option>
+                <option value="POLICY_EXCEPTION">Policy Exceptions</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Item Title:</label>
+              <input type="text" id="new-kb-title" class="form-input" placeholder="e.g. ISO 27001 Certification Fact" required>
+            </div>
+          </div>
 
-  <!-- App Footer -->
-  <footer class="app-footer">
-    <div class="footer-container">
-      <p>Sanket AI &copy; 2026. All rights reserved.</p>
-      <div class="footer-links">
-        <span onclick="switchMainView('landing')" role="button" tabindex="0">Overview</span> &bull;
-        <span onclick="switchMainView('developer')" role="button" tabindex="0">Check Vibe</span> &bull;
-        <span onclick="switchMainView('company')" role="button" tabindex="0">Company Portal</span> &bull;
-        <span onclick="switchMainView('account')" role="button" tabindex="0">Company Account</span> &bull;
-        <span onclick="toggleRoleModal()" role="button" tabindex="0">Role Switcher</span> &bull;
-        <span onclick="toggleSettingsModal()" role="button" tabindex="0">API Settings</span>
+          <div class="form-group">
+            <label>Approved Content / Fact Statement:</label>
+            <textarea id="new-kb-content" rows="3" class="form-textarea" placeholder="Enter verified company fact or approved claim..." required></textarea>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>Supporting Evidence Source (Citation):</label>
+              <input type="text" id="new-kb-evidence" class="form-input" placeholder="e.g. BSI Audit Certificate 2026-BSI-9921">
+            </div>
+            <div class="form-group">
+              <label>Evidence Reference URL / Doc:</label>
+              <input type="text" id="new-kb-ref" class="form-input" placeholder="https://apexcloud.io/compliance/iso27001">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeAddKnowledgeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save to Knowledge Base</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Generate Brand DNA -->
+  <div id="modal-generate-dna" class="app-modal hidden">
+    <div class="modal-backdrop" onclick="closeDnaGeneratorModal()"></div>
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">Generate Brand DNA (10 Input Dimensions)</h3>
+        <button type="button" class="modal-close-btn" onclick="closeDnaGeneratorModal()">&times;</button>
+      </div>
+      <form id="form-generate-dna" onsubmit="submitGenerateDNA(event)">
+        <div class="modal-body">
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>1. Company Name:</label>
+              <input type="text" id="dna-company-name" class="form-input" value="Apex Cloud Systems" required>
+            </div>
+            <div class="form-group">
+              <label>2. Industry / Sector:</label>
+              <input type="text" id="dna-industry" class="form-input" value="Enterprise Cloud Infrastructure & Cybersecurity" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>3. Business Description:</label>
+            <textarea id="dna-business-desc" rows="2" class="form-textarea" required>We build high-availability zero-trust cloud data pipelines and automated container security meshes.</textarea>
+          </div>
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>4. Main Products &amp; Services:</label>
+              <input type="text" id="dna-products" class="form-input" value="Apex Shield Kubernetes Mesh, Apex Pipeline Engine" required>
+            </div>
+            <div class="form-group">
+              <label>5. Target Audience:</label>
+              <input type="text" id="dna-audience" class="form-input" value="DevOps Leads, Cloud Architects, Enterprise CISOs" required>
+            </div>
+          </div>
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>6. Core Company Values:</label>
+              <input type="text" id="dna-values" class="form-input" value="Deterministic security, Zero downtime, Radical transparency" required>
+            </div>
+            <div class="form-group">
+              <label>7. Brand Positioning:</label>
+              <input type="text" id="dna-positioning" class="form-input" value="The zero-trust infrastructure engine for mission-critical enterprise workloads." required>
+            </div>
+          </div>
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label>8. Desired Customer Perception:</label>
+              <input type="text" id="dna-perception" class="form-input" value="Rock-solid, uncompromising, highly technical, reliable" required>
+            </div>
+            <div class="form-group">
+              <label>9. Communication Personality:</label>
+              <input type="text" id="dna-personality" class="form-input" value="Authoritative, crisp, empowering, direct" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>10. Reference Benchmark Brands:</label>
+            <input type="text" id="dna-reference-brands" class="form-input" value="Stripe, Cloudflare, HashiCorp">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeDnaGeneratorModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-run-generate-dna">Synthesize 13 Brand DNA Sections</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Approve Brand DNA -->
+  <div id="modal-approve-dna" class="app-modal hidden">
+    <div class="modal-backdrop" onclick="closeApproveDnaModal()"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Approve &amp; Activate Brand DNA</h3>
+        <button type="button" class="modal-close-btn" onclick="closeApproveDnaModal()">&times;</button>
+      </div>
+      <form id="form-approve-dna" onsubmit="submitApproveDNA(event)">
+        <div class="modal-body">
+          <p>Official approval transitions Brand DNA from DRAFT to <strong>ACTIVE</strong> and synchronizes with Supabase governance records.</p>
+          <div class="form-group">
+            <label>Approver Name &amp; Role:</label>
+            <input type="text" id="approve-dna-by" class="form-input" value="Elena Rostova (Chief Brand Officer)" required>
+          </div>
+          <div class="form-group">
+            <label>Approval Notes:</label>
+            <textarea id="approve-dna-notes" rows="2" class="form-textarea">Approved official corporate brand guidelines standard for global marketing and partner compliance.</textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeApproveDnaModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm &amp; Activate Standard</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notifications Modal -->
+  <div id="modal-notifications" class="app-modal hidden">
+    <div class="modal-backdrop" onclick="toggleNotificationsModal()"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Governance Notifications</h3>
+        <button type="button" class="modal-close-btn" onclick="toggleNotificationsModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="notifications-modal-body">
+        <div class="notification-item">
+          <strong>🚨 Claim Escalated for Legal Sign-Off</strong>
+          <p>Elena submitted "#1 fastest cloud globally" requiring Authorised Reviewer sign-off.</p>
+          <span class="subtle-time">10 minutes ago</span>
+        </div>
+        <div class="notification-item">
+          <strong>✅ Content Review Approved</strong>
+          <p>Marcus Vance approved "Spring Ad Campaign v1" after SLA citation verified.</p>
+          <span class="subtle-time">1 hour ago</span>
+        </div>
+        <div class="notification-item">
+          <strong>📖 Knowledge Base Item Updated (v2)</strong>
+          <p>Compliance Auditor updated "ISO 27001 Certification Fact" with SOC 2 confirmation.</p>
+          <span class="subtle-time">3 hours ago</span>
+        </div>
       </div>
     </div>
-  </footer>
+  </div>
 
-  <!-- Modal and Interaction Helper Scripts -->
-  <script>
-    
-    function updateRemediationSlider(val) {
-      const afterImg = document.getElementById('slider-after-img');
-      const line = document.getElementById('slider-line');
-      const handle = document.getElementById('slider-handle');
-      if (afterImg) afterImg.style.clipPath = `polygon(${val}% 0, 100% 0, 100% 100%, ${val}% 100%)`;
-      if (line) line.style.left = `${val}%`;
-      if (handle) handle.style.left = `${val}%`;
-    }
+  <!-- Help & Documentation Modal -->
+  <div id="modal-help" class="app-modal hidden">
+    <div class="modal-backdrop" onclick="toggleHelpModal()"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Governance Platform Reference &amp; Shortcuts</h3>
+        <button type="button" class="modal-close-btn" onclick="toggleHelpModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4>Keyboard Shortcuts</h4>
+        <div class="shortcuts-list">
+          <div class="shortcut-item"><kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd> <span>Open Global Search</span></div>
+          <div class="shortcut-item"><kbd>Esc</kbd> <span>Close Active Modal</span></div>
+        </div>
+        <h4 style="margin-top: 1.25rem;">Governance Standards Enforced</h4>
+        <ul class="styled-guideline-list">
+          <li><strong>CIELAB &Delta;E Tolerance:</strong> &Delta;E &le; 15.0 per W3C / CIE colorimetry standard.</li>
+          <li><strong>WCAG 2.1 AA Contrast:</strong> Minimum 4.5:1 for standard copy, 3.0:1 for large headlines.</li>
+          <li><strong>FTC Claim Verification:</strong> Never assume true without certified Knowledge Base evidence.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
-    // 3D Card Perspective Micro-Interactions
-    document.addEventListener('DOMContentLoaded', () => {
-      const tiltCards = document.querySelectorAll('.floating-tile, .metric-stat-item');
-      tiltCards.forEach(card => {
-        card.addEventListener('mousemove', e => {
-          const rect = card.getBoundingClientRect();
-          const x = e.clientX - rect.left - rect.width / 2;
-          const y = e.clientY - rect.top - rect.height / 2;
-          card.style.transform = `perspective(900px) rotateX(${-y * 0.04}deg) rotateY(${x * 0.04}deg) translateY(-4px)`;
-        });
-        card.addEventListener('mouseleave', () => {
-          card.style.transform = '';
-        });
-      });
-    });
-
-    function switchHeroTab(tabKey) {
-      document.querySelectorAll('.interactive-demo-tabs .demo-tab').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.hero-demo-pane').forEach(p => {
-        p.classList.add('hidden');
-        p.classList.remove('active');
-      });
-      const btn = document.getElementById('tab-btn-' + tabKey);
-      const pane = document.getElementById('hero-pane-' + tabKey);
-      if (btn) btn.classList.add('active');
-      if (pane) {
-        pane.classList.remove('hidden');
-        pane.classList.add('active');
-      }
-    }
-    function toggleMobileNav() {
-      const drawer = document.getElementById('mobile-nav-drawer');
-      if (drawer) drawer.classList.toggle('hidden');
-    }
-    function toggleRoleModal() {
-      const modal = document.getElementById('modal-role-switcher');
-      if (modal) modal.classList.toggle('hidden');
-    }
-    function toggleSettingsModal() {
-      const modal = document.getElementById('modal-settings');
-      if (modal) modal.classList.toggle('hidden');
-    }
-    function selectRole(roleTitle, dept, initials, rbac) {
-      document.querySelectorAll('.role-card-option').forEach(el => el.classList.remove('active'));
-      if (event && event.currentTarget) event.currentTarget.classList.add('active');
-      const roleDisplay = document.getElementById('active-role-display');
-      if (roleDisplay) roleDisplay.textContent = roleTitle;
-      const sideName = document.getElementById('sidebar-user-name');
-      if (sideName) sideName.textContent = dept;
-      const sideRole = document.getElementById('sidebar-user-role');
-      if (sideRole) sideRole.textContent = roleTitle;
-      const sideAvatar = document.getElementById('sidebar-user-avatar');
-      if (sideAvatar) sideAvatar.textContent = initials;
-      if (typeof toast === 'function') toast('Active role switched to ' + roleTitle);
-      toggleRoleModal();
-    }
-    function saveSettings() {
-      toggleSettingsModal();
-      if (typeof toast === 'function') toast('Governance preferences saved');
-    }
-  </script>
-
-  <script src="/static/app.js?v=27.0"></script>
+  <script src="/static/app.js?v=28.0"></script>
 </body>
 </html>

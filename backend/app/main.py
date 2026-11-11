@@ -132,9 +132,19 @@ async def get_favicon():
         return FileResponse(fav_path, media_type="image/svg+xml")
     return Response(status_code=404)
 
+@app.get("/dashboard")
+@app.get("/brand-identity")
+@app.get("/brand-knowledge")
+@app.get("/content-review")
+@app.get("/content-review/{review_id}")
+@app.get("/preflight-scanner")
+@app.get("/brand-copilot")
+@app.get("/approvals")
+@app.get("/brand-insights")
+@app.get("/settings")
 @app.get("/overview")
 @app.get("/")
-def serve_index():
+def serve_index(review_id: str = None):
     index_file = STATIC_DIR / "index.html"
     if index_file.exists():
         return FileResponse(index_file)
