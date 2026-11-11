@@ -162,9 +162,27 @@ class BrandCopilotService:
             structured_corrections=structured_corrections
         )
 
-        # 2. AI Reasoning layer (Google Gemini) for nuanced contextual conversation
+        # 2. AI Reasoning layer: Priority 1: Groq API (ultra-low latency), Priority 2: Gemini API, Priority 3: Deterministic fallback
         reply_text = ""
-        if settings.has_gemini:
+        if settings.has_groq:
+            try:
+                reply_text = await self._generate_groq_reply(
+                    req=req,
+                    brand_name=brand_name,
+                    brand_tone=brand_tone,
+                    personality=personality,
+                    dna_profile=dna_profile,
+                    kb_context=kb_context,
+                    approved_palette=approved_palette,
+                    structured_corrections=structured_corrections,
+                    intent=intent
+                )
+                if reply_text:
+                    context_sources.append(f"AI Reasoning: Groq Cloud ({getattr(settings, 'GROQ_TEXT_MODEL', 'llama-3.3-70b-versatile')})")
+            except Exception as exc:
+                logger.warning("Groq Co-Pilot chat reasoning skipped due to error: %s", exc)
+
+        if not reply_text and settings.has_gemini:
             try:
                 reply_text = await self._generate_gemini_reply(
                     req=req,
@@ -177,10 +195,12 @@ class BrandCopilotService:
                     structured_corrections=structured_corrections,
                     intent=intent
                 )
+                if reply_text:
+                    context_sources.append("AI Reasoning: Google Gemini")
             except Exception as exc:
                 logger.warning("Gemini Co-Pilot chat reasoning skipped due to API condition: %s", exc)
 
-        # Fallback response generation if Gemini was unavailable or empty
+        # Fallback response generation if neither LLM was available or empty
         if not reply_text:
             reply_text = self._generate_deterministic_reply(
                 req=req,
@@ -192,6 +212,7 @@ class BrandCopilotService:
                 step_guidance=step_guidance,
                 approved_palette=approved_palette
             )
+            context_sources.append("Deterministic Grounding Engine")
 
         quick_prompts = [
             f"Suggest 3 headlines in {brand_name}'s voice",
@@ -505,6 +526,88 @@ class BrandCopilotService:
         ))
 
         return steps
+
+    async def _generate_groq_reply(
+        self,
+        req: CopilotChatRequest,
+        brand_name: str,
+        brand_tone: Any,
+        personality: Any,
+        dna_profile: Any,
+        kb_context: Dict[str, Any],
+        approved_palette: List[str],
+        structured_corrections: List[RemediationSuggestion],
+        intent: str
+    ) -> str:
+        """
+        Invokes Groq Cloud API using supported models (llama-3.3-70b-versatile / llama-3.1-8b-instant)
+        with automatic fallback, timeout handling, and rate limit backoff.
+        """
+        if not settings.has_groq:
+            return ""
+
+        from groq import AsyncGroq
+        import httpx
+
+        timeout = httpx.Timeout(15.0, connect=5.0)
+        async with httpx.AsyncClient(timeout=timeout) as http_client:
+            client = AsyncGroq(api_key=settings.GROQ_API_KEY, http_client=http_client)
+
+            system_prompt = (
+                f"You are the official AI Brand Co-Pilot and Guardian for '{brand_name}'. "
+                f"Tone of voice: {brand_tone}. Personality: {personality}. "
+                "Provide authoritative, actionable remediation advice grounded exclusively in the company's approved brand guidelines. "
+                "Never invent official facts, certifications, or unverified claims. "
+                "Keep responses concise (under 160 words), encouraging, and clear."
+            )
+
+            user_prompt = f"""### ORGANIZATION GROUND TRUTH (BRAND DNA & KNOWLEDGE BASE):
+- Approved Palette: {json.dumps(approved_palette)}
+- Prohibited Terms & Claims: {json.dumps(kb_context.get('prohibited_messaging', []))}
+- Approved Verified Claims: {json.dumps([c.get('claim_text') for c in kb_context.get('approved_promotional_claims', [])])}
+- Approved Terminology Mappings: {json.dumps(kb_context.get('approved_terminology_map', {}))}
+
+### CREATIVE AUDIT CONTEXT:
+- Creator Copy: "{req.copy_text or 'None'}"
+- Flagged Issues / Discrepancies: {json.dumps(req.discrepancies)}
+- Creator Message: "{req.message}"
+- Stated Intent: {intent}
+
+### DIRECTIVES:
+1. Explain specifically why detected issues depart from {brand_name}'s approved guidelines.
+2. Provide step-by-step guidance on how to bring the content into full compliance.
+3. Suggest a compliant headline or rewrite if requested.
+4. Keep the tone encouraging, authoritative, and professional.
+"""
+            models_to_try = [
+                getattr(settings, "GROQ_TEXT_MODEL", "llama-3.3-70b-versatile"),
+                "llama-3.1-8b-instant",
+                "llama-3.3-70b-versatile",
+                "mixtral-8x7b-32768"
+            ]
+
+            last_err = None
+            for model in dict.fromkeys(models_to_try):
+                try:
+                    response = await client.chat.completions.create(
+                        model=model,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt}
+                        ],
+                        temperature=0.2,
+                        max_tokens=350
+                    )
+                    if response and response.choices and response.choices[0].message.content:
+                        return response.choices[0].message.content.strip()
+                except Exception as exc:
+                    last_err = exc
+                    logger.warning("Groq Co-Pilot chat reasoning with model '%s' failed: %s. Trying next...", model, exc)
+                    continue
+
+            if last_err:
+                logger.error("All Groq models failed in Co-Pilot: %s", last_err)
+            return ""
 
     async def _generate_gemini_reply(
         self,

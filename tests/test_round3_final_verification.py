@@ -228,3 +228,25 @@ def test_full_approval_workflow_lifecycle():
         )
     )
     assert dec.status == ContentStatus.APPROVED
+
+
+# ===========================================================================
+# 5. GROQ API RESILIENCE & ERROR HANDLING
+# ===========================================================================
+def test_groq_api_endpoint_handling(client):
+    """Verifies that /api/v1/system/test-groq properly handles unconfigured and invalid keys."""
+    # 1. Unconfigured check
+    res_unconf = client.get("/api/v1/system/test-groq")
+    assert res_unconf.status_code == 200
+    data_unconf = res_unconf.json()
+    assert "status" in data_unconf
+
+    # 2. Invalid key handling
+    res_inv = client.post("/api/v1/system/test-groq", json={
+        "api_key": "gsk_invalid_test_mock_key_99999",
+        "prompt": "Test"
+    })
+    assert res_inv.status_code == 200
+    data_inv = res_inv.json()
+    assert data_inv["status"] in ("invalid_api_key", "error", "unconfigured")
+

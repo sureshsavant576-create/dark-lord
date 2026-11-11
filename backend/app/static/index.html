@@ -1499,17 +1499,28 @@
                 <div class="card-header"><h3 class="card-title">AI Gateways &amp; Resiliency Configuration</h3></div>
                 <div class="gateway-status-row">
                   <div>
-                    <strong>Google Gemini API (gemini-3.5-flash-lite)</strong>
-                    <span class="subtle-label">Multimodal reasoning &amp; Brand DNA synthesis</span>
+                    <strong>Google Gemini API (gemini-3.1-flash-lite)</strong>
+                    <span class="subtle-label">Primary multimodal vision, brand DNA synthesis, &amp; audio tone reasoning</span>
                   </div>
                   <span class="status-pill status-active">Operational</span>
                 </div>
                 <div class="gateway-status-row" style="margin-top: 1rem;">
                   <div>
-                    <strong>Groq API (llama-3.2-11b-vision-preview)</strong>
-                    <span class="subtle-label">High-velocity sub-second image inspection</span>
+                    <strong>Groq Cloud API (llama-3.3-70b-versatile &amp; llama-3.2-11b-vision-preview)</strong>
+                    <span class="subtle-label">Ultra-low latency text reasoning, Brand Co-Pilot conversation, &amp; cloud vision</span>
                   </div>
-                  <span class="status-pill status-active">Operational</span>
+                  <span class="status-pill status-active">Connected</span>
+                </div>
+
+                <!-- Interactive Groq Live Health Diagnostic -->
+                <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: #cbd5e1; font-weight: 600;">Groq Cloud Health Check</span>
+                    <button type="button" class="btn btn-secondary" id="btn-test-groq" onclick="testGroqConnection()" style="font-size: 11px; padding: 6px 12px;">
+                      ⚡ Test Live Groq Connectivity
+                    </button>
+                  </div>
+                  <div id="groq-test-results" class="hidden" style="margin-top: 0.75rem;"></div>
                 </div>
               </div>
             </div>

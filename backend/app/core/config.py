@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     DEFAULT_TEXT_MODEL: str = Field(default="gemini-3.1-flash-lite", description="Default text reasoning model")
     DEFAULT_EMBEDDING_MODEL: str = Field(default="gemini-embedding-001", description="Default embedding model")
     GROQ_VISION_MODEL: str = Field(default="llama-3.2-11b-vision-preview", description="Groq cloud-hosted vision model")
+    GROQ_TEXT_MODEL: str = Field(default="llama-3.3-70b-versatile", description="Groq cloud-hosted fast text reasoning model")
 
     MAX_COLOR_DELTA_E: float = Field(default=15.0, description="Max acceptable CIELAB Delta E color deviation")
     MIN_OVERALL_PASS_SCORE: float = Field(default=70.0, description="Minimum overall score for automatic pass")

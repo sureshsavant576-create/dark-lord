@@ -7203,3 +7203,55 @@ window.navigateToPage = function(viewKey, evt, optionalId) {
     setTimeout(triggerDashboardKpiAnimations, 100);
   }
 };
+
+// 10. Interactive Groq Cloud Diagnostics Controller
+async function testGroqConnection() {
+  const resultEl = document.getElementById('groq-test-results');
+  const btn = document.getElementById('btn-test-groq');
+  if (btn) btn.classList.add('btn-loading');
+  if (resultEl) {
+    resultEl.classList.remove('hidden');
+    resultEl.innerHTML = '<span style="color: #60a5fa; font-size: 11px;">Pinging Groq Cloud API...</span>';
+  }
+
+  try {
+    const res = await fetch('/api/v1/system/test-groq');
+    const data = await res.json();
+
+    if (data.status === 'operational') {
+      resultEl.innerHTML = `
+        <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); padding: 10px; border-radius: 8px; font-size: 11px;">
+          <strong style="color: #34d399;">✅ Groq API Operational &amp; Verified!</strong><br>
+          <span style="color: #94a3b8;">Model: <strong>${data.model_tested}</strong> &bull; Latency: <strong>${data.latency_ms} ms</strong> &bull; Key: <strong>${data.key_masked}</strong></span><br>
+          <span style="color: #cbd5e1; font-style: italic; display: block; margin-top: 4px;">"${data.test_response}"</span>
+        </div>
+      `;
+      showToast('Groq Cloud API is fully connected (' + data.latency_ms + 'ms)', 'success');
+    } else if (data.status === 'unconfigured') {
+      resultEl.innerHTML = `
+        <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); padding: 10px; border-radius: 8px; font-size: 11px;">
+          <strong style="color: #fbbf24;">⚠️ GROQ_API_KEY Not Detected Locally</strong><br>
+          <span style="color: #cbd5e1;">Added to Render environment variables. In this local preview session, set GROQ_API_KEY in .env to test locally.</span>
+        </div>
+      `;
+      showToast('GROQ_API_KEY is not configured in local environment.', 'warning');
+    } else {
+      resultEl.innerHTML = `
+        <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); padding: 10px; border-radius: 8px; font-size: 11px;">
+          <strong style="color: #f87171;">❌ Groq API Notice: ${data.status}</strong><br>
+          <span style="color: #fca5a5;">${data.error || data.message || 'Check API key permissions.'}</span>
+        </div>
+      `;
+      showToast('Groq notice: ' + (data.error || data.status), 'error');
+    }
+  } catch (err) {
+    if (resultEl) {
+      resultEl.innerHTML = `<span style="color: #f87171; font-size: 11px;">Diagnostic error: ${err.message}</span>`;
+    }
+    showToast('Failed to reach Groq diagnostic endpoint', 'error');
+  } finally {
+    if (btn) btn.classList.remove('btn-loading');
+  }
+}
+window.testGroqConnection = testGroqConnection;
+
