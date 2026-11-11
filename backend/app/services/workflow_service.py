@@ -42,6 +42,83 @@ class WorkflowService:
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.db_path.exists():
             self.db_path.write_text("{}", encoding="utf-8")
+        if self.db_path == (settings.DB_DIR / "workflow_items.json"):
+            current = self._load_all()
+            if not current:
+                self._seed_default_items()
+
+    def _seed_default_items(self) -> None:
+        try:
+            # 1. Escalated item for Apex Cloud
+            it1 = self.submit_content(SubmitContentRequest(
+                org_id="apex_cloud",
+                brand_id="apex_cloud",
+                title="Apex Cloud Q4 Enterprise Security & Speed Billboard",
+                content_text="Apex Cloud guarantees 100% zero downtime and 10x faster AI processing than AWS or Google Cloud. Certified by NASA.",
+                image_url="/static/samples/off_brand_poster.png",
+                user_id="creator_01",
+                user_name="Alex Rivera (Creative Lead)",
+                user_role=WorkflowRole.CREATOR,
+                has_high_risk_claims=True,
+                compliance_score=45.0,
+                findings_summary=[
+                    "Unsubstantiated absolute claim: guarantees 100% zero downtime",
+                    "Comparative superlative lacking benchmark audit: 10x faster AI processing",
+                    "Unverified institutional certification: Certified by NASA"
+                ]
+            ))
+            self.add_comment(it1.item_id, CommentRequest(
+                item_id=it1.item_id,
+                user_id="sarah_mgr",
+                user_name="Sarah Chen (Marketing Manager)",
+                user_role=WorkflowRole.MANAGER,
+                comment="Flagged by compliance engine due to 100% uptime guarantee and NASA claim. Escalating to Legal & Authorised Reviewers per company policy."
+            ))
+
+            # 2. Approved with warnings item for Apex Cloud
+            it2 = self.submit_content(SubmitContentRequest(
+                org_id="apex_cloud",
+                brand_id="apex_cloud",
+                title="SOC2 Type II Compliance Announcement Social Graphic",
+                content_text="Apex Cloud achieves SOC 2 Type II compliance, reinforcing our commitment to enterprise security and customer privacy.",
+                image_url="/static/samples/brand_guide_cover.png",
+                user_id="creator_01",
+                user_name="Alex Rivera (Creative Lead)",
+                user_role=WorkflowRole.CREATOR,
+                has_high_risk_claims=False,
+                compliance_score=88.5,
+                findings_summary=[
+                    "Approved terminology verified against ISO/SOC2 knowledge base registry",
+                    "Minor warning: Ensure brand hex #0052CC is maintained on dark mode preview"
+                ]
+            ))
+            self.record_decision(it2.item_id, "apex_cloud", ApprovalDecisionRequest(
+                user_id="marcus_auth",
+                user_name="Marcus Vance (Authorised Reviewer)",
+                user_role=WorkflowRole.AUTHORISED_REVIEWER,
+                decision=ContentStatus.APPROVED_WITH_WARNINGS,
+                notes="SOC2 Type II is verified against active compliance audit certificates. Minor note: Ensure brand hex #0052CC is maintained on dark mode preview."
+            ))
+
+            # 3. Under review item for Nike
+            self.submit_content(SubmitContentRequest(
+                org_id="nike",
+                brand_id="nike",
+                title="Nike Air Zoom Pegasus Marathon Social Banner",
+                content_text="Engineered for runners who refuse to quit. Lightweight cushioning meets explosive energy return with every stride.",
+                image_url="/static/samples/brand_guide_cover.png",
+                user_id="creator_nike",
+                user_name="Elena Rostova (Senior Brand Designer)",
+                user_role=WorkflowRole.CREATOR,
+                has_high_risk_claims=False,
+                compliance_score=94.0,
+                findings_summary=[
+                    "Tone matches Inspiring & Bold Brand DNA persona",
+                    "All typography matches Futura Bold approved guidelines"
+                ]
+            ))
+        except Exception as exc:
+            logger.warning("Default workflow seeding skipped: %s", exc)
 
     def _load_all(self) -> Dict[str, dict]:
         with self._lock:
