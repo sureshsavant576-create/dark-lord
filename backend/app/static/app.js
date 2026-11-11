@@ -3956,22 +3956,26 @@ function initBrandDNASuite() {
 
 function switchPortalMode(mode) {
   const tabDna = document.getElementById('tab-btn-dna') || document.getElementById('portal-tab-dna');
+  const tabKnowledge = document.getElementById('tab-btn-knowledge');
   const tabManual = document.getElementById('tab-btn-manual') || document.getElementById('portal-tab-manual');
   const tabWorkflow = document.getElementById('tab-btn-workflow');
   const tabInsights = document.getElementById('tab-btn-insights');
   const sectionDna = document.getElementById('brand-dna-section') || document.getElementById('brand-dna-suite');
+  const sectionKnowledge = document.getElementById('knowledge-portal-section');
   const sectionManual = document.getElementById('onboarding-form') || document.getElementById('ob-form-section');
   const sectionWorkflow = document.getElementById('workflow-portal-section');
   const sectionInsights = document.getElementById('insights-portal-section');
 
   // Remove active from all tabs
   if (tabDna) tabDna.classList.remove('active');
+  if (tabKnowledge) tabKnowledge.classList.remove('active');
   if (tabManual) tabManual.classList.remove('active');
   if (tabWorkflow) tabWorkflow.classList.remove('active');
   if (tabInsights) tabInsights.classList.remove('active');
 
   // Hide all sections
   if (sectionDna) sectionDna.classList.add('hidden');
+  if (sectionKnowledge) sectionKnowledge.classList.add('hidden');
   if (sectionManual) sectionManual.classList.add('hidden');
   if (sectionWorkflow) sectionWorkflow.classList.add('hidden');
   if (sectionInsights) sectionInsights.classList.add('hidden');
@@ -3979,6 +3983,10 @@ function switchPortalMode(mode) {
   if (mode === 'dna') {
     if (tabDna) tabDna.classList.add('active');
     if (sectionDna) sectionDna.classList.remove('hidden');
+  } else if (mode === 'knowledge') {
+    if (tabKnowledge) tabKnowledge.classList.add('active');
+    if (sectionKnowledge) sectionKnowledge.classList.remove('hidden');
+    loadKnowledgeItems();
   } else if (mode === 'workflow') {
     if (tabWorkflow) tabWorkflow.classList.add('active');
     if (sectionWorkflow) sectionWorkflow.classList.remove('hidden');
@@ -5508,3 +5516,269 @@ function copyRevisionText(encodedText) {
   }
 }
 window.copyRevisionText = copyRevisionText;
+
+
+/* ==========================================================================
+   BRAND KNOWLEDGE BASE CONTROLLER & CLAIMS GOVERNANCE (RULE 6 ENFORCEMENT)
+   ========================================================================== */
+
+let currentKnowledgeOrg = 'default-org';
+let currentKnowledgeCategory = '';
+let allKnowledgeItems = [];
+
+async function loadKnowledgeItems(orgId, category) {
+  const orgSel = document.getElementById('knowledge-brand-select');
+  if (orgId) {
+    currentKnowledgeOrg = orgId;
+    if (orgSel) orgSel.value = orgId;
+  } else if (orgSel) {
+    currentKnowledgeOrg = orgSel.value;
+  }
+
+  if (category !== undefined) {
+    currentKnowledgeCategory = category;
+  }
+
+  const grid = document.getElementById('knowledge-items-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div class="knowledge-loading"><span class="status-pulse-dot"></span> Loading approved brand knowledge items...</div>';
+
+  try {
+    let url = `${API_BASE}/knowledge/items?org_id=${encodeURIComponent(currentKnowledgeOrg)}&active_only=true`;
+    if (currentKnowledgeCategory) {
+      url += `&category=${encodeURIComponent(currentKnowledgeCategory)}`;
+    }
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to load knowledge base items.`);
+    allKnowledgeItems = await res.json();
+
+    // Update count pill
+    const countAll = document.getElementById('kb-count-all');
+    if (countAll) countAll.textContent = allKnowledgeItems.length;
+
+    renderKnowledgeItems(allKnowledgeItems);
+  } catch (err) {
+    console.error('Error loading knowledge items:', err);
+    grid.innerHTML = `<div class="knowledge-empty-state"><p>Could not load Knowledge Base items: ${err.message}</p><button type="button" class="btn btn-xs btn-primary" onclick="loadKnowledgeItems()">Retry</button></div>`;
+  }
+}
+window.loadKnowledgeItems = loadKnowledgeItems;
+
+function renderKnowledgeItems(items) {
+  const grid = document.getElementById('knowledge-items-grid');
+  if (!grid) return;
+
+  if (!items || items.length === 0) {
+    grid.innerHTML = `
+      <div class="knowledge-empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #94A3B8;">
+        <p style="font-size: 0.95rem; margin-bottom: 0.75rem;">No knowledge items found for active criteria.</p>
+        <button type="button" class="btn btn-sm btn-primary" onclick="openAddKnowledgeModal()">+ Add First Approved Item</button>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map(item => {
+    const catClass = `cat-${item.category}`;
+    const cleanCat = (item.category || '').replace(/_/g, ' ');
+
+    let evidenceHtml = '';
+    if (item.category === 'PROMOTIONAL_CLAIM') {
+      const evSource = (item.structured_data && item.structured_data.evidence_source) || (item.tags && item.tags.length ? `Verified via ${item.tags.join(', ')}` : 'Audited Evidence on File');
+      evidenceHtml = `
+        <div class="knowledge-evidence-box">
+          <span class="evidence-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Verified Supporting Evidence:
+          </span>
+          <span class="evidence-text">"${escapeHtml(evSource)}"</span>
+        </div>`;
+    }
+
+    let terminologyHtml = '';
+    if (item.category === 'TERMINOLOGY' && item.structured_data) {
+      const allowed = item.structured_data.approved_terms || [];
+      const prohibited = item.structured_data.prohibited_alternatives || [];
+      terminologyHtml = `
+        <div style="display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.3rem;">
+          ${allowed.length ? `<div style="font-size: 0.74rem;"><strong style="color: #34D399;">Approved:</strong> ${allowed.map(t => `<span class="id-badge" style="background: rgba(16,185,129,0.15); color: #34D399; margin-right: 0.2rem;">${t}</span>`).join('')}</div>` : ''}
+          ${prohibited.length ? `<div style="font-size: 0.74rem;"><strong style="color: #F87171;">Prohibited:</strong> ${prohibited.map(t => `<span class="id-badge" style="background: rgba(239,68,68,0.15); color: #F87171; margin-right: 0.2rem;">${t}</span>`).join('')}</div>` : ''}
+        </div>`;
+    }
+
+    const confLevel = (item.structured_data && item.structured_data.confidentiality) || 'INTERNAL';
+
+    return `
+      <div class="knowledge-card">
+        <div class="knowledge-card-header">
+          <div>
+            <h4 class="knowledge-card-title">${escapeHtml(item.title)}</h4>
+          </div>
+          <span class="knowledge-cat-badge ${catClass}">${cleanCat}</span>
+        </div>
+
+        <div class="knowledge-card-body">
+          ${escapeHtml(item.content)}
+        </div>
+
+        ${evidenceHtml}
+        ${terminologyHtml}
+
+        <div class="knowledge-meta-strip">
+          <div class="knowledge-meta-left">
+            <span class="confidentiality-pill conf-${confLevel}">${confLevel}</span>
+            <span style="font-family: var(--font-mono); font-size: 0.7rem; color: #94A3B8;">v${item.version}.0 &bull; Approved</span>
+          </div>
+          <button type="button" class="btn-history-link" onclick="viewKnowledgeHistory('${item.item_id}')">History</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+window.renderKnowledgeItems = renderKnowledgeItems;
+
+function filterKnowledgeCategory(category) {
+  currentKnowledgeCategory = category;
+  document.querySelectorAll('.kb-pill').forEach(btn => btn.classList.remove('active'));
+  const targetBtn = document.getElementById(category ? `kb-pill-${category}` : 'kb-pill-all');
+  if (targetBtn) targetBtn.classList.add('active');
+
+  loadKnowledgeItems(currentKnowledgeOrg, category);
+}
+window.filterKnowledgeCategory = filterKnowledgeCategory;
+
+function handleKnowledgeSearch(query) {
+  if (!query || !query.trim()) {
+    renderKnowledgeItems(allKnowledgeItems);
+    return;
+  }
+  const q = query.toLowerCase().trim();
+  const filtered = allKnowledgeItems.filter(it => 
+    (it.title && it.title.toLowerCase().includes(q)) ||
+    (it.content && it.content.toLowerCase().includes(q)) ||
+    (it.category && it.category.toLowerCase().includes(q)) ||
+    (it.tags && it.tags.some(t => t.toLowerCase().includes(q)))
+  );
+  renderKnowledgeItems(filtered);
+}
+window.handleKnowledgeSearch = handleKnowledgeSearch;
+
+function openAddKnowledgeModal() {
+  const modal = document.getElementById('modal-add-knowledge');
+  if (modal) modal.classList.remove('hidden');
+}
+window.openAddKnowledgeModal = openAddKnowledgeModal;
+
+function closeAddKnowledgeModal() {
+  const modal = document.getElementById('modal-add-knowledge');
+  if (modal) modal.classList.add('hidden');
+}
+window.closeAddKnowledgeModal = closeAddKnowledgeModal;
+
+function toggleEvidenceFieldRequirement(cat) {
+  const req = document.getElementById('kb-evidence-required');
+  const group = document.getElementById('kb-evidence-group');
+  if (cat === 'PROMOTIONAL_CLAIM') {
+    if (req) req.style.display = 'inline';
+    if (group) group.style.display = 'block';
+  } else {
+    if (req) req.style.display = 'none';
+  }
+}
+window.toggleEvidenceFieldRequirement = toggleEvidenceFieldRequirement;
+
+async function submitNewKnowledgeItem() {
+  const category = (document.getElementById('kb-add-category') || {}).value || 'COMPANY_FACT';
+  const title = (document.getElementById('kb-add-title') || {}).value || '';
+  const content = (document.getElementById('kb-add-content') || {}).value || '';
+  const evidence = (document.getElementById('kb-add-evidence') || {}).value || '';
+  const dept = (document.getElementById('kb-add-department') || {}).value || 'Marketing';
+  const confidentiality = (document.getElementById('kb-add-confidentiality') || {}).value || 'INTERNAL';
+  const approver = (document.getElementById('kb-add-approver') || {}).value || 'Brand Lead';
+
+  if (!title.trim() || !content.trim()) {
+    toast('Title and content are required.');
+    return;
+  }
+
+  if (category === 'PROMOTIONAL_CLAIM' && !evidence.trim()) {
+    toast('Rule 6 Enforcement: Approved claims must have verifiable supporting evidence source.');
+    return;
+  }
+
+  const payload = {
+    org_id: currentKnowledgeOrg,
+    brand_id: currentKnowledgeOrg,
+    category: category,
+    title: title.trim(),
+    content: content.trim(),
+    provenance: 'COMPANY_FACT',
+    is_approved: true,
+    approved_by: approver,
+    structured_data: {
+      evidence_source: evidence.trim(),
+      department: dept.trim(),
+      confidentiality: confidentiality
+    },
+    tags: [category.toLowerCase(), dept.toLowerCase()]
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/knowledge/items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+
+    toast('✓ Knowledge Base item approved and registered.');
+    closeAddKnowledgeModal();
+    loadKnowledgeItems(currentKnowledgeOrg);
+  } catch (err) {
+    toast(`Failed to save item: ${err.message}`);
+  }
+}
+window.submitNewKnowledgeItem = submitNewKnowledgeItem;
+
+async function viewKnowledgeHistory(itemId) {
+  const modal = document.getElementById('modal-knowledge-history');
+  const list = document.getElementById('kb-history-list');
+  if (modal) modal.classList.remove('hidden');
+  if (list) list.innerHTML = '<div class="insights-loading">Fetching immutable version snapshots...</div>';
+
+  try {
+    const res = await fetch(`${API_BASE}/knowledge/items/${encodeURIComponent(itemId)}/history?org_id=${encodeURIComponent(currentKnowledgeOrg)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const history = await res.json();
+
+    if (!history || history.length === 0) {
+      if (list) list.innerHTML = '<div style="color: #94A3B8; text-align: center; padding: 2rem;">No prior revisions recorded. This is the baseline v1.0.</div>';
+      return;
+    }
+
+    if (list) {
+      list.innerHTML = history.map(h => `
+        <div class="kb-history-item">
+          <div class="kb-history-header">
+            <strong style="color: #60A5FA;">Version ${h.version}</strong>
+            <span style="color: #94A3B8;">${new Date(h.timestamp).toLocaleString()} by ${escapeHtml(h.changed_by)}</span>
+          </div>
+          <p style="font-size: 0.78rem; color: #CBD5E1; margin: 0.25rem 0;">Reason: ${escapeHtml(h.change_reason)}</p>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    if (list) list.innerHTML = `<div style="color: #F87171; text-align: center; padding: 1.5rem;">Could not load version history: ${err.message}</div>`;
+  }
+}
+window.viewKnowledgeHistory = viewKnowledgeHistory;
+
+function closeKnowledgeHistoryModal() {
+  const modal = document.getElementById('modal-knowledge-history');
+  if (modal) modal.classList.add('hidden');
+}
+window.closeKnowledgeHistoryModal = closeKnowledgeHistoryModal;

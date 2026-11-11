@@ -130,9 +130,9 @@
                   <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                   <span>AI Brand DNA Generator (Gemini + Supabase)</span>
                 </button>
-                <button type="button" class="portal-mode-tab" id="tab-btn-manual" onclick="switchPortalMode('manual')">
-                  <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                  <span>Manual Registration &amp; Colour Studio</span>
+                <button type="button" class="portal-mode-tab" id="tab-btn-knowledge" onclick="switchPortalMode('knowledge')">
+                  <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  <span>Brand Knowledge Base</span>
                 </button>
                 <button type="button" class="portal-mode-tab" id="tab-btn-workflow" onclick="switchPortalMode('workflow')">
                   <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
@@ -141,6 +141,10 @@
                 <button type="button" class="portal-mode-tab" id="tab-btn-insights" onclick="switchPortalMode('insights')">
                   <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                   <span>Brand Insights &amp; Recurring Issues</span>
+                </button>
+                <button type="button" class="portal-mode-tab" id="tab-btn-manual" onclick="switchPortalMode('manual')">
+                  <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                  <span>Manual Registration &amp; Colour Studio</span>
                 </button>
               </div>
 
@@ -1070,6 +1074,54 @@
                 </div>
 
               </div>
+
+              <!-- BRAND KNOWLEDGE BASE REPOSITORY SECTION -->
+              <div id="knowledge-portal-section" class="knowledge-portal-section hidden">
+                <div class="knowledge-header-panel">
+                  <div class="knowledge-title-group">
+                    <span class="knowledge-badge-main">GOVERNANCE GROUND TRUTH</span>
+                    <h3>Brand Knowledge Base</h3>
+                    <p>Official guidelines, company facts, product specifications, approved promotional claims, approved terminology, and policy exceptions. Preserves confidentiality and company-level data isolation via Supabase Row Level Security.</p>
+                  </div>
+                  <div class="knowledge-header-controls">
+                    <div class="knowledge-brand-selector-wrap">
+                      <label for="knowledge-brand-select"><small>Tenant Organization:</small></label>
+                      <select id="knowledge-brand-select" class="knowledge-brand-select" onchange="loadKnowledgeItems(this.value)">
+                        <option value="default-org" selected>default-org (Apex Cloud Systems)</option>
+                        <option value="nike">nike (Nike Global)</option>
+                        <option value="acme-corp">acme-corp (Acme Enterprise)</option>
+                      </select>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="openAddKnowledgeModal()">
+                      <svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      <span>Add Approved Item</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Search and Category Filter Toolbar -->
+                <div class="knowledge-toolbar">
+                  <div class="knowledge-search-wrap">
+                    <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="knowledge-search-input" placeholder="Search approved facts, claims, guidelines, or terminology..." oninput="handleKnowledgeSearch(this.value)">
+                  </div>
+                  <div class="knowledge-category-pills">
+                    <button type="button" class="kb-pill active" id="kb-pill-all" onclick="filterKnowledgeCategory('')">All (<span id="kb-count-all">0</span>)</button>
+                    <button type="button" class="kb-pill" id="kb-pill-PROMOTIONAL_CLAIM" onclick="filterKnowledgeCategory('PROMOTIONAL_CLAIM')">Approved Claims</button>
+                    <button type="button" class="kb-pill" id="kb-pill-COMPANY_FACT" onclick="filterKnowledgeCategory('COMPANY_FACT')">Company Facts</button>
+                    <button type="button" class="kb-pill" id="kb-pill-PRODUCT_SERVICE" onclick="filterKnowledgeCategory('PRODUCT_SERVICE')">Product &amp; Services</button>
+                    <button type="button" class="kb-pill" id="kb-pill-TERMINOLOGY" onclick="filterKnowledgeCategory('TERMINOLOGY')">Approved Terminology</button>
+                    <button type="button" class="kb-pill" id="kb-pill-GUIDELINE" onclick="filterKnowledgeCategory('GUIDELINE')">Official Guidelines</button>
+                    <button type="button" class="kb-pill" id="kb-pill-POLICY_EXCEPTION" onclick="filterKnowledgeCategory('POLICY_EXCEPTION')">Policy Exceptions</button>
+                    <button type="button" class="kb-pill" id="kb-pill-OFFICIAL_ASSET" onclick="filterKnowledgeCategory('OFFICIAL_ASSET')">Logos &amp; Assets</button>
+                  </div>
+                </div>
+
+                <!-- Knowledge Base Items Grid -->
+                <div id="knowledge-items-grid" class="knowledge-cards-grid">
+                  <div class="knowledge-loading">Loading approved knowledge items from repository...</div>
+                </div>
+              </div>
             </div>
 
 
@@ -1453,6 +1505,97 @@
       
       <div id="saving-modal-substatus" style="font-size: 0.78rem; color: var(--text-muted, #94A3B8); font-family: var(--font-mono, monospace);">
         Connecting to BrandShield Governance Engine...
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD KNOWLEDGE ITEM MODAL -->
+  <div id="modal-add-knowledge" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeAddKnowledgeModal()">
+    <div class="app-modal" style="max-width: 620px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Add Approved Knowledge Item</h3>
+          <p>Register verified facts, promotional claims, terminology, or policy exceptions into the Knowledge Base.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeAddKnowledgeModal()">&times;</button>
+      </div>
+      <form id="add-knowledge-form" class="modal-body" onsubmit="event.preventDefault(); submitNewKnowledgeItem();">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="kb-add-category">Category: <span class="required">*</span></label>
+            <select id="kb-add-category" required onchange="toggleEvidenceFieldRequirement(this.value)">
+              <option value="PROMOTIONAL_CLAIM">Approved Promotional Claim</option>
+              <option value="COMPANY_FACT">Company Fact</option>
+              <option value="PRODUCT_SERVICE">Product / Service Specification</option>
+              <option value="TERMINOLOGY">Approved Terminology</option>
+              <option value="GUIDELINE">Official Brand Guideline</option>
+              <option value="POLICY_EXCEPTION">Policy Exception</option>
+              <option value="OFFICIAL_ASSET">Official Asset / Wordmark Rule</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="kb-add-department">Department / Team:</label>
+            <input type="text" id="kb-add-department" placeholder="e.g. Legal, Product Marketing, Security">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="kb-add-title">Title / Guideline Descriptor: <span class="required">*</span></label>
+          <input type="text" id="kb-add-title" placeholder="e.g. SOC 2 Type II Certification Claim" required>
+        </div>
+
+        <div class="form-group">
+          <label for="kb-add-content">Content / Guideline Body: <span class="required">*</span></label>
+          <textarea id="kb-add-content" rows="3" placeholder="Exact statement, approved claim text, terminology rule, or specification..." required></textarea>
+        </div>
+
+        <div class="form-group" id="kb-evidence-group">
+          <label for="kb-add-evidence">Supporting Evidence / Benchmark Study: <span class="required" id="kb-evidence-required">*</span></label>
+          <input type="text" id="kb-add-evidence" placeholder="e.g. Independent AICPA SOC 2 Type II Audit Report, dated Nov 2026">
+          <span class="field-hint">Rule 6: Never approve claims without authentic verified evidence source.</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="kb-add-confidentiality">Confidentiality Level:</label>
+            <select id="kb-add-confidentiality">
+              <option value="INTERNAL" selected>INTERNAL (All Employees)</option>
+              <option value="PUBLIC">PUBLIC (Marketing &amp; External)</option>
+              <option value="CONFIDENTIAL">CONFIDENTIAL (Managers &amp; Above)</option>
+              <option value="RESTRICTED">RESTRICTED (Legal / Exec Only)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="kb-add-approver">Approved By (Authority): <span class="required">*</span></label>
+            <input type="text" id="kb-add-approver" value="Marcus Vance (Brand Compliance Director)" required>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="padding-top: 1rem; margin-top: 1rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeAddKnowledgeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save to Knowledge Base</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- KNOWLEDGE ITEM VERSION HISTORY MODAL -->
+  <div id="modal-knowledge-history" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeKnowledgeHistoryModal()">
+    <div class="app-modal" style="max-width: 640px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 id="kb-history-title">Guideline Version History</h3>
+          <p id="kb-history-subtitle">Immutable audit trail of previous revisions and changes.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeKnowledgeHistoryModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="kb-history-list" class="kb-history-list">
+          <div class="insights-loading">Loading version history...</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeKnowledgeHistoryModal()">Close</button>
       </div>
     </div>
   </div>

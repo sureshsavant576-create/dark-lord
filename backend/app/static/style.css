@@ -9622,3 +9622,350 @@ body.landing-view-active {
   padding: 0.2rem 0;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
+
+/* ==========================================================================
+   BRAND KNOWLEDGE BASE REPOSITORY & CLAIMS GOVERNANCE STYLES
+   ========================================================================== */
+
+.knowledge-portal-section {
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.knowledge-header-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 12px;
+}
+
+.knowledge-badge-main {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #818CF8;
+  background: rgba(99, 102, 241, 0.15);
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  margin-bottom: 0.4rem;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.knowledge-title-group h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #F8FAFC;
+  margin: 0 0 0.35rem 0;
+}
+
+.knowledge-title-group p {
+  font-size: 0.82rem;
+  color: #94A3B8;
+  margin: 0;
+  max-width: 650px;
+  line-height: 1.45;
+}
+
+.knowledge-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.knowledge-brand-selector-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.knowledge-brand-selector-wrap label {
+  color: #94A3B8;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.knowledge-brand-select {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #F8FAFC;
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  min-width: 220px;
+}
+
+/* Toolbar: Search + Category Pills */
+.knowledge-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.knowledge-search-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.knowledge-search-wrap svg {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748B;
+}
+
+.knowledge-search-wrap input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #F8FAFC;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem 0.6rem 2.4rem;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.knowledge-search-wrap input:focus {
+  outline: none;
+  border-color: #6366F1;
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.knowledge-category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.kb-pill {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94A3B8;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.kb-pill:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #F8FAFC;
+}
+
+.kb-pill.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: #A5B4FC;
+}
+
+/* Cards Grid */
+.knowledge-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1rem;
+}
+
+.knowledge-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.knowledge-card:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  transform: translateY(-2px);
+}
+
+.knowledge-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.knowledge-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.knowledge-cat-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+.cat-PROMOTIONAL_CLAIM {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.cat-COMPANY_FACT {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.cat-PRODUCT_SERVICE {
+  background: rgba(168, 85, 247, 0.15);
+  color: #C084FC;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.cat-TERMINOLOGY {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.cat-GUIDELINE {
+  background: rgba(14, 165, 233, 0.15);
+  color: #38BDF8;
+  border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+.cat-POLICY_EXCEPTION {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.cat-OFFICIAL_ASSET {
+  background: rgba(236, 72, 153, 0.15);
+  color: #F472B6;
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.cat-BRAND_DNA {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818CF8;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.knowledge-card-body {
+  font-size: 0.82rem;
+  color: #CBD5E1;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.knowledge-evidence-box {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.evidence-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #34D399;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.evidence-text {
+  font-size: 0.78rem;
+  color: #E2E8F0;
+  font-style: italic;
+}
+
+.knowledge-meta-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: #64748B;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 0.6rem;
+  margin-top: auto;
+}
+
+.knowledge-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.confidentiality-pill {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-weight: 600;
+  background: rgba(148, 163, 184, 0.1);
+  color: #94A3B8;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.conf-CONFIDENTIAL, .conf-RESTRICTED {
+  background: rgba(239, 68, 68, 0.1);
+  color: #F87171;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.btn-history-link {
+  background: transparent;
+  border: none;
+  color: #60A5FA;
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.btn-history-link:hover {
+  color: #93C5FD;
+}
+
+.kb-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.kb-history-item {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.kb-history-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+  font-size: 0.75rem;
+}
