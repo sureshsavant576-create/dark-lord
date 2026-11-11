@@ -76,6 +76,21 @@
           </svg>
         </button>
 
+        <!-- Onboarding Tour Action -->
+        <button type="button" class="btn-topbar-action" id="btn-topbar-onboard" onclick="openOnboardingModal()" title="Start Interactive Onboarding Tour" aria-label="Onboarding Tour">
+          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </button>
+
+        <!-- Authentication & Security Modal -->
+        <button type="button" class="btn-topbar-action" id="btn-topbar-auth" onclick="openAuthModal()" title="Security & Authentication Portal" aria-label="Authentication">
+          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </button>
+
         <!-- User Profile Pill & Role Switcher -->
         <button type="button" class="user-profile-btn" onclick="toggleRoleModal()" title="Switch Persona / User Role">
           <div class="user-avatar-top" id="topbar-user-avatar">AV</div>
@@ -1005,6 +1020,7 @@
 
               <!-- Live Canvas Preview -->
               <div id="preflight-preview-frame" class="preflight-canvas-frame hidden">
+                <div class="scanner-laser-line hidden" id="scanner-laser-sweep"></div>
                 <img id="preflight-canvas-img" src="" alt="Pre-Flight Inspection Preview" class="preflight-rendered-img">
               </div>
             </div>
@@ -1158,6 +1174,16 @@
                     Hello! I'm your Brand Co-Pilot. I evaluate your copy against <strong>Apex Cloud Systems</strong> approved Brand DNA and official Knowledge Base. How can I help you refine this creative?
                   </div>
                 </div>
+              </div>
+
+              <!-- Co-Pilot Typing Indicator -->
+              <div id="copilot-typing-container" class="hidden" style="padding: 0.5rem 1rem;">
+                <div class="copilot-typing-indicator">
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                </div>
+                <span style="font-size: 11px; color: #94a3b8; margin-left: 8px;">AI Brand Co-Pilot is evaluating brand guidelines...</span>
               </div>
 
               <!-- Structured Corrections Display Deck -->
@@ -1721,6 +1747,166 @@
       </div>
     </div>
   </div>
+
+
+  <!-- ======================================================================
+       AUTHENTICATION MODAL (Login / Registration Transitions)
+       ====================================================================== -->
+  <div id="modal-auth" class="app-modal hidden">
+    <div class="modal-backdrop" onclick="closeAuthModal()"></div>
+    <div class="modal-card modal-sm" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="auth-modal-title">Enterprise Authentication</h3>
+        <button type="button" class="modal-close-btn" onclick="closeAuthModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Auth Tabs (Sign In vs Register) -->
+        <div class="modality-switch-pill" style="margin-bottom: 1.25rem;">
+          <button type="button" class="modality-btn active" id="auth-tab-signin" onclick="switchAuthTab('signin')">Sign In</button>
+          <button type="button" class="modality-btn" id="auth-tab-register" onclick="switchAuthTab('register')">Register</button>
+        </div>
+
+        <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+          <div class="form-group auth-input-group">
+            <label for="auth-email">Corporate Email</label>
+            <input type="email" id="auth-email" class="form-control" placeholder="alex.vance@apexcloud.com" required>
+          </div>
+
+          <div class="form-group auth-input-group">
+            <label for="auth-password">Password</label>
+            <div style="position: relative;">
+              <input type="password" id="auth-password" class="form-control" placeholder="••••••••••••" oninput="checkPasswordStrength(this.value)" required style="padding-right: 2.5rem;">
+              <button type="button" onclick="togglePasswordVisibility('auth-password', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px;" aria-label="Toggle password visibility">
+                👁️
+              </button>
+            </div>
+            <!-- Animated Password Strength Bar -->
+            <div id="auth-strength-container" class="hidden" style="margin-top: 6px;">
+              <div class="password-strength-bar weak" id="auth-strength-bar"></div>
+              <span id="auth-strength-label" style="font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 4px; display: block;">Weak password</span>
+            </div>
+          </div>
+
+          <div id="auth-error-message" class="hidden" style="color: #ef4444; font-size: 12px; margin-bottom: 1rem; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 6px;"></div>
+          <div id="auth-success-message" class="hidden" style="color: #10b981; font-size: 12px; margin-bottom: 1rem; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 6px;"></div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+            <label style="font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="auth-remember-me" checked> Remember this device
+            </label>
+            <button type="submit" class="btn-primary" id="btn-auth-submit" style="min-width: 120px;">
+              <span id="auth-btn-text">Authenticate</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       ONBOARDING WIZARD MODAL (Multi-Step Governance Setup)
+       ====================================================================== -->
+  <div id="modal-onboarding" class="app-modal hidden">
+    <div class="modal-backdrop" onclick="closeOnboardingModal()"></div>
+    <div class="modal-card modal-lg" style="max-width: 640px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Interactive Governance Onboarding</h3>
+          <p style="font-size: 11px; color: #94a3b8; margin: 0;">Step-by-step Brand DNA synthesis & verification setup</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeOnboardingModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Progress Steps Bar -->
+        <div style="margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 11px; font-weight: 600; color: #94a3b8;">
+            <span id="onboard-step-lbl-1" style="color: #3b82f6;">1. Welcome</span>
+            <span id="onboard-step-lbl-2">2. Company Profile</span>
+            <span id="onboard-step-lbl-3">3. DNA Synthesis</span>
+            <span id="onboard-step-lbl-4">4. Activation</span>
+          </div>
+          <div class="onboarding-progress-track">
+            <div class="onboarding-progress-fill" id="onboard-progress-fill" style="width: 25%;"></div>
+          </div>
+        </div>
+
+        <!-- Step 1: Welcome -->
+        <div class="onboarding-step-pane active" id="onboard-step-1">
+          <div style="text-align: center; padding: 1.5rem 0;">
+            <div style="font-size: 42px; margin-bottom: 0.75rem; animation: gentleFloat 2.5s infinite ease-in-out;">🛡️</div>
+            <h4 style="font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 0.5rem;">Welcome to Sanket AI Platform</h4>
+            <p style="font-size: 13px; color: #94a3b8; max-width: 460px; margin: 0 auto; line-height: 1.6;">
+              Establish multi-company AI brand governance, enforce WCAG contrast standards, verify factual claims, and streamline compliance across teams.
+            </p>
+          </div>
+          <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+            <button type="button" class="btn-primary" onclick="nextOnboardingStep(2)">Get Started →</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Company Profile -->
+        <div class="onboarding-step-pane" id="onboard-step-2">
+          <h4 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 0.5rem;">Configure Organisation Profile</h4>
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 1.25rem;">Set up tenant branding identity for multi-company isolation.</p>
+          <div class="form-group">
+            <label for="onboard-org-name">Organisation Name</label>
+            <input type="text" id="onboard-org-name" class="form-control" value="Apex Cloud Solutions">
+          </div>
+          <div class="form-group">
+            <label for="onboard-industry">Primary Industry</label>
+            <select id="onboard-industry" class="form-control">
+              <option value="cloud_infra">Enterprise Cloud Infrastructure & Security</option>
+              <option value="fintech">Fintech & Banking</option>
+              <option value="ecommerce">Global Retail & Athletics</option>
+              <option value="healthcare">Healthcare & Life Sciences</option>
+            </select>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
+            <button type="button" class="btn-secondary" onclick="nextOnboardingStep(1)">← Back</button>
+            <button type="button" class="btn-primary" onclick="startDnaSynthesisStep()">Synthesize Brand DNA →</button>
+          </div>
+        </div>
+
+        <!-- Step 3: DNA Synthesis Loading Sequence -->
+        <div class="onboarding-step-pane" id="onboard-step-3">
+          <div style="text-align: center; padding: 1.5rem 0;">
+            <div style="font-size: 38px; margin-bottom: 0.75rem;">🧬</div>
+            <h4 style="font-size: 16px; font-weight: 700; color: #fff;" id="dna-synthesis-status-text">Synthesizing Core Brand DNA...</h4>
+            <p style="font-size: 12px; color: #94a3b8; margin-top: 0.25rem;" id="dna-synthesis-subtext">Evaluating colorimetric centroids, typography, and voice guidelines</p>
+
+            <div class="dna-synthesis-loader">
+              <div class="dna-synthesis-bar" id="dna-synthesis-progress-bar" style="width: 15%;"></div>
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 1rem; font-size: 11px; color: #64748b; font-family: monospace;" id="dna-synthesis-steps-indicators">
+              <span id="dna-step-1" style="color: #3b82f6;">● Palette Centroids</span>
+              <span id="dna-step-2">○ Voice & Tone</span>
+              <span id="dna-step-3">○ WCAG Contrast</span>
+              <span id="dna-step-4">○ Rules Engine</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Activation & Confirmation -->
+        <div class="onboarding-step-pane" id="onboard-step-4">
+          <div style="text-align: center; padding: 1.5rem 0;">
+            <div style="font-size: 42px; margin-bottom: 0.75rem; animation: checkmarkPop 500ms cubic-bezier(0.34, 1.3, 0.64, 1) forwards;">✅</div>
+            <h4 style="font-size: 18px; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">Brand DNA Certified & Active!</h4>
+            <p style="font-size: 13px; color: #94a3b8; max-width: 440px; margin: 0 auto; line-height: 1.6;">
+              Apex Cloud Solutions Brand DNA is now active. All content reviews, pre-flight scanner evaluations, and Co-Pilot suggestions will be evaluated against this specification.
+            </p>
+          </div>
+          <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+            <button type="button" class="btn-primary" onclick="finishOnboarding()">Enter Governance Dashboard →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Toast Notifications Container -->
+  <div id="toast-container" aria-live="polite"></div>
 
   <!-- Help & Documentation Modal -->
   <div id="modal-help" class="app-modal hidden">

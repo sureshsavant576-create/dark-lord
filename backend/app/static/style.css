@@ -11400,3 +11400,811 @@ body.enterprise-app-body {
     padding: 1rem;
   }
 }
+
+
+/* ==========================================================================
+   GLOBAL MOTION & ANIMATION DESIGN SYSTEM
+   Standardized enterprise motion system: subtle, performant, accessible
+   ========================================================================== */
+
+:root {
+  /* Motion Duration Tokens */
+  --motion-duration-micro: 140ms;
+  --motion-duration-hover: 180ms;
+  --motion-duration-dropdown: 200ms;
+  --motion-duration-modal: 260ms;
+  --motion-duration-page: 280ms;
+  --motion-duration-complex: 380ms;
+  --motion-duration-reveal: 500ms;
+
+  /* Motion Easing Curves */
+  --motion-ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --motion-ease-out: cubic-bezier(0.16, 1.0, 0.3, 1);
+  --motion-ease-in: cubic-bezier(0.4, 0.0, 1.0, 1);
+  --motion-ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --motion-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --------------------------------------------------------------------------
+   KEYFRAME ANIMATIONS
+   -------------------------------------------------------------------------- */
+
+/* 1. View / Page Entrance */
+@keyframes viewFadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 2. Staggered Item Entrance */
+@keyframes itemFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 3. Modal Backdrop Fade */
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 4. Modal Card Scale & Pop */
+@keyframes modalCardPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 5. Dropdown Menu Unfold */
+@keyframes dropdownUnfold {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scaleY(0.96);
+    transform-origin: top center;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+/* 6. Notification Badge Pulse */
+@keyframes badgePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    transform: scale(1.08);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    transform: scale(1);
+  }
+}
+
+/* 7. Subtle Active Glow Pulse */
+@keyframes activePillPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4), 0 0 12px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.7), 0 0 18px rgba(59, 130, 246, 0.35);
+  }
+}
+
+/* 8. Pre-Flight Scanner Laser Sweep */
+@keyframes scanLaserSweep {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 98%;
+    opacity: 0;
+  }
+}
+
+/* 9. Skeleton Wave Shimmer */
+@keyframes shimmerWave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* 10. Co-Pilot Typing Indicator Dots */
+@keyframes copilotTypingDot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+/* 11. Chat Message Slide In */
+@keyframes chatMsgIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 12. Toast Slide In and Out */
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(30px) scale(0.92);
+  }
+}
+
+/* 13. Progress Bar Shimmer Glow */
+@keyframes progressIndeterminate {
+  0% {
+    left: -40%;
+    width: 30%;
+  }
+  50% {
+    left: 20%;
+    width: 60%;
+  }
+  100% {
+    left: 100%;
+    width: 40%;
+  }
+}
+
+/* 14. Input Focus Ring Glow */
+@keyframes inputGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.55);
+  }
+}
+
+/* 15. Form Error Shake */
+@keyframes formShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+/* 16. Checkmark Pop In */
+@keyframes checkmarkPop {
+  0% {
+    transform: scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.2) rotate(0deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* 17. Chart Bar Grow Up */
+@keyframes chartBarGrowY {
+  from {
+    transform: scaleY(0);
+    transform-origin: bottom center;
+  }
+  to {
+    transform: scaleY(1);
+    transform-origin: bottom center;
+  }
+}
+
+/* 18. Chart Bar Grow Horizontal */
+@keyframes chartBarGrowX {
+  from {
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+}
+
+/* 19. Rotating Spinner */
+@keyframes spinSmooth {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 20. Gentle Float for Illustrations */
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* --------------------------------------------------------------------------
+   PAGE & SECTION TRANSITIONS
+   -------------------------------------------------------------------------- */
+
+.app-view-pane.active {
+  animation: viewFadeSlideIn var(--motion-duration-page) var(--motion-ease-out) forwards;
+  will-change: opacity, transform;
+}
+
+/* Stagger animations for cards in dashboard & identity */
+.stagger-grid > * {
+  animation: itemFadeUp var(--motion-duration-complex) var(--motion-ease-out) both;
+}
+
+.stagger-grid > *:nth-child(1) { animation-delay: 30ms; }
+.stagger-grid > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-grid > *:nth-child(3) { animation-delay: 90ms; }
+.stagger-grid > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-grid > *:nth-child(5) { animation-delay: 150ms; }
+.stagger-grid > *:nth-child(6) { animation-delay: 180ms; }
+.stagger-grid > *:nth-child(7) { animation-delay: 210ms; }
+.stagger-grid > *:nth-child(8) { animation-delay: 240ms; }
+.stagger-grid > *:nth-child(9) { animation-delay: 270ms; }
+.stagger-grid > *:nth-child(10) { animation-delay: 300ms; }
+
+/* --------------------------------------------------------------------------
+   NAVIGATION MOTION
+   -------------------------------------------------------------------------- */
+
+.app-sidebar {
+  transition: width var(--motion-duration-complex) var(--motion-ease-out),
+              transform var(--motion-duration-complex) var(--motion-ease-out);
+  will-change: width, transform;
+}
+
+.nav-item-btn {
+  transition: background-color var(--motion-duration-hover) var(--motion-ease-standard),
+              color var(--motion-duration-hover) var(--motion-ease-standard),
+              transform var(--motion-duration-micro) var(--motion-ease-out),
+              border-color var(--motion-duration-hover) var(--motion-ease-standard);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item-btn:hover {
+  transform: translateX(2px);
+}
+
+.nav-item-btn:active {
+  transform: scale(0.98);
+}
+
+.nav-item-btn.active {
+  animation: activePillPulse 4s infinite ease-in-out;
+}
+
+.nav-item-btn.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 15%;
+  height: 70%;
+  width: 3px;
+  background: #3b82f6;
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 0 8px #3b82f6;
+}
+
+.notification-badge {
+  animation: badgePulse 2.5s infinite;
+}
+
+/* Tenant selection crossfade effect */
+.workspace-transitioning {
+  opacity: 0.65;
+  transition: opacity 160ms ease-out;
+}
+
+/* --------------------------------------------------------------------------
+   DASHBOARD WIDGETS & METRICS
+   -------------------------------------------------------------------------- */
+
+.dashboard-kpi-card {
+  transition: transform var(--motion-duration-hover) var(--motion-ease-out),
+              box-shadow var(--motion-duration-hover) var(--motion-ease-out),
+              border-color var(--motion-duration-hover) var(--motion-ease-standard);
+}
+
+.dashboard-kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 246, 0.45);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4), 0 0 16px rgba(59, 130, 246, 0.12);
+}
+
+.count-up-val {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  transition: color 250ms ease;
+}
+
+/* Metric change indicator */
+.metric-pulse-up {
+  animation: checkmarkPop 400ms var(--motion-ease-spring) forwards;
+}
+
+/* Quick Action Buttons */
+.quick-action-card {
+  transition: transform var(--motion-duration-hover) var(--motion-ease-out),
+              background-color var(--motion-duration-hover) var(--motion-ease-standard),
+              border-color var(--motion-duration-hover) var(--motion-ease-standard);
+}
+
+.quick-action-card:hover {
+  transform: translateY(-2px);
+}
+
+.quick-action-card:active {
+  transform: scale(0.98);
+}
+
+/* Table row entrance stagger */
+.styled-table tbody tr {
+  transition: background-color var(--motion-duration-micro) var(--motion-ease-standard);
+}
+
+.styled-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.035);
+}
+
+/* --------------------------------------------------------------------------
+   MODAL MOTION
+   -------------------------------------------------------------------------- */
+
+.app-modal {
+  transition: opacity var(--motion-duration-modal) var(--motion-ease-standard);
+}
+
+.app-modal.active,
+.app-modal:not(.hidden) {
+  opacity: 1;
+}
+
+.app-modal:not(.hidden) .modal-backdrop {
+  animation: modalBackdropIn var(--motion-duration-modal) var(--motion-ease-standard) forwards;
+}
+
+.app-modal:not(.hidden) .modal-card {
+  animation: modalCardPopIn var(--motion-duration-modal) var(--motion-ease-out) forwards;
+  will-change: transform, opacity;
+}
+
+.modal-close-btn {
+  transition: transform var(--motion-duration-micro) var(--motion-ease-standard),
+              color var(--motion-duration-micro) var(--motion-ease-standard);
+}
+
+.modal-close-btn:hover {
+  transform: scale(1.15) rotate(9deg);
+  color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   PRE-FLIGHT SCANNER ANIMATIONS
+   -------------------------------------------------------------------------- */
+
+.scanner-preview-box {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.scanner-laser-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, #3b82f6 30%, #60a5fa 50%, #3b82f6 70%, transparent 100%);
+  box-shadow: 0 0 14px 3px rgba(59, 130, 246, 0.8), 0 0 4px #93c5fd;
+  z-index: 10;
+  pointer-events: none;
+  animation: scanLaserSweep 2s ease-in-out infinite;
+}
+
+.preflight-dropzone {
+  transition: border-color var(--motion-duration-hover) var(--motion-ease-standard),
+              background-color var(--motion-duration-hover) var(--motion-ease-standard),
+              transform var(--motion-duration-hover) var(--motion-ease-out);
+}
+
+.preflight-dropzone.drag-active {
+  border-color: #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  transform: scale(1.01);
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.25);
+}
+
+/* Pre-Flight Palette chips reveal */
+.palette-swatch-chip {
+  animation: itemFadeUp 300ms var(--motion-ease-spring) both;
+  transition: transform var(--motion-duration-hover) var(--motion-ease-spring),
+              box-shadow var(--motion-duration-hover) var(--motion-ease-standard);
+}
+
+.palette-swatch-chip:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   BRAND CO-PILOT CHAT ANIMATIONS
+   -------------------------------------------------------------------------- */
+
+.chat-bubble {
+  animation: chatMsgIn 220ms var(--motion-ease-out) both;
+  will-change: transform, opacity;
+}
+
+/* 3-dot typing indicator */
+.copilot-typing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.copilot-typing-indicator .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #60a5fa;
+  animation: copilotTypingDot 1.4s infinite ease-in-out both;
+}
+
+.copilot-typing-indicator .dot:nth-child(1) { animation-delay: 0s; }
+.copilot-typing-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
+.copilot-typing-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* --------------------------------------------------------------------------
+   AUTO-FIX SIDE-BY-SIDE MOTION
+   -------------------------------------------------------------------------- */
+
+.autofix-comparison-wrap {
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--motion-duration-hover) var(--motion-ease-standard);
+}
+
+.autofix-pane {
+  transition: transform var(--motion-duration-complex) var(--motion-ease-out),
+              opacity var(--motion-duration-complex) var(--motion-ease-out);
+}
+
+.autofix-accept-flash {
+  animation: checkmarkPop 400ms var(--motion-ease-spring) forwards;
+}
+
+/* --------------------------------------------------------------------------
+   AUTHENTICATION & ONBOARDING ANIMATIONS
+   -------------------------------------------------------------------------- */
+
+/* Input focus glow */
+.auth-input-group input:focus {
+  animation: inputGlowPulse 2.5s infinite ease-in-out;
+  outline: none;
+}
+
+/* Password strength bar */
+.password-strength-bar {
+  height: 4px;
+  border-radius: 2px;
+  transition: width 280ms var(--motion-ease-out),
+              background-color 280ms var(--motion-ease-standard);
+  background-color: #ef4444;
+}
+
+.password-strength-bar.weak { width: 25%; background-color: #ef4444; }
+.password-strength-bar.medium { width: 50%; background-color: #f59e0b; }
+.password-strength-bar.strong { width: 75%; background-color: #3b82f6; }
+.password-strength-bar.excellent { width: 100%; background-color: #10b981; }
+
+/* Onboarding Step Transitions */
+.onboarding-step-pane {
+  display: none;
+  opacity: 0;
+  transform: translateX(12px);
+  transition: opacity var(--motion-duration-page) var(--motion-ease-out),
+              transform var(--motion-duration-page) var(--motion-ease-out);
+}
+
+.onboarding-step-pane.active {
+  display: block;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Progress Steps bar */
+.onboarding-progress-track {
+  position: relative;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.onboarding-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+  transition: width var(--motion-duration-complex) var(--motion-ease-out);
+  border-radius: 2px;
+}
+
+.onboarding-step-bubble {
+  transition: background-color var(--motion-duration-hover) var(--motion-ease-standard),
+              border-color var(--motion-duration-hover) var(--motion-ease-standard),
+              transform var(--motion-duration-hover) var(--motion-ease-spring),
+              color var(--motion-duration-hover) var(--motion-ease-standard);
+}
+
+.onboarding-step-bubble.completed {
+  background-color: #10b981;
+  border-color: #10b981;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.onboarding-step-bubble.current {
+  background-color: #2563eb;
+  border-color: #60a5fa;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+  transform: scale(1.1);
+}
+
+/* DNA Generation Loading Sequence */
+.dna-synthesis-loader {
+  position: relative;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+}
+
+.dna-synthesis-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6);
+  background-size: 200% 100%;
+  animation: shimmerWave 2s linear infinite;
+  transition: width 350ms var(--motion-ease-out);
+  border-radius: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   BUTTONS & MICRO-INTERACTIONS
+   -------------------------------------------------------------------------- */
+
+button, .btn-primary, .btn-secondary, .btn-outline {
+  transition: transform var(--motion-duration-micro) var(--motion-ease-out),
+              background-color var(--motion-duration-hover) var(--motion-ease-standard),
+              border-color var(--motion-duration-hover) var(--motion-ease-standard),
+              box-shadow var(--motion-duration-hover) var(--motion-ease-standard),
+              opacity var(--motion-duration-hover) var(--motion-ease-standard);
+}
+
+button:hover, .btn-primary:hover, .btn-secondary:hover {
+  transform: translateY(-1px);
+}
+
+button:active, .btn-primary:active, .btn-secondary:active {
+  transform: scale(0.97);
+}
+
+/* Button Loading State */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+  color: transparent !important;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  margin-left: -7px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spinSmooth 0.7s linear infinite;
+}
+
+/* Toggle Switch */
+.toggle-switch-track {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background-color: #334155;
+  border-radius: 11px;
+  transition: background-color var(--motion-duration-hover) var(--motion-ease-standard);
+  cursor: pointer;
+}
+
+.toggle-switch-track.active {
+  background-color: #3b82f6;
+}
+
+.toggle-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform var(--motion-duration-hover) var(--motion-ease-spring);
+}
+
+.toggle-switch-track.active .toggle-switch-thumb {
+  transform: translateX(18px);
+}
+
+/* --------------------------------------------------------------------------
+   LOADING, SKELETON & FEEDBACK SYSTEM
+   -------------------------------------------------------------------------- */
+
+/* Skeleton shimmer */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmerWave 1.8s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+/* Spinner Icon */
+.icon-spinner {
+  display: inline-block;
+  animation: spinSmooth 0.8s linear infinite;
+}
+
+/* Toast Notifications Container */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast-item {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 300px;
+  max-width: 440px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 13px;
+  animation: toastSlideIn var(--motion-duration-modal) var(--motion-ease-out) forwards;
+  will-change: transform, opacity;
+}
+
+.toast-item.toast-success {
+  border-left: 4px solid #10b981;
+}
+
+.toast-item.toast-error {
+  border-left: 4px solid #ef4444;
+}
+
+.toast-item.toast-info {
+  border-left: 4px solid #3b82f6;
+}
+
+.toast-item.toast-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.toast-item.removing {
+  animation: toastSlideOut var(--motion-duration-dropdown) var(--motion-ease-in) forwards;
+}
+
+/* --------------------------------------------------------------------------
+   ACCESSIBILITY: PREFERS-REDUCED-MOTION
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .scanner-laser-line {
+    display: none !important;
+  }
+
+  .notification-badge {
+    animation: none !important;
+  }
+
+  .nav-item-btn.active {
+    animation: none !important;
+  }
+
+  .dna-synthesis-bar {
+    animation: none !important;
+  }
+
+  .skeleton-shimmer {
+    animation: none !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+}

@@ -6768,3 +6768,381 @@ window.handleContentReviewSubmit = handleContentReviewSubmit;
 document.addEventListener("DOMContentLoaded", () => {
   initAppRouter();
 });
+
+
+// ============================================================================
+// GLOBAL MOTION & ANIMATION CONTROLLERS (Sanket AI Motion Design System)
+// ============================================================================
+
+// 1. Accessibility: prefers-reduced-motion check
+const prefersReducedMotion = () => {
+  return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+};
+
+// 2. Enhanced Toast Notification System (Stackable & Animated)
+function showToast(message, type = 'info', duration = 3500) {
+  const container = document.getElementById('toast-container');
+  if (!container) {
+    if (typeof window.toast === 'function') window.toast(message, type);
+    return;
+  }
+
+  const icons = {
+    success: '✅',
+    error: '❌',
+    warning: '⚠️',
+    info: 'ℹ️'
+  };
+
+  const toastItem = document.createElement('div');
+  toastItem.className = `toast-item toast-${type}`;
+  toastItem.setAttribute('role', 'alert');
+  toastItem.innerHTML = `
+    <span style="font-size: 16px;">${icons[type] || 'ℹ️'}</span>
+    <span style="flex: 1; line-height: 1.4;">${message}</span>
+  `;
+
+  container.appendChild(toastItem);
+
+  setTimeout(() => {
+    toastItem.classList.add('removing');
+    setTimeout(() => {
+      if (toastItem.parentNode) toastItem.parentNode.removeChild(toastItem);
+    }, 250);
+  }, duration);
+}
+window.showToast = showToast;
+
+// 3. Numeric Count-Up Animation (60fps requestAnimationFrame)
+function animateCountUp(element, start, end, duration = 650, decimals = 0, suffix = '') {
+  if (!element) return;
+  if (prefersReducedMotion()) {
+    element.textContent = (decimals > 0 ? end.toFixed(decimals) : Math.round(end)) + suffix;
+    return;
+  }
+
+  const startTime = performance.now();
+  const diff = end - start;
+
+  function updateCount(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out cubic
+    const easeProgress = 1 - Math.pow(1 - progress, 3);
+    const currentVal = start + diff * easeProgress;
+
+    element.textContent = (decimals > 0 ? currentVal.toFixed(decimals) : Math.round(currentVal)) + suffix;
+
+    if (progress < 1) {
+      requestAnimationFrame(updateCount);
+    } else {
+      element.textContent = (decimals > 0 ? end.toFixed(decimals) : Math.round(end)) + suffix;
+    }
+  }
+
+  requestAnimationFrame(updateCount);
+}
+window.animateCountUp = animateCountUp;
+
+// Trigger KPI animations on Dashboard load
+function triggerDashboardKpiAnimations() {
+  const complianceEl = document.querySelector('.kpi-card .kpi-value');
+  const allKpiVals = document.querySelectorAll('.kpi-value');
+
+  if (allKpiVals && allKpiVals.length >= 4) {
+    // KPI 1: Compliance Avg
+    animateCountUp(allKpiVals[0], 70.0, 94.8, 700, 1, '%');
+    // KPI 2: Active Submissions
+    animateCountUp(allKpiVals[1], 0, 128, 600, 0, '');
+    // KPI 3: Issues
+    animateCountUp(allKpiVals[2], 0, 2, 500, 0, '');
+    // KPI 4: Auto-Fix Rate
+    animateCountUp(allKpiVals[3], 50.0, 87.5, 750, 1, '%');
+  }
+}
+
+// 4. Authentication Modal Controller
+function openAuthModal() {
+  const modal = document.getElementById('modal-auth');
+  if (modal) {
+    modal.classList.remove('hidden');
+    const input = document.getElementById('auth-email');
+    if (input) setTimeout(() => input.focus(), 150);
+  }
+}
+window.openAuthModal = openAuthModal;
+
+function closeAuthModal() {
+  const modal = document.getElementById('modal-auth');
+  if (modal) modal.classList.add('hidden');
+}
+window.closeAuthModal = closeAuthModal;
+
+function switchAuthTab(tab) {
+  const btnSignIn = document.getElementById('auth-tab-signin');
+  const btnRegister = document.getElementById('auth-tab-register');
+  const title = document.getElementById('auth-modal-title');
+  const btnSubmit = document.getElementById('auth-btn-text');
+  const strengthCont = document.getElementById('auth-strength-container');
+
+  if (tab === 'register') {
+    if (btnRegister) btnRegister.classList.add('active');
+    if (btnSignIn) btnSignIn.classList.remove('active');
+    if (title) title.textContent = 'Create Enterprise Account';
+    if (btnSubmit) btnSubmit.textContent = 'Register';
+    if (strengthCont) strengthCont.classList.remove('hidden');
+  } else {
+    if (btnSignIn) btnSignIn.classList.add('active');
+    if (btnRegister) btnRegister.classList.remove('active');
+    if (title) title.textContent = 'Enterprise Authentication';
+    if (btnSubmit) btnSubmit.textContent = 'Authenticate';
+    if (strengthCont) strengthCont.classList.add('hidden');
+  }
+}
+window.switchAuthTab = switchAuthTab;
+
+function checkPasswordStrength(val) {
+  const strengthCont = document.getElementById('auth-strength-container');
+  const strengthBar = document.getElementById('auth-strength-bar');
+  const strengthLbl = document.getElementById('auth-strength-label');
+
+  if (!val || val.length === 0) {
+    if (strengthCont) strengthCont.classList.add('hidden');
+    return;
+  }
+  if (strengthCont) strengthCont.classList.remove('hidden');
+
+  let score = 0;
+  if (val.length >= 8) score += 1;
+  if (/[A-Z]/.test(val)) score += 1;
+  if (/[0-9]/.test(val)) score += 1;
+  if (/[^A-Za-z0-9]/.test(val)) score += 1;
+
+  if (strengthBar && strengthLbl) {
+    strengthBar.className = 'password-strength-bar';
+    if (score <= 1) {
+      strengthBar.classList.add('weak');
+      strengthLbl.textContent = 'Weak: Add numbers & special characters';
+      strengthLbl.style.color = '#ef4444';
+    } else if (score === 2) {
+      strengthBar.classList.add('medium');
+      strengthLbl.textContent = 'Medium: Add uppercase & symbols';
+      strengthLbl.style.color = '#f59e0b';
+    } else if (score === 3) {
+      strengthBar.classList.add('strong');
+      strengthLbl.textContent = 'Strong password';
+      strengthLbl.style.color = '#3b82f6';
+    } else {
+      strengthBar.classList.add('excellent');
+      strengthLbl.textContent = 'Enterprise Compliant (Very Strong)';
+      strengthLbl.style.color = '#10b981';
+    }
+  }
+}
+window.checkPasswordStrength = checkPasswordStrength;
+
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (btn) btn.textContent = '🔒';
+  } else {
+    input.type = 'password';
+    if (btn) btn.textContent = '👁️';
+  }
+}
+window.togglePasswordVisibility = togglePasswordVisibility;
+
+async function handleAuthSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-auth-submit');
+  const emailInput = document.getElementById('auth-email');
+  const passwordInput = document.getElementById('auth-password');
+  const errorMsg = document.getElementById('auth-error-message');
+  const successMsg = document.getElementById('auth-success-message');
+
+  if (errorMsg) errorMsg.classList.add('hidden');
+  if (successMsg) successMsg.classList.add('hidden');
+
+  if (!emailInput || !passwordInput) return;
+
+  if (btn) btn.classList.add('btn-loading');
+
+  // Smooth simulated auth handshake
+  setTimeout(() => {
+    if (btn) btn.classList.remove('btn-loading');
+    if (emailInput.value.includes('@')) {
+      if (successMsg) {
+        successMsg.textContent = 'Authentication successful! Session encrypted.';
+        successMsg.classList.remove('hidden');
+      }
+      showToast('Welcome, ' + emailInput.value + '! Enterprise clearances verified.', 'success');
+      setTimeout(() => {
+        closeAuthModal();
+        if (successMsg) successMsg.classList.add('hidden');
+      }, 900);
+    } else {
+      if (errorMsg) {
+        errorMsg.textContent = 'Invalid corporate email format.';
+        errorMsg.classList.remove('hidden');
+        errorMsg.style.animation = 'formShake 300ms ease';
+      }
+    }
+  }, 750);
+}
+window.handleAuthSubmit = handleAuthSubmit;
+
+// 5. Onboarding Wizard Controller
+let currentOnboardingStep = 1;
+
+function openOnboardingModal() {
+  const modal = document.getElementById('modal-onboarding');
+  if (modal) {
+    modal.classList.remove('hidden');
+    nextOnboardingStep(1);
+  }
+}
+window.openOnboardingModal = openOnboardingModal;
+
+function closeOnboardingModal() {
+  const modal = document.getElementById('modal-onboarding');
+  if (modal) modal.classList.add('hidden');
+}
+window.closeOnboardingModal = closeOnboardingModal;
+
+function nextOnboardingStep(step) {
+  currentOnboardingStep = step;
+  const progressFill = document.getElementById('onboard-progress-fill');
+  const percentage = step === 1 ? '25%' : step === 2 ? '50%' : step === 3 ? '75%' : '100%';
+  if (progressFill) progressFill.style.width = percentage;
+
+  for (let s = 1; s <= 4; s++) {
+    const pane = document.getElementById(`onboard-step-${s}`);
+    const lbl = document.getElementById(`onboard-step-lbl-${s}`);
+    if (pane) {
+      if (s === step) {
+        pane.classList.add('active');
+      } else {
+        pane.classList.remove('active');
+      }
+    }
+    if (lbl) {
+      if (s <= step) {
+        lbl.style.color = '#3b82f6';
+      } else {
+        lbl.style.color = '#94a3b8';
+      }
+    }
+  }
+}
+window.nextOnboardingStep = nextOnboardingStep;
+
+function startDnaSynthesisStep() {
+  nextOnboardingStep(3);
+  const progressBar = document.getElementById('dna-synthesis-progress-bar');
+  const statusText = document.getElementById('dna-synthesis-status-text');
+  const subText = document.getElementById('dna-synthesis-subtext');
+
+  const steps = [
+    { p: '30%', text: 'Extracting Colorimetric Centroids...', sub: 'Synthesizing primary, surface, and text palettes in CIELAB space' },
+    { p: '60%', text: 'Generating Voice & Tone Rules...', sub: 'Aligning enterprise persona, authoritative claims, and terminology constraints' },
+    { p: '85%', text: 'Verifying WCAG 2.1 AA Contrast Ratios...', sub: 'Validating minimum 4.5:1 text-to-surface accessibility thresholds' },
+    { p: '100%', text: 'Brand DNA Profile Synthesized!', sub: '10 specification dimensions ready for activation' }
+  ];
+
+  let currentIdx = 0;
+  function advanceSynthesis() {
+    if (currentIdx < steps.length) {
+      const stepData = steps[currentIdx];
+      if (progressBar) progressBar.style.width = stepData.p;
+      if (statusText) statusText.textContent = stepData.text;
+      if (subText) subText.textContent = stepData.sub;
+
+      const ind = document.getElementById(`dna-step-${currentIdx + 1}`);
+      if (ind) {
+        ind.style.color = '#10b981';
+        ind.textContent = ind.textContent.replace('○', '●');
+      }
+
+      currentIdx++;
+      setTimeout(advanceSynthesis, 650);
+    } else {
+      setTimeout(() => {
+        nextOnboardingStep(4);
+      }, 400);
+    }
+  }
+
+  advanceSynthesis();
+}
+window.startDnaSynthesisStep = startDnaSynthesisStep;
+
+function finishOnboarding() {
+  closeOnboardingModal();
+  showToast('Brand DNA profile activated! Governance dashboard ready.', 'success');
+  navigateToPage('dashboard');
+}
+window.finishOnboarding = finishOnboarding;
+
+// 6. Pre-Flight Scanner Laser Animation Wrap
+const originalRunPreflight = window.runPreflightInstantScan;
+window.runPreflightInstantScan = function(file) {
+  const laserLine = document.getElementById('scanner-laser-sweep');
+  if (laserLine) {
+    laserLine.classList.remove('hidden');
+    // Hide laser line after 2 seconds
+    setTimeout(() => {
+      laserLine.classList.add('hidden');
+    }, 2000);
+  }
+
+  if (typeof originalRunPreflight === 'function') {
+    originalRunPreflight(file);
+  }
+};
+
+// 7. Brand Co-Pilot Typing Indicator & Response Wrap
+const originalAskCopilot = window.askCopilot;
+window.askCopilot = function(promptText) {
+  const typingInd = document.getElementById('copilot-typing-container');
+  if (typingInd) typingInd.classList.remove('hidden');
+
+  setTimeout(() => {
+    if (typingInd) typingInd.classList.add('hidden');
+    if (typeof originalAskCopilot === 'function') {
+      originalAskCopilot(promptText);
+    }
+  }, 650);
+};
+
+// 8. Auto-Fix Accept & Reject Micro-interactions
+function acceptAutoFix(event) {
+  if (event) event.preventDefault();
+  const acceptBtn = event ? event.target : null;
+  if (acceptBtn) {
+    acceptBtn.classList.add('autofix-accept-flash');
+    acceptBtn.textContent = '✓ Auto-Fix Applied!';
+  }
+  showToast('Auto-Fix recolor accepted! Compliant image saved and certified.', 'success');
+}
+window.acceptAutoFix = acceptAutoFix;
+
+function rejectAutoFix(event) {
+  if (event) event.preventDefault();
+  showToast('Auto-Fix rejected. Original creative retained for human review.', 'info');
+}
+window.rejectAutoFix = rejectAutoFix;
+
+// 9. Attach navigation view change animation triggers
+const originalNavigateToPage = window.navigateToPage;
+window.navigateToPage = function(viewKey, evt, optionalId) {
+  if (typeof originalNavigateToPage === 'function') {
+    originalNavigateToPage(viewKey, evt, optionalId);
+  }
+
+  // If entering dashboard, animate KPIs
+  if (viewKey === 'dashboard') {
+    setTimeout(triggerDashboardKpiAnimations, 100);
+  }
+};

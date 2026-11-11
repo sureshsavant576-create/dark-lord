@@ -51,6 +51,14 @@ export default function PlatformPage() {
     predictedStyle: string;
   } | null>(null);
 
+  // Motion states
+  const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [isCopilotTyping, setIsCopilotTyping] = useState<boolean>(false);
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState<boolean>(false);
+  const [onboardingStep, setOnboardingStep] = useState<number>(1);
+  const [dnaSynthesisProgress, setDnaSynthesisProgress] = useState<number>(20);
+
   // Copilot state
   const [copilotMessages, setCopilotMessages] = useState<Array<{ sender: string; text: string; time: string }>>([
     {
@@ -93,6 +101,8 @@ export default function PlatformPage() {
   };
 
   const handlePreflightFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsScanning(true);
+    setTimeout(() => setIsScanning(false), 2000);
     const file = e.target.files?.[0];
     if (!file) return;
     const img = new Image();
@@ -115,6 +125,20 @@ export default function PlatformPage() {
   const handleSendCopilot = () => {
     if (!chatInput.trim()) return;
     const userMsg = { sender: "You", text: chatInput, time: new Date().toLocaleTimeString() };
+    setIsCopilotTyping(true);
+    setChatInput("");
+    setCopilotMessages(prev => [...prev, userMsg]);
+
+    setTimeout(() => {
+      setIsCopilotTyping(false);
+      const botReply = {
+        sender: "AI Brand Co-Pilot",
+        text: `Based on your approved brand guidelines for "${orgId}", here is the recommended correction:\n\nOriginal: "${userMsg.text}"\nRecommended Tone: Authoritative, innovative, yet grounded.\nCorrection: "Empowering next-generation cloud infrastructure with verified 99.99% operational continuity."`,
+        time: new Date().toLocaleTimeString()
+      };
+      setCopilotMessages(prev => [...prev, botReply]);
+    }, 700);
+    return;
     const botReply = {
       sender: "AI Brand Co-Pilot",
       text: `Based on your approved brand guidelines for "${orgId}", here is the recommended correction:\n\nOriginal: "${chatInput}"\nRecommended Tone: Authoritative, innovative, yet grounded.\nCorrection: "Empowering next-generation cloud infrastructure with verified 99.99% operational continuity."`,
@@ -249,7 +273,7 @@ export default function PlatformPage() {
               className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 relative"
             >
               🔔
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500 pulse-badge" />
             </button>
             <button
               title="Help & Documentation"
@@ -261,7 +285,7 @@ export default function PlatformPage() {
         </header>
 
         {/* Dynamic View Container */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-8 view-transition" key={activeTab}>
           {/* VIEW: DASHBOARD */}
           {activeTab === "dashboard" && (
             <div className="space-y-6 max-w-7xl mx-auto">
