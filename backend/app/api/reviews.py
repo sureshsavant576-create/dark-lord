@@ -134,8 +134,8 @@ async def upload_and_review_creative(
             resource_id=report.review_id,
             action="CREATIVE_AUDIT_COMPLETED",
             details={
-                "compliance_score": report.compliance_score,
-                "overall_verdict": report.overall_verdict,
+                "overall_score": report.overall_score,
+                "is_approved": report.is_approved,
                 "detected_issues_count": len(report.detected_issues)
             },
             success=True
