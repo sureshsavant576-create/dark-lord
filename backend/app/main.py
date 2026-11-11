@@ -13,6 +13,7 @@ from backend.app.api.inspections import router as inspections_router
 from backend.app.api.knowledge import router as knowledge_router
 from backend.app.api.reviews import router as reviews_router
 from backend.app.api.system import router as system_router
+from backend.app.api.workflow import router as workflow_router
 from backend.app.core.config import settings
 from backend.app.core.rate_limiter import RateLimitMiddleware
 
@@ -66,6 +67,7 @@ app.include_router(knowledge_router, prefix=settings.API_V1_PREFIX)
 app.include_router(reviews_router, prefix=settings.API_V1_PREFIX)
 app.include_router(claims_router, prefix=settings.API_V1_PREFIX)
 app.include_router(accessibility_router, prefix=settings.API_V1_PREFIX)
+app.include_router(workflow_router, prefix=settings.API_V1_PREFIX)
 
 STATIC_DIR = Path(__file__).parent / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)

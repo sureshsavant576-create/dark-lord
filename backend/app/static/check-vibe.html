@@ -276,31 +276,82 @@
                         <div class="preflight-hud-header">
                           <div class="preflight-hud-title">
                             <span class="status-pulse-dot"></span>
-                            <strong>Instant Pre-Flight Scanner</strong>
-                            <span class="pf-latency-ticker" id="pf-latency-ticker">&bull; Real-Time Diagnostics</span>
+                            <strong>Instant Client-Side Pre-Flight Scanner</strong>
+                            <span class="pf-latency-ticker" id="pf-latency-ticker">&bull; 100% In-Browser Heuristics</span>
                           </div>
-                          <span id="pf-brand-alignment-badge" class="badge badge-success">88% Expected Alignment</span>
+                          <span id="pf-brand-alignment-badge" class="badge badge-success">Diagnostics Active</span>
                         </div>
-                        <div class="preflight-hud-grid">
-                          <div class="pf-tile">
-                            <span class="pf-label">Color Temperature</span>
-                            <strong id="pf-temp-text" class="pf-val">Warm 3200K</strong>
-                            <span id="pf-temp-sub" class="pf-sub">Golden / Ambient Hue</span>
+
+                        <!-- Preliminary Disclaimers & Governance Notice -->
+                        <div class="pf-governance-notice">
+                          <span class="pf-badge-preliminary">PRELIMINARY HEURISTICS</span>
+                          <small>Browser-based measurements calculated in milliseconds without server upload. <strong>Not final brand approval.</strong> Complete multimodal AI verification and OCR compliance runs upon clicking "Run Brand Inspection".</small>
+                        </div>
+
+                        <!-- Preliminary Mismatch Warnings Alert Box -->
+                        <div id="pf-mismatch-box" class="pf-mismatch-box hidden">
+                          <div class="mismatch-title">
+                            <span>⚠️ Preliminary Mismatch Warnings:</span>
                           </div>
-                          <div class="pf-tile">
-                            <span class="pf-label">Negative Space</span>
-                            <strong id="pf-whitespace-text" class="pf-val">42.4%</strong>
-                            <div class="pf-mini-bar"><div id="pf-whitespace-fill" class="pf-mini-fill" style="width: 42.4%;"></div></div>
+                          <div id="pf-mismatch-list" class="pf-mismatch-list"></div>
+                        </div>
+
+                        <!-- Instant Preview + Diagnostics Grid -->
+                        <div class="preflight-main-wrap">
+                          <div class="pf-thumb-column">
+                            <img id="pf-live-thumb" class="pf-live-thumb" alt="Client pre-flight preview">
+                            <span class="pf-thumb-caption" id="pf-dimensions-tag">-- × -- px</span>
                           </div>
-                          <div class="pf-tile">
-                            <span class="pf-label">Predicted Visual Vibe</span>
-                            <strong id="pf-vibe-text" class="pf-val">Minimalist Modern</strong>
-                            <span id="pf-vibe-sub" class="pf-sub">High Whitespace / Balanced Contrast</span>
-                          </div>
-                          <div class="pf-tile">
-                            <span class="pf-label">Extracted Palette</span>
-                            <div id="pf-swatches-row" class="pf-swatches-row"></div>
-                            <span class="pf-sub">Dominant Centroids</span>
+
+                          <div class="preflight-hud-grid">
+                            <!-- 1. Dominant Colors & Approximate HEX -->
+                            <div class="pf-tile">
+                              <span class="pf-label">Dominant Palette (HEX)</span>
+                              <div id="pf-swatches-row" class="pf-swatches-row"></div>
+                              <span id="pf-hex-labels-sub" class="pf-sub">Click to copy HEX</span>
+                            </div>
+
+                            <!-- 2. Color Temperature -->
+                            <div class="pf-tile">
+                              <span class="pf-label">Color Temperature</span>
+                              <strong id="pf-temp-text" class="pf-val">Neutral 5400K</strong>
+                              <span id="pf-temp-sub" class="pf-sub">Balanced Studio White</span>
+                            </div>
+
+                            <!-- 3. Contrast Measurement -->
+                            <div class="pf-tile">
+                              <span class="pf-label">Contrast Ratio</span>
+                              <strong id="pf-contrast-text" class="pf-val">6.8:1 (WCAG AA)</strong>
+                              <span id="pf-contrast-sub" class="pf-sub">Luminance Dynamic Range</span>
+                            </div>
+
+                            <!-- 4. Aspect Ratio & Dimensions -->
+                            <div class="pf-tile">
+                              <span class="pf-label">Dimensions &amp; Format</span>
+                              <strong id="pf-aspect-text" class="pf-val">1:1 Square</strong>
+                              <span id="pf-dims-sub" class="pf-sub">Social Feed Standard</span>
+                            </div>
+
+                            <!-- 5. Negative Space Estimation -->
+                            <div class="pf-tile">
+                              <span class="pf-label">Negative Space</span>
+                              <strong id="pf-whitespace-text" class="pf-val">42.4%</strong>
+                              <div class="pf-mini-bar"><div id="pf-whitespace-fill" class="pf-mini-fill" style="width: 42.4%;"></div></div>
+                            </div>
+
+                            <!-- 6. Layout Properties -->
+                            <div class="pf-tile">
+                              <span class="pf-label">Layout &amp; Composition</span>
+                              <strong id="pf-layout-text" class="pf-val">Balanced Grid</strong>
+                              <span id="pf-layout-sub" class="pf-sub">Low Clutter / Clear Hierarchy</span>
+                            </div>
+
+                            <!-- 7. Visual Style Prediction -->
+                            <div class="pf-tile pf-tile-wide">
+                              <span class="pf-label">Preliminary Visual-Style Prediction</span>
+                              <strong id="pf-vibe-text" class="pf-val pf-val-highlight">Minimalist</strong>
+                              <span id="pf-vibe-sub" class="pf-sub">High whitespace, restrained palette, and clean typography breathing room.</span>
+                            </div>
                           </div>
                         </div>
                       </div>

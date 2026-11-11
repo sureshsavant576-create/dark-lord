@@ -77,6 +77,19 @@ from backend.app.models.remediation import (
     VisualProblemType,
     VisualRemediationResult,
 )
+from backend.app.models.workflow import (
+    ApprovalDecisionRequest,
+    CommentRequest,
+    ContentStatus,
+    ContentVersion,
+    ReviseContentRequest,
+    RevisionRequest,
+    SubmitContentRequest,
+    WorkflowAuditLogEntry,
+    WorkflowComment,
+    WorkflowItem,
+    WorkflowRole,
+)
 
 __all__ = [
     "BrandProfile",

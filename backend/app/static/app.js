@@ -3020,9 +3020,51 @@ function runInstantPreflight(file) {
   const reader = new FileReader();
 
   reader.onload = function(e) {
+    const dataUrl = e.target.result;
+
+    // Instant image preview thumbnail in HUD
+    const liveThumb = document.getElementById('pf-live-thumb');
+    if (liveThumb) {
+      liveThumb.src = dataUrl;
+    }
+
     const img = new Image();
     img.onload = function() {
-      // 1. Off-screen canvas analysis (100x100 thumbnail for instant sub-millisecond calculation)
+      const origW = img.naturalWidth || img.width;
+      const origH = img.naturalHeight || img.height;
+
+      // 1. Dimensions & Aspect Ratio Classification
+      const dimsTag = document.getElementById('pf-dimensions-tag');
+      if (dimsTag) dimsTag.textContent = `${origW} × ${origH} px`;
+
+      const aspectVal = origW / Math.max(1, origH);
+      let aspectLabel = "1:1 Square";
+      let orientation = "Square";
+      let dimsSub = "Social Feed Standard (Instagram / Display)";
+
+      if (aspectVal >= 1.7) {
+        aspectLabel = "16:9 Landscape";
+        orientation = "Landscape";
+        dimsSub = "Hero Banner / YouTube / Display Ad";
+      } else if (aspectVal <= 0.6) {
+        aspectLabel = "9:16 Vertical";
+        orientation = "Portrait";
+        dimsSub = "Stories / Reels / TikTok Format";
+      } else if (aspectVal >= 0.75 && aspectVal <= 0.85) {
+        aspectLabel = "4:5 Portrait";
+        orientation = "Portrait";
+        dimsSub = "Social Feed Portrait Carousel";
+      } else if (aspectVal > 1.15) {
+        aspectLabel = `${aspectVal.toFixed(2)}:1 Landscape`;
+        orientation = "Landscape";
+        dimsSub = "Wide Web Creative Banner";
+      } else if (aspectVal < 0.85) {
+        aspectLabel = `1:${(1 / aspectVal).toFixed(2)} Portrait`;
+        orientation = "Portrait";
+        dimsSub = "Vertical Marketing Poster";
+      }
+
+      // 2. Off-screen canvas analysis (100x100 thumbnail for instant sub-millisecond calculation)
       const canvas = document.createElement('canvas');
       canvas.width = 100;
       canvas.height = 100;
@@ -3035,6 +3077,7 @@ function runInstantPreflight(file) {
       let totalR = 0, totalG = 0, totalB = 0;
       let lightBgCount = 0;
       const colorCounts = {};
+      const luminances = [];
 
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
@@ -3045,60 +3088,135 @@ function runInstantPreflight(file) {
         totalG += g;
         totalB += b;
 
-        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-        if (lum > 220 || lum < 25) lightBgCount++;
+        const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
+        luminances.push(lum);
+        if (lum > 0.86 || lum < 0.10) lightBgCount++;
 
-        // Quantize to hex
-        const qr = Math.round(r / 32) * 32;
-        const qg = Math.round(g / 32) * 32;
-        const qb = Math.round(b / 32) * 32;
+        // Quantize to hex (32-level quantization for palette clustering)
+        const qr = Math.min(255, Math.round(r / 32) * 32);
+        const qg = Math.min(255, Math.round(g / 32) * 32);
+        const qb = Math.min(255, Math.round(b / 32) * 32);
         const hex = `#${((1 << 24) + (qr << 16) + (qg << 8) + qb).toString(16).slice(1).toUpperCase()}`;
         colorCounts[hex] = (colorCounts[hex] || 0) + 1;
       }
 
       const pixelCount = data.length / 4;
       const meanR = totalR / pixelCount;
+      const meanG = totalG / pixelCount;
       const meanB = totalB / pixelCount;
 
-      // Color Temperature
+      // 3. Color Temperature (Kelvin estimate)
       const tempDiff = meanR - meanB;
       let tempLabel = "Neutral 5400K";
-      let tempSub = "Balanced Studio White";
-      if (tempDiff > 30) {
+      let tempSub = "Balanced Studio Daylight";
+      let tempCategory = "NEUTRAL";
+      if (tempDiff > 35) {
         tempLabel = "Warm 3000K";
-        tempSub = "Golden / Sunset Hue";
-      } else if (tempDiff > 10) {
+        tempSub = "Golden / Amber Sunset Hue";
+        tempCategory = "WARM";
+      } else if (tempDiff > 12) {
         tempLabel = "Warm 3800K";
         tempSub = "Soft Ambient Warmth";
-      } else if (tempDiff < -30) {
+        tempCategory = "WARM";
+      } else if (tempDiff < -35) {
         tempLabel = "Cool 7500K";
         tempSub = "High-Tech / Ice Daylight";
-      } else if (tempDiff < -10) {
+        tempCategory = "COOL";
+      } else if (tempDiff < -12) {
         tempLabel = "Cool 6500K";
         tempSub = "Clean Daylight Blue";
+        tempCategory = "COOL";
       }
 
-      // Negative Space
-      const whitespacePct = Math.min(88, Math.max(18, Math.round((lightBgCount / pixelCount) * 100)));
+      // 4. Contrast Measurement (Percentile Relative Luminance)
+      luminances.sort((a, b) => a - b);
+      const lMin = luminances[Math.floor(luminances.length * 0.10)] || 0.05;
+      const lMax = luminances[Math.floor(luminances.length * 0.90)] || 0.95;
+      const contrastRatio = parseFloat(((lMax + 0.05) / (lMin + 0.05)).toFixed(1));
+      const contrastPassWCAG = contrastRatio >= 4.5;
+      const contrastLabel = `${contrastRatio}:1 (${contrastPassWCAG ? 'WCAG AA Pass' : 'Low Contrast'})`;
+      const contrastSub = contrastPassWCAG
+        ? "Exceeds 4.5:1 recommended legibility threshold"
+        : "Warning: May fail WCAG AA contrast on body text";
 
-      // Dominant Swatches
+      // 5. Negative Space Estimation
+      const whitespacePct = Math.min(88, Math.max(16, Math.round((lightBgCount / pixelCount) * 100)));
+
+      // 6. Dominant Swatches (Top 5) & Approximate HEX Codes
       const sortedColors = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
-      // Predicted Visual Vibe
-      let predictedVibe = "Balanced Modern";
-      let vibeSub = "Professional Commercial Layout";
-      if (meanR < 70 && meanB < 70) {
-        predictedVibe = "Stealth Minimalist";
-        vibeSub = "Deep Blacks / Contrast Stealth";
-      } else if (whitespacePct > 45) {
-        predictedVibe = "Minimalist Modern";
-        vibeSub = "High Whitespace / Clean Editorial";
-      } else if (tempDiff > 25) {
-        predictedVibe = "Warm Heritage";
-        vibeSub = "Traditional Organic Aesthetic";
+      // 7. Layout Properties
+      const meanLumVal = (0.299 * meanR + 0.587 * meanG + 0.114 * meanB);
+      let layoutLabel = "Balanced Grid";
+      let layoutSub = "Clean Visual Hierarchy & Contrast";
+      if (whitespacePct > 55) {
+        layoutLabel = "Spacious Open Layout";
+        layoutSub = "Generous Margins & High Breathing Room";
+      } else if (whitespacePct < 25) {
+        layoutLabel = "High-Density Composition";
+        layoutSub = "Tight Content-Heavy Arrangement";
       } else {
-        predictedVibe = "Dynamic Lifestyle";
-        vibeSub = "High-Impact Visual Contrast";
+        layoutLabel = `${orientation} Balanced Grid`;
+        layoutSub = "Standard Commercial Marketing Layout";
+      }
+
+      // 8. Preliminary Visual-Style Prediction (Mapped strictly to 7 mandated styles)
+      const saturation = Math.max(0, Math.max(meanR, meanG, meanB) - Math.min(meanR, meanG, meanB));
+      let predictedStyle = "Corporate";
+      let styleExplanation = "Structured commercial grid, balanced corporate tones, and business-ready presentation.";
+
+      if (whitespacePct >= 48 && saturation < 60) {
+        predictedStyle = "Minimalist";
+        styleExplanation = "Generous negative space, restrained palette, and clean typography breathing room.";
+      } else if (meanLumVal < 55 && (meanB > 90 || (meanR < 60 && meanG > 100))) {
+        predictedStyle = "Futuristic";
+        styleExplanation = "Dark high-tech backdrop punctuated by cyber cyan/neon accents.";
+      } else if ((meanLumVal < 50 || meanLumVal > 225) && contrastRatio >= 7.5 && saturation < 50) {
+        predictedStyle = "Luxury";
+        styleExplanation = "Refined tonal depth, extreme contrast, and restrained monochrome/gold elegance.";
+      } else if (saturation > 80 && tempCategory === "WARM") {
+        predictedStyle = "Playful";
+        styleExplanation = "Vibrant warm colors, dynamic saturation, and playful high-energy presentation.";
+      } else if (saturation >= 65 || contrastRatio >= 9.0) {
+        predictedStyle = "Bold";
+        styleExplanation = "High-impact visual punch, saturated focal elements, and commanding contrast.";
+      } else if (orientation === "Portrait" && whitespacePct >= 28 && whitespacePct <= 46) {
+        predictedStyle = "Editorial";
+        styleExplanation = "Magazine-style vertical balance, thoughtful composition, and editorial poise.";
+      }
+
+      // 9. Preliminary Brand Mismatch Warnings
+      const mismatchBox = document.getElementById('pf-mismatch-box');
+      const mismatchList = document.getElementById('pf-mismatch-list');
+      const mismatchWarnings = [];
+
+      const brandSelect = document.getElementById('inspect-brand-select');
+      const selectedBrandId = brandSelect ? brandSelect.value : '';
+
+      if (!contrastPassWCAG) {
+        mismatchWarnings.push(`Estimated contrast (${contrastRatio}:1) is below WCAG AA 4.5:1 threshold.`);
+      }
+
+      // Check off-brand color mismatch against known palette if brand selected
+      if (selectedBrandId === 'nike') {
+        const hasBlackOrOrange = sortedColors.some(([hex]) => hex.startsWith('#0') || hex.startsWith('#1') || hex.startsWith('#F') || hex.startsWith('#E'));
+        if (!hasBlackOrOrange && sortedColors.length > 0) {
+          mismatchWarnings.push(`Dominant color ${sortedColors[0][0]} may deviate from Nike's core brand standards.`);
+        }
+      } else if (selectedBrandId === 'apex_cloud') {
+        const hasNavyOrCyan = sortedColors.some(([hex]) => hex.includes('0B') || hex.includes('1C') || hex.includes('5B') || hex.includes('FF'));
+        if (!hasNavyOrCyan && sortedColors.length > 0) {
+          mismatchWarnings.push(`Dominant palette deviates from Apex Cloud's approved navy & cyber cyan centroids.`);
+        }
+      }
+
+      if (mismatchBox && mismatchList) {
+        if (mismatchWarnings.length > 0) {
+          mismatchList.innerHTML = mismatchWarnings.map(w => `<div class="pf-mismatch-item">⚠️ ${escapeHtml(w)}</div>`).join('');
+          mismatchBox.classList.remove('hidden');
+        } else {
+          mismatchBox.classList.add('hidden');
+        }
       }
 
       const elapsed = Math.round(performance.now() - startTime);
@@ -3106,8 +3224,14 @@ function runInstantPreflight(file) {
       // Update HUD elements
       const tempText = document.getElementById('pf-temp-text');
       const tempSubEl = document.getElementById('pf-temp-sub');
+      const contrastText = document.getElementById('pf-contrast-text');
+      const contrastSubEl = document.getElementById('pf-contrast-sub');
+      const aspectText = document.getElementById('pf-aspect-text');
+      const dimsSubEl = document.getElementById('pf-dims-sub');
       const whiteText = document.getElementById('pf-whitespace-text');
       const whiteFill = document.getElementById('pf-whitespace-fill');
+      const layoutText = document.getElementById('pf-layout-text');
+      const layoutSubEl = document.getElementById('pf-layout-sub');
       const vibeText = document.getElementById('pf-vibe-text');
       const vibeSubEl = document.getElementById('pf-vibe-sub');
       const swatchesRow = document.getElementById('pf-swatches-row');
@@ -3116,11 +3240,17 @@ function runInstantPreflight(file) {
 
       if (tempText) tempText.textContent = tempLabel;
       if (tempSubEl) tempSubEl.textContent = tempSub;
+      if (contrastText) contrastText.textContent = contrastLabel;
+      if (contrastSubEl) contrastSubEl.textContent = contrastSub;
+      if (aspectText) aspectText.textContent = aspectLabel;
+      if (dimsSubEl) dimsSubEl.textContent = dimsSub;
       if (whiteText) whiteText.textContent = `${whitespacePct}%`;
       if (whiteFill) whiteFill.style.width = `${whitespacePct}%`;
-      if (vibeText) vibeText.textContent = predictedVibe;
-      if (vibeSubEl) vibeSubEl.textContent = vibeSub;
-      if (latencyTicker) latencyTicker.textContent = `• ${elapsed}ms Real-Time Diagnostics`;
+      if (layoutText) layoutText.textContent = layoutLabel;
+      if (layoutSubEl) layoutSubEl.textContent = layoutSub;
+      if (vibeText) vibeText.textContent = predictedStyle;
+      if (vibeSubEl) vibeSubEl.textContent = styleExplanation;
+      if (latencyTicker) latencyTicker.textContent = `• ${elapsed}ms Real-Time In-Browser Diagnostics`;
 
       if (swatchesRow) {
         swatchesRow.innerHTML = '';
@@ -3128,24 +3258,25 @@ function runInstantPreflight(file) {
           const chip = document.createElement('div');
           chip.className = 'pf-swatch-chip';
           chip.style.backgroundColor = hex;
-          chip.title = hex;
+          chip.title = `Click to copy ${hex}`;
+          chip.onclick = () => {
+            navigator.clipboard.writeText(hex).then(() => toast(`Copied ${hex} to clipboard!`));
+          };
           swatchesRow.appendChild(chip);
         });
       }
 
-      // Check brand alignment if selected
-      const brandSelect = document.getElementById('inspect-brand-select');
       if (brandBadge) {
-        if (brandSelect && brandSelect.value) {
-          brandBadge.textContent = "✓ Alignment Diagnostics Active";
+        if (mismatchWarnings.length === 0) {
+          brandBadge.textContent = "✓ Alignment Diagnostics: Normal";
           brandBadge.className = "badge badge-success";
         } else {
-          brandBadge.textContent = "Pre-Flight Diagnostics Certified";
-          brandBadge.className = "badge badge-primary";
+          brandBadge.textContent = "⚠️ Mismatches Detected";
+          brandBadge.className = "badge badge-warning";
         }
       }
     };
-    img.src = e.target.result;
+    img.src = dataUrl;
   };
   reader.readAsDataURL(file);
 }
@@ -3161,6 +3292,34 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Hook drop-zone dragover & drop
+  const dropZone = document.getElementById('drop-zone');
+  if (dropZone) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('drag-active');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('drag-active');
+      }, false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt && dt.files && dt.files[0]) {
+        runInstantPreflight(dt.files[0]);
+      }
+    }, false);
+  }
+});
 
   // Auto-detect ?preset=... in URL query string for 1-click evaluator deep-links
   try {
@@ -3796,21 +3955,33 @@ function initBrandDNASuite() {
 }
 
 function switchPortalMode(mode) {
-  const tabDna = document.getElementById('portal-tab-dna');
-  const tabManual = document.getElementById('portal-tab-manual');
-  const suiteDna = document.getElementById('brand-dna-suite');
-  const sectionManual = document.getElementById('ob-form-section');
+  const tabDna = document.getElementById('tab-btn-dna') || document.getElementById('portal-tab-dna');
+  const tabManual = document.getElementById('tab-btn-manual') || document.getElementById('portal-tab-manual');
+  const tabWorkflow = document.getElementById('tab-btn-workflow');
+  const sectionDna = document.getElementById('brand-dna-section') || document.getElementById('brand-dna-suite');
+  const sectionManual = document.getElementById('onboarding-form') || document.getElementById('ob-form-section');
+  const sectionWorkflow = document.getElementById('workflow-portal-section');
+
+  // Remove active from all tabs
+  if (tabDna) tabDna.classList.remove('active');
+  if (tabManual) tabManual.classList.remove('active');
+  if (tabWorkflow) tabWorkflow.classList.remove('active');
+
+  // Hide all sections
+  if (sectionDna) sectionDna.classList.add('hidden');
+  if (sectionManual) sectionManual.classList.add('hidden');
+  if (sectionWorkflow) sectionWorkflow.classList.add('hidden');
 
   if (mode === 'dna') {
     if (tabDna) tabDna.classList.add('active');
-    if (tabManual) tabManual.classList.remove('active');
-    if (suiteDna) suiteDna.classList.remove('hidden');
-    if (sectionManual) sectionManual.classList.add('hidden');
+    if (sectionDna) sectionDna.classList.remove('hidden');
+  } else if (mode === 'workflow') {
+    if (tabWorkflow) tabWorkflow.classList.add('active');
+    if (sectionWorkflow) sectionWorkflow.classList.remove('hidden');
+    loadWorkflowItems();
   } else {
     if (tabManual) tabManual.classList.add('active');
-    if (tabDna) tabDna.classList.remove('active');
     if (sectionManual) sectionManual.classList.remove('hidden');
-    if (suiteDna) suiteDna.classList.add('hidden');
   }
 }
 
@@ -4358,3 +4529,504 @@ window.updateDnaColorRole = updateDnaColorRole;
 window.saveDNADraftEdits = saveDNADraftEdits;
 window.approveAndActivateBrandDNA = approveAndActivateBrandDNA;
 window.initBrandDNASuite = initBrandDNASuite;
+
+
+/* ==========================================================================
+   ORGANISATIONAL CONTENT REVIEW & APPROVAL WORKFLOW CLIENT SUITE
+   ========================================================================== */
+
+let currentWorkflowRole = "Authorised Reviewer";
+let currentWorkflowOrgId = "org-apex-cloud";
+let currentWorkflowFilter = "ALL";
+let loadedWorkflowItems = [];
+let activeWorkflowItem = null;
+let activeWorkflowVersion = 1;
+
+async function loadWorkflowItems() {
+  const container = document.getElementById('wf-items-container');
+  if (!container) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/workflow/items?org_id=${encodeURIComponent(currentWorkflowOrgId)}`);
+    if (!res.ok) throw new Error(await res.text());
+    loadedWorkflowItems = await res.json();
+
+    // If empty, auto-seed two realistic demonstration items for judges
+    if (loadedWorkflowItems.length === 0) {
+      await seedDemonstrationWorkflowItems();
+      const res2 = await fetch(`${API_BASE}/workflow/items?org_id=${encodeURIComponent(currentWorkflowOrgId)}`);
+      loadedWorkflowItems = await res2.json();
+    }
+
+    renderWorkflowCards();
+  } catch (err) {
+    container.innerHTML = `<div class="wf-empty-state" style="color: #F87171;">Failed to load submissions: ${escapeHtml(err.message)}</div>`;
+  }
+}
+window.loadWorkflowItems = loadWorkflowItems;
+
+async function seedDemonstrationWorkflowItems() {
+  // 1. Standard creative
+  await fetch(`${API_BASE}/workflow/items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      org_id: currentWorkflowOrgId,
+      brand_id: "apex_cloud",
+      title: "Q4 High-Throughput Cloud Guard Announcement",
+      content_text: "Apex Shield Mesh delivers deterministic sub-millisecond microsegmentation for enterprise Kubernetes clusters.",
+      user_id: "creator_01",
+      user_name: "Marcus Vance",
+      user_role: "Creator",
+      has_high_risk_claims: false,
+      compliance_score: 96.0,
+      findings_summary: ["Complies with Apex Cloud Brand DNA", "Zero banned terms detected"]
+    })
+  });
+
+  // 2. High-risk claim creative (Demonstrating automatic escalation!)
+  await fetch(`${API_BASE}/workflow/items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      org_id: currentWorkflowOrgId,
+      brand_id: "apex_cloud",
+      title: "Promotional Banner: #1 Cloud Security Guarantee",
+      content_text: "Apex Cloud is voted #1 in the cloud security industry with guaranteed 100% bug-free uptime for enterprise servers.",
+      user_id: "creator_02",
+      user_name: "Elena Rostova",
+      user_role: "Creator",
+      has_high_risk_claims: true,
+      compliance_score: 46.0,
+      findings_summary: ["High-Risk Claim: '#1 in the industry'", "Disallowed term: 'guaranteed 100% bug-free'", "Deprecated term: 'servers' -> 'cloud engines'"]
+    })
+  });
+}
+
+function renderWorkflowCards() {
+  const container = document.getElementById('wf-items-container');
+  if (!container) return;
+
+  const filtered = loadedWorkflowItems.filter(item => {
+    if (currentWorkflowFilter === 'ALL') return true;
+    return item.status === currentWorkflowFilter;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="wf-empty-state">No submissions currently matching status "${currentWorkflowFilter}".</div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  filtered.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'wf-card';
+
+    const latestVer = (item.versions && item.versions.length > 0)
+      ? item.versions[item.versions.length - 1]
+      : { content_text: 'No content', compliance_score: 0 };
+
+    const statusClass = `tag-${item.status.replace(/\s+/g, '_')}`;
+
+    card.innerHTML = `
+      <div>
+        <div class="wf-card-header">
+          <h4 class="wf-card-title">${escapeHtml(item.title)}</h4>
+          <span class="tag-badge ${statusClass}">${escapeHtml(item.status)}</span>
+        </div>
+        <div class="wf-card-meta">
+          <strong>Brand:</strong> ${item.brand_id.toUpperCase()} &bull; 
+          <strong>Version:</strong> v${item.current_version} &bull; 
+          <strong>By:</strong> ${escapeHtml(item.created_by)}
+        </div>
+        ${item.has_high_risk_claims ? `
+          <div style="margin-top: 0.4rem;">
+            <span class="tag-badge tag-Escalated" style="font-size: 0.65rem;">⚠️ HIGH-RISK CLAIMS ESCALATED</span>
+          </div>
+        ` : ''}
+        <div class="wf-card-body">
+          <p>"${escapeHtml(latestVer.content_text)}"</p>
+        </div>
+      </div>
+      <div class="wf-card-footer">
+        <span class="wf-card-meta">💬 ${item.comments.length} comments &bull; 📜 ${item.approval_history.length} log events</span>
+        <button type="button" class="btn btn-secondary btn-xs" onclick="openWorkflowDetailModal('${item.item_id}')">
+          Review &amp; Audit Trail &rarr;
+        </button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function filterWorkflowByStatus(status) {
+  currentWorkflowFilter = status;
+  const pills = document.querySelectorAll('#wf-filter-pills .wf-pill');
+  pills.forEach(p => {
+    if (p.textContent.includes(status) || (status === 'ALL' && p.textContent.includes('All'))) {
+      p.classList.add('active');
+    } else {
+      p.classList.remove('active');
+    }
+  });
+  renderWorkflowCards();
+}
+window.filterWorkflowByStatus = filterWorkflowByStatus;
+
+function onWorkflowRoleChanged(newRole) {
+  currentWorkflowRole = newRole;
+  const actingLabel = document.getElementById('wf-acting-role-label');
+  if (actingLabel) actingLabel.textContent = `Acting as: ${newRole}`;
+  toast(`Switched workflow acting role to: ${newRole}`);
+  if (activeWorkflowItem) {
+    updateWorkflowActionPermissions();
+  }
+}
+window.onWorkflowRoleChanged = onWorkflowRoleChanged;
+
+function openNewWorkflowModal() {
+  const modal = document.getElementById('modal-workflow-new');
+  if (modal) modal.classList.remove('hidden');
+}
+window.openNewWorkflowModal = openNewWorkflowModal;
+
+function closeNewWorkflowModal() {
+  const modal = document.getElementById('modal-workflow-new');
+  if (modal) modal.classList.add('hidden');
+}
+window.closeNewWorkflowModal = closeNewWorkflowModal;
+
+async function handleNewWorkflowSubmit(e) {
+  if (e) e.preventDefault();
+  const title = (document.getElementById('wf-new-title') || {}).value || 'Untitled Creative';
+  const brandId = (document.getElementById('wf-new-brand') || {}).value || 'apex_cloud';
+  const copyText = (document.getElementById('wf-new-copy') || {}).value || '';
+  const imageUrl = (document.getElementById('wf-new-image') || {}).value || null;
+  const hasHighRisk = !!(document.getElementById('wf-new-high-risk') || {}).checked;
+  const score = parseFloat((document.getElementById('wf-new-score') || {}).value) || 85.0;
+
+  try {
+    const res = await fetch(`${API_BASE}/workflow/items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        org_id: currentWorkflowOrgId,
+        brand_id: brandId,
+        title: title,
+        content_text: copyText,
+        image_url: imageUrl,
+        user_id: "user_active",
+        user_name: `User (${currentWorkflowRole})`,
+        user_role: currentWorkflowRole,
+        has_high_risk_claims: hasHighRisk,
+        compliance_score: score
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    closeNewWorkflowModal();
+    toast("✓ Creative submitted into workflow review!");
+    loadWorkflowItems();
+  } catch (err) {
+    toast(`Submission error: ${err.message}`);
+  }
+}
+window.handleNewWorkflowSubmit = handleNewWorkflowSubmit;
+
+async function openWorkflowDetailModal(itemId) {
+  const modal = document.getElementById('modal-workflow-detail');
+  if (!modal) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/workflow/items/${encodeURIComponent(itemId)}?org_id=${encodeURIComponent(currentWorkflowOrgId)}`);
+    if (!res.ok) throw new Error(await res.text());
+    activeWorkflowItem = await res.json();
+    activeWorkflowVersion = activeWorkflowItem.current_version;
+
+    renderWorkflowDetail();
+    modal.classList.remove('hidden');
+  } catch (err) {
+    toast(`Failed to load details: ${err.message}`);
+  }
+}
+window.openWorkflowDetailModal = openWorkflowDetailModal;
+
+function closeWorkflowDetailModal() {
+  const modal = document.getElementById('modal-workflow-detail');
+  if (modal) modal.classList.add('hidden');
+  activeWorkflowItem = null;
+}
+window.closeWorkflowDetailModal = closeWorkflowDetailModal;
+
+function renderWorkflowDetail() {
+  const item = activeWorkflowItem;
+  if (!item) return;
+
+  // Title and Status
+  const titleEl = document.getElementById('wf-detail-title');
+  const badgeEl = document.getElementById('wf-detail-status-badge');
+  const metaEl = document.getElementById('wf-detail-meta');
+
+  if (titleEl) titleEl.textContent = item.title;
+  if (badgeEl) {
+    badgeEl.textContent = item.status;
+    badgeEl.className = `tag-badge tag-${item.status.replace(/\s+/g, '_')}`;
+  }
+  if (metaEl) {
+    metaEl.textContent = `Version ${item.current_version} • Brand: ${item.brand_id.toUpperCase()} • Submitted by ${escapeHtml(item.created_by)} (${item.created_at.slice(0, 10)})`;
+  }
+
+  // Escalation alert
+  const alertEl = document.getElementById('wf-detail-escalation-alert');
+  const alertReason = document.getElementById('wf-detail-escalation-reason');
+  if (item.has_high_risk_claims || item.status === 'Escalated') {
+    if (alertReason) alertReason.textContent = item.escalation_reason || "Escalated: High-risk claims require Authorised Reviewer or Administrator approval.";
+    if (alertEl) alertEl.classList.remove('hidden');
+  } else if (alertEl) {
+    alertEl.classList.add('hidden');
+  }
+
+  // Render Version Tabs
+  const vtabsBar = document.getElementById('wf-version-tabs-bar');
+  if (vtabsBar) {
+    vtabsBar.innerHTML = '';
+    (item.versions || []).forEach(v => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `wf-vtab ${v.version_number === activeWorkflowVersion ? 'active' : ''}`;
+      btn.textContent = `v${v.version_number} (${v.submitted_by})`;
+      btn.onclick = () => {
+        activeWorkflowVersion = v.version_number;
+        renderWorkflowDetail();
+      };
+      vtabsBar.appendChild(btn);
+    });
+  }
+
+  // Render Version Content
+  const curVer = (item.versions || []).find(v => v.version_number === activeWorkflowVersion) || item.versions[item.versions.length - 1];
+  const copyEl = document.getElementById('wf-detail-copy-text');
+  const scoreEl = document.getElementById('wf-detail-score');
+  const findingsList = document.getElementById('wf-detail-findings-list');
+
+  if (copyEl) copyEl.textContent = curVer.content_text;
+  if (scoreEl) scoreEl.textContent = `${curVer.compliance_score || 85}% Compliance`;
+  if (findingsList) {
+    findingsList.innerHTML = '';
+    (curVer.findings_summary || []).forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'wf-card-meta';
+      div.innerHTML = `&bull; ${escapeHtml(f)}`;
+      findingsList.appendChild(div);
+    });
+  }
+
+  // Render Comments
+  const commentsList = document.getElementById('wf-detail-comments-list');
+  if (commentsList) {
+    commentsList.innerHTML = '';
+    if (item.comments.length === 0) {
+      commentsList.innerHTML = `<div class="empty-comments">No review comments yet. Post feedback below.</div>`;
+    } else {
+      item.comments.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'wf-comment-item';
+        div.innerHTML = `
+          <div class="wf-comment-meta">${escapeHtml(c.user_name)} (${c.role}) • <small style="color: #64748B;">v${c.version_number}</small>:</div>
+          <div>${escapeHtml(c.text)}</div>
+        `;
+        commentsList.appendChild(div);
+      });
+    }
+  }
+
+  // Render Audit Trail
+  const auditList = document.getElementById('wf-detail-audit-list');
+  if (auditList) {
+    auditList.innerHTML = '';
+    (item.approval_history || []).forEach(entry => {
+      const div = document.createElement('div');
+      div.className = 'wf-audit-item';
+      div.innerHTML = `
+        <strong>[${escapeHtml(entry.action)}]</strong> ${escapeHtml(entry.actor_name)} (${entry.actor_role}) &bull; ${entry.timestamp.slice(11, 19)}: ${escapeHtml(entry.details)}
+      `;
+      auditList.appendChild(div);
+    });
+  }
+
+  updateWorkflowActionPermissions();
+}
+
+function updateWorkflowActionPermissions() {
+  const item = activeWorkflowItem;
+  if (!item) return;
+
+  const actingRole = currentWorkflowRole;
+  const isEscalated = (item.status === 'Escalated' || item.has_high_risk_claims);
+
+  const reqRevBox = document.getElementById('wf-request-revision-box');
+  const submitRevBox = document.getElementById('wf-submit-revision-box');
+  const btnApprove = document.getElementById('btn-wf-approve');
+  const btnApproveWarn = document.getElementById('btn-wf-approve-warn');
+  const btnReject = document.getElementById('btn-wf-reject');
+
+  // Creator view
+  if (actingRole === 'Creator') {
+    if (reqRevBox) reqRevBox.classList.add('hidden');
+    if (submitRevBox) submitRevBox.classList.remove('hidden');
+    if (btnApprove) btnApprove.disabled = true;
+    if (btnApproveWarn) btnApproveWarn.disabled = true;
+    if (btnReject) btnReject.disabled = true;
+    return;
+  }
+
+  // Manager view
+  if (actingRole === 'Manager') {
+    if (reqRevBox) reqRevBox.classList.remove('hidden');
+    if (submitRevBox) submitRevBox.classList.add('hidden');
+    if (btnReject) btnReject.disabled = false;
+
+    // Manager CANNOT approve escalated content
+    if (isEscalated) {
+      if (btnApprove) {
+        btnApprove.disabled = true;
+        btnApprove.title = "High-risk claims require Authorised Reviewer approval.";
+      }
+      if (btnApproveWarn) btnApproveWarn.disabled = true;
+    } else {
+      if (btnApprove) {
+        btnApprove.disabled = false;
+        btnApprove.title = "";
+      }
+      if (btnApproveWarn) btnApproveWarn.disabled = false;
+    }
+    return;
+  }
+
+  // Authorised Reviewer or Administrator view (Full signatory authority)
+  if (actingRole === 'Authorised Reviewer' || actingRole === 'Administrator') {
+    if (reqRevBox) reqRevBox.classList.remove('hidden');
+    if (submitRevBox) submitRevBox.classList.remove('hidden');
+    if (btnApprove) {
+      btnApprove.disabled = false;
+      btnApprove.title = "Signatory authority confirmed.";
+    }
+    if (btnApproveWarn) btnApproveWarn.disabled = false;
+    if (btnReject) btnReject.disabled = false;
+  }
+}
+
+async function handlePostComment(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById('wf-comment-input');
+  if (!input || !input.value.trim() || !activeWorkflowItem) return;
+
+  const text = input.value.trim();
+  input.value = '';
+
+  try {
+    const res = await fetch(`${API_BASE}/workflow/items/${encodeURIComponent(activeWorkflowItem.item_id)}/comments?org_id=${encodeURIComponent(currentWorkflowOrgId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: "user_active",
+        user_name: `User (${currentWorkflowRole})`,
+        user_role: currentWorkflowRole,
+        text: text
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    toast("Comment posted to review thread.");
+    await openWorkflowDetailModal(activeWorkflowItem.item_id);
+  } catch (err) {
+    toast(`Comment error: ${err.message}`);
+  }
+}
+window.handlePostComment = handlePostComment;
+
+async function handleRequestRevision() {
+  if (!activeWorkflowItem) return;
+  const feedbackInput = document.getElementById('wf-revision-feedback');
+  const feedback = (feedbackInput && feedbackInput.value.trim()) || "Please adjust copy and terminology to meet brand guidelines.";
+
+  try {
+    const res = await fetch(`${API_BASE}/workflow/items/${encodeURIComponent(activeWorkflowItem.item_id)}/revisions?org_id=${encodeURIComponent(currentWorkflowOrgId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: "user_active",
+        user_name: `Reviewer (${currentWorkflowRole})`,
+        user_role: currentWorkflowRole,
+        feedback: feedback
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    toast("Revisions requested. Item marked as 'Needs Revision'.");
+    await openWorkflowDetailModal(activeWorkflowItem.item_id);
+    loadWorkflowItems();
+  } catch (err) {
+    toast(`Request error: ${err.message}`);
+  }
+}
+window.handleRequestRevision = handleRequestRevision;
+
+async function handleSubmitRevision() {
+  if (!activeWorkflowItem) return;
+  const copyInput = document.getElementById('wf-revised-copy');
+  const summaryInput = document.getElementById('wf-revised-summary');
+
+  const revisedCopy = (copyInput && copyInput.value.trim()) || "Revised brand copy addressing review feedback.";
+  const summary = (summaryInput && summaryInput.value.trim()) || "Revised version addressing feedback";
+
+  try {
+    const res = await fetch(`${API_BASE}/workflow/items/${encodeURIComponent(activeWorkflowItem.item_id)}/revise?org_id=${encodeURIComponent(currentWorkflowOrgId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: "creator_01",
+        user_name: `Creator (${currentWorkflowRole})`,
+        user_role: currentWorkflowRole,
+        content_text: revisedCopy,
+        change_summary: summary,
+        has_high_risk_claims: false,
+        compliance_score: 96.0,
+        findings_summary: ["Replaced flagged terms with approved lexicon"]
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    toast("✓ Revised version submitted! Ready for re-review.");
+    await openWorkflowDetailModal(activeWorkflowItem.item_id);
+    loadWorkflowItems();
+  } catch (err) {
+    toast(`Revision error: ${err.message}`);
+  }
+}
+window.handleSubmitRevision = handleSubmitRevision;
+
+async function handleDecision(decision) {
+  if (!activeWorkflowItem) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/workflow/items/${encodeURIComponent(activeWorkflowItem.item_id)}/decision?org_id=${encodeURIComponent(currentWorkflowOrgId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: "reviewer_01",
+        user_name: `Approver (${currentWorkflowRole})`,
+        user_role: currentWorkflowRole,
+        decision: decision,
+        notes: `Governance signoff rendered by ${currentWorkflowRole}.`
+      })
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ detail: 'Decision failed' }));
+      throw new Error(errData.detail || 'Decision failed');
+    }
+    toast(`✓ Decision recorded: ${decision.toUpperCase()}`);
+    await openWorkflowDetailModal(activeWorkflowItem.item_id);
+    loadWorkflowItems();
+  } catch (err) {
+    toast(`Governance Gate: ${err.message}`);
+  }
+}
+window.handleDecision = handleDecision;
+
