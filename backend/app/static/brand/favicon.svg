@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <defs>
+    <linearGradient id="fav-spectrum" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="50%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#090D17"/>
+  <polygon points="32,6 56,20 56,48 32,58 8,48 8,20" 
+           stroke="url(#fav-spectrum)" stroke-width="2.5" stroke-linejoin="round" fill="#0B132B" />
+  <!-- Aperture Facets -->
+  <path d="M32 16 L46 30 L32 34 Z" fill="#38BDF8" />
+  <path d="M46 30 L46 44 L32 34 Z" fill="#6366F1" />
+  <path d="M46 44 L32 50 L32 34 Z" fill="#8B5CF6" />
+  <path d="M32 50 L18 44 L32 34 Z" fill="#10B981" />
+  <path d="M18 44 L18 30 L32 34 Z" fill="#06B6D4" />
+  <path d="M18 30 L32 16 L32 34 Z" fill="#818CF8" />
+  <!-- Focal core -->
+  <circle cx="32" cy="34" r="6" fill="#FFFFFF"/>
+  <circle cx="32" cy="34" r="2.5" fill="#090D17"/>
+  <circle cx="32" cy="22" r="2" fill="#38BDF8"/>
+</svg>

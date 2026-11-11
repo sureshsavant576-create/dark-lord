@@ -6978,3 +6978,220 @@ html, body {
   justify-content: center;
   box-shadow: 0 4px 15px -3px rgba(99, 102, 241, 0.4);
 }
+
+
+/* ==========================================================================
+   CREATIVE DIRECTOR SUITE: AMBIENT AURA, RADAR SCAN & ADVANCED MOTION
+   ========================================================================== */
+
+/* Ambient Chromatic Aura & Technical Blueprint Grid */
+body.landing-view-active {
+  position: relative;
+  background-color: #060913;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18) 0%, transparent 60%),
+    radial-gradient(circle at 10% 40%, rgba(6, 182, 212, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 90% 70%, rgba(168, 85, 247, 0.14) 0%, transparent 50%),
+    radial-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px;
+  background-position: 0 0, 0 0, 0 0, 0 0;
+  overflow-x: hidden;
+}
+
+@keyframes ambientAuroraMove {
+  0% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 0.8; }
+  50% { transform: translateX(-48%) scale(1.06) rotate(2deg); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 0.8; }
+}
+
+.landing-hero-container {
+  position: relative;
+}
+
+.landing-hero-container::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 850px;
+  height: 480px;
+  background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.22) 0%, rgba(6, 182, 212, 0.12) 40%, rgba(168, 85, 247, 0.05) 70%, transparent 80%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: -1;
+  animation: ambientAuroraMove 12s ease-in-out infinite;
+}
+
+/* Radar Scanline for Pre-Flight Frame */
+@keyframes radarScan {
+  0% {
+    top: 0%;
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0.8;
+  }
+}
+
+.demo-poster-frame::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #38BDF8 30%, #6366F1 70%, transparent);
+  box-shadow: 0 0 12px 2px rgba(56, 189, 248, 0.65);
+  animation: radarScan 3.4s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Shimmer Sweep Effect on Primary Buttons */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transform: rotate(30deg);
+  transition: all 0.75s ease;
+  pointer-events: none;
+}
+
+.btn-shimmer:hover::after {
+  left: 120%;
+}
+
+/* Interactive Split Slider for Tab 3 (Generative Auto-Remediation) */
+.interactive-slider-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.7);
+  border: 1px solid var(--border-medium);
+  user-select: none;
+  height: 260px;
+}
+
+.slider-before-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.slider-after-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+  transition: clip-path 0.05s linear;
+}
+
+.slider-divider-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: #FFFFFF;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px #6366F1;
+  pointer-events: none;
+  z-index: 10;
+  transform: translateX(-50%);
+}
+
+.slider-handle-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366F1, #38BDF8);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 12px #6366F1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-size: 13px;
+  z-index: 11;
+  pointer-events: none;
+}
+
+.slider-range-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: ew-resize;
+  z-index: 12;
+  margin: 0;
+}
+
+.slider-tag-before {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  background: rgba(239, 68, 68, 0.85);
+  backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  z-index: 8;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.slider-tag-after {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  background: rgba(16, 185, 129, 0.85);
+  backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  z-index: 8;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .landing-hero-container::before,
+  .demo-poster-frame::after,
+  .btn-shimmer::after,
+  .status-pulse-dot {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -67,6 +67,18 @@ app.mount("/storage/uploads", StaticFiles(directory=str(settings.UPLOADS_DIR)), 
 app.mount("/storage/guidelines", StaticFiles(directory=str(settings.GUIDELINES_DIR)), name="guidelines")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
+PUBLIC_BRAND_DIR = Path("public/brand")
+if PUBLIC_BRAND_DIR.exists():
+    app.mount("/public/brand", StaticFiles(directory=str(PUBLIC_BRAND_DIR)), name="public_brand")
+
+@app.get("/favicon.ico", include_in_schema=False)
+@app.get("/favicon.svg", include_in_schema=False)
+async def get_favicon():
+    fav_path = STATIC_DIR / "brand" / "favicon.svg"
+    if fav_path.exists():
+        return FileResponse(fav_path, media_type="image/svg+xml")
+    return Response(status_code=404)
+
 @app.get("/overview")
 @app.get("/")
 def serve_index():
