@@ -23,6 +23,7 @@ class Settings(BaseSettings):
 
     DEFAULT_VISION_MODEL: str = Field(default="gemini-3.1-flash-lite", description="Default multimodal vision model")
     DEFAULT_TEXT_MODEL: str = Field(default="gemini-3.1-flash-lite", description="Default text reasoning model")
+    GEMINI_MODEL: str = Field(default="gemini-3.1-flash-lite", description="Default Gemini model")
     DEFAULT_EMBEDDING_MODEL: str = Field(default="gemini-embedding-001", description="Default embedding model")
     GROQ_VISION_MODEL: str = Field(default="llama-3.2-11b-vision-preview", description="Groq cloud-hosted vision model")
     GROQ_TEXT_MODEL: str = Field(default="llama-3.3-70b-versatile", description="Groq cloud-hosted fast text reasoning model")

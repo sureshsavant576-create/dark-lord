@@ -190,22 +190,52 @@ Return ONLY valid JSON with this exact schema:
 }}
 """
 
-            response = client.models.generate_content(
-                model=settings.DEFAULT_VISION_MODEL,
-                contents=[
-                    types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
-                    prompt
-                ],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    temperature=0.2
-                )
-            )
+            models_to_try = list(dict.fromkeys([
+                settings.DEFAULT_VISION_MODEL,
+                "gemini-3.1-flash-lite",
+                "gemini-3.8-flash",
+                "gemini-3.5-flash"
+            ]))
+
+            response = None
+            used_model = settings.DEFAULT_VISION_MODEL
+            last_error = None
+
+            for m_name in models_to_try:
+                try:
+                    response = client.models.generate_content(
+                        model=m_name,
+                        contents=[
+                            types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                            prompt
+                        ],
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                            temperature=0.2
+                        )
+                    )
+                    if response and response.text:
+                        used_model = m_name
+                        break
+                except Exception as exc:
+                    last_error = exc
+                    logger.warning("Gemini vision fallback model '%s' failed: %s. Trying next...", m_name, exc)
+                    continue
+
+            if not response or not response.text:
+                if last_error:
+                    logger.error("All Gemini vision fallback models failed: %s", last_error)
+                return {
+                    "visual_identity_findings": [],
+                    "aesthetic_summary": "Multimodal visual reasoning failed; falling back to OpenCV metrics.",
+                    "visual_score": 80.0,
+                    "provider": "opencv_fallback"
+                }
 
             text_content = response.text
             parsed = json.loads(text_content)
             parsed["provider"] = "gemini_multimodal_vision"
-            parsed["model"] = settings.DEFAULT_VISION_MODEL
+            parsed["model"] = used_model
             return parsed
 
         except Exception as exc:

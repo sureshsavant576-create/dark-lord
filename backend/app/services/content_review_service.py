@@ -266,7 +266,7 @@ class ContentReviewService:
             measurable_properties=measurable_props,
             extracted_text=extracted_text_content,
             knowledge_base_citations=citations,
-            text_model_used="gemini-3.5-flash-lite",
+            text_model_used=settings.DEFAULT_TEXT_MODEL,
             vision_model_used=vision_provider_label,
             created_at=now
         )

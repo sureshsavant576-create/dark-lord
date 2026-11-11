@@ -106,6 +106,6 @@ class ContentReviewReport(BaseModel):
     measurable_properties: Optional[MeasurableImageProperties] = None
     extracted_text: Optional[str] = None
     knowledge_base_citations: List[Dict[str, Any]] = Field(default_factory=list)
-    text_model_used: str = "gemini-3.5-flash-lite"
+    text_model_used: str = "gemini-3.1-flash-lite"
     vision_model_used: str = "groq-llama-3.2-11b-vision"
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())

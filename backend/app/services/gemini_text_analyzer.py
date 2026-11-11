@@ -104,14 +104,36 @@ Every issue MUST contain EXACTLY these fields:
 - evidence_citation: evidence reference from the Knowledge Base (or "None verified" if missing)
 """
 
-        response = client.models.generate_content(
-            model=settings.DEFAULT_TEXT_MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.1
-            )
-        )
+        models_to_try = list(dict.fromkeys([
+            settings.DEFAULT_TEXT_MODEL,
+            "gemini-3.1-flash-lite",
+            "gemini-3.8-flash",
+            "gemini-3.5-flash"
+        ]))
+
+        response = None
+        last_error = None
+        for m_name in models_to_try:
+            try:
+                response = client.models.generate_content(
+                    model=m_name,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        temperature=0.1
+                    )
+                )
+                if response and response.text:
+                    break
+            except Exception as exc:
+                last_error = exc
+                logger.warning("Gemini text analysis model '%s' failed: %s. Trying fallback...", m_name, exc)
+                continue
+
+        if not response or not response.text:
+            if last_error:
+                raise last_error
+            return []
 
         raw_json = json.loads(response.text)
         items = raw_json.get("findings", [])

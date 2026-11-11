@@ -283,8 +283,11 @@ class KnowledgeBaseService:
         for raw in data.values():
             if raw.get("org_id") != org_id:
                 continue
-            if brand_id and raw.get("brand_id") != brand_id:
-                continue
+            if brand_id:
+                target_bid = brand_id.lower().replace("-", "_").strip()
+                item_bid = (raw.get("brand_id") or "").lower().replace("-", "_").strip()
+                if item_bid and item_bid != target_bid:
+                    continue
             if category and raw.get("category") != category.value:
                 continue
             if active_only and not raw.get("is_active", True):

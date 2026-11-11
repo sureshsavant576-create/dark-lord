@@ -647,11 +647,33 @@ Strict Directives:
 4. Preserve the creator's original purpose and topic.
 5. Keep your conversational response structured, encouraging, concise (under 180 words), and actionable.
 """
-        response = client.models.generate_content(
-            model=settings.GEMINI_MODEL,
-            contents=prompt
-        )
-        return response.text.strip() if response and response.text else ""
+        models_to_try = list(dict.fromkeys([
+            getattr(settings, "GEMINI_MODEL", "gemini-3.1-flash-lite"),
+            getattr(settings, "DEFAULT_TEXT_MODEL", "gemini-3.1-flash-lite"),
+            "gemini-3.1-flash-lite",
+            "gemini-3.8-flash",
+            "gemini-3.5-flash"
+        ]))
+
+        response = None
+        last_error = None
+
+        for m_name in models_to_try:
+            try:
+                response = client.models.generate_content(
+                    model=m_name,
+                    contents=prompt
+                )
+                if response and response.text:
+                    return response.text.strip()
+            except Exception as exc:
+                last_error = exc
+                logger.warning("Gemini Co-Pilot model '%s' failed: %s. Trying fallback...", m_name, exc)
+                continue
+
+        if last_error:
+            logger.error("All Gemini Co-Pilot models failed: %s", last_error)
+        return ""
 
     def _generate_deterministic_reply(
         self,
