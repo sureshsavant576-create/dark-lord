@@ -9,6 +9,7 @@ from backend.app.core.auth import (
     UserContext,
     UserRole as AuthUserRole,
     get_current_user,
+    require_authenticated_user,
     verify_tenant_access,
 )
 from backend.app.core.config import settings
@@ -39,7 +40,7 @@ async def secure_file_upload(
     user_id: str = Form("user-1"),
     confidentiality: str = Form("INTERNAL"),
     subfolder: str = Form("uploads"),
-    user: UserContext = Depends(get_current_user)
+    user: UserContext = Depends(require_authenticated_user)
 ):
     """
     Secure file upload endpoint with:
@@ -122,7 +123,7 @@ def get_secure_file(
     user_id: str = Query("user-1", description="Requester ID"),
     subfolder: str = Query("uploads", description="Target subfolder"),
     confidentiality: str = Query("INTERNAL", description="Document confidentiality level"),
-    user: UserContext = Depends(get_current_user)
+    user: UserContext = Depends(require_authenticated_user)
 ):
     """
     Serves confidential company files with:
@@ -166,7 +167,7 @@ def get_secure_file(
             event_type=AuditEventType.PATH_TRAVERSAL_BLOCKED,
             org_id=clean_org,
             user_id=user_id,
-            user_role=user_role,
+            user_role=effective_role,
             severity=AuditEventSeverity.CRITICAL,
             resource_type="file",
             resource_id=file_id,
@@ -190,7 +191,7 @@ def get_secure_file(
         event_type=AuditEventType.FILE_ACCESS,
         org_id=clean_org,
         user_id=user_id,
-        user_role=user_role,
+        user_role=effective_role,
         severity=AuditEventSeverity.INFO,
         resource_type="company_file",
         resource_id=file_id,

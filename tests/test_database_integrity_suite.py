@@ -35,8 +35,17 @@ class DatabaseIntegrityTestSuite(unittest.TestCase):
         cls.org_alpha = "audit_db_tenant_alpha"
         cls.org_beta = "audit_db_tenant_beta"
 
+        def get_or_create(email, password, role, org_id):
+            clean_email = email.strip().lower()
+            users = auth_service._load_users()
+            for u in users.values():
+                if u.get("email") == clean_email:
+                    from backend.app.core.auth import UserRecord
+                    return UserRecord(**u)
+            return auth_service.register_user(email=clean_email, password=password, role=role, org_id=org_id)
+
         # Register admin & user for Alpha
-        cls.user_alpha = auth_service.register_user(
+        cls.user_alpha = get_or_create(
             email="db_admin_alpha@audit-corp.io",
             password="SecurePassword2026!",
             role=UserRole.ADMIN,
@@ -45,7 +54,7 @@ class DatabaseIntegrityTestSuite(unittest.TestCase):
         cls.token_alpha = auth_service.create_session_token(cls.user_alpha.user_id, "admin", cls.org_alpha)
 
         # Register developer for Beta
-        cls.user_beta = auth_service.register_user(
+        cls.user_beta = get_or_create(
             email="db_dev_beta@audit-corp.io",
             password="SecurePassword2026!",
             role=UserRole.DEVELOPER,

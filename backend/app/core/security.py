@@ -145,7 +145,25 @@ ROLE_PERMISSIONS: Dict[UserRole, Set[str]] = {
 def check_role_clearance(role: str | UserRole, level: str | ConfidentialityLevel) -> bool:
     """Verifies whether a given role holds sufficient clearance for a confidentiality tier."""
     try:
-        user_role = UserRole(role)
+        if isinstance(role, str):
+            role_map = {
+                "admin": UserRole.ADMINISTRATOR,
+                "administrator": UserRole.ADMINISTRATOR,
+                "compliance_lead": UserRole.AUTHORISED_REVIEWER,
+                "authorised reviewer": UserRole.AUTHORISED_REVIEWER,
+                "authorised_reviewer": UserRole.AUTHORISED_REVIEWER,
+                "manager": UserRole.MANAGER,
+                "creator": UserRole.CREATOR,
+                "developer": UserRole.CREATOR,
+                "viewer": UserRole.CREATOR,
+            }
+            clean_role = role.strip().lower()
+            if clean_role in role_map:
+                user_role = role_map[clean_role]
+            else:
+                user_role = UserRole(role)
+        else:
+            user_role = role
         target_level = ConfidentialityLevel(level)
     except ValueError:
         return False
@@ -155,7 +173,25 @@ def check_role_clearance(role: str | UserRole, level: str | ConfidentialityLevel
 def check_role_permission(role: str | UserRole, action: str) -> bool:
     """Verifies whether a user role is permitted to perform a specified action."""
     try:
-        user_role = UserRole(role)
+        if isinstance(role, str):
+            role_map = {
+                "admin": UserRole.ADMINISTRATOR,
+                "administrator": UserRole.ADMINISTRATOR,
+                "compliance_lead": UserRole.AUTHORISED_REVIEWER,
+                "authorised reviewer": UserRole.AUTHORISED_REVIEWER,
+                "authorised_reviewer": UserRole.AUTHORISED_REVIEWER,
+                "manager": UserRole.MANAGER,
+                "creator": UserRole.CREATOR,
+                "developer": UserRole.CREATOR,
+                "viewer": UserRole.CREATOR,
+            }
+            clean_role = role.strip().lower()
+            if clean_role in role_map:
+                user_role = role_map[clean_role]
+            else:
+                user_role = UserRole(role)
+        else:
+            user_role = role
     except ValueError:
         return False
     return action in ROLE_PERMISSIONS.get(user_role, set())

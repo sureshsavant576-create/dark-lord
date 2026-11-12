@@ -17,9 +17,18 @@ class ComprehensiveSecurityAuditSuite(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        def get_or_create(email, password, role, org_id):
+            clean_email = email.strip().lower()
+            users = auth_service._load_users()
+            for u in users.values():
+                if u.get("email") == clean_email:
+                    from backend.app.core.auth import UserRecord
+                    return UserRecord(**u)
+            return auth_service.register_user(email=clean_email, password=password, role=role, org_id=org_id)
+
         # Register test accounts for two distinct organizations
         # 1. Org Alpha
-        cls.alpha_admin_rec = auth_service.register_user(
+        cls.alpha_admin_rec = get_or_create(
             email="sec_audit_admin@alpha-corp.io",
             password="SecurePassword2026!",
             role=UserRole.ADMIN,
@@ -29,7 +38,7 @@ class ComprehensiveSecurityAuditSuite(unittest.TestCase):
             cls.alpha_admin_rec.user_id, "admin", "org_alpha"
         )
 
-        cls.alpha_user_rec = auth_service.register_user(
+        cls.alpha_user_rec = get_or_create(
             email="sec_audit_dev@alpha-corp.io",
             password="SecurePassword2026!",
             role=UserRole.DEVELOPER,
@@ -40,7 +49,7 @@ class ComprehensiveSecurityAuditSuite(unittest.TestCase):
         )
 
         # 2. Org Beta
-        cls.beta_admin_rec = auth_service.register_user(
+        cls.beta_admin_rec = get_or_create(
             email="sec_audit_admin@beta-defense.com",
             password="SecurePassword2026!",
             role=UserRole.ADMIN,
@@ -50,7 +59,7 @@ class ComprehensiveSecurityAuditSuite(unittest.TestCase):
             cls.beta_admin_rec.user_id, "admin", "org_beta"
         )
 
-        cls.beta_user_rec = auth_service.register_user(
+        cls.beta_user_rec = get_or_create(
             email="sec_audit_dev@beta-defense.com",
             password="SecurePassword2026!",
             role=UserRole.DEVELOPER,

@@ -390,11 +390,14 @@ class WorkflowService:
                 severity=AuditEventSeverity.WARNING,
                 resource_type="workflow_item",
                 resource_id=item_id,
-                action="REQUEST_REVISION",
-                details={"feedback": req.feedback, "from_status": prev_status.value}
+                action="SUBMIT_REVISION",
+                details={
+                    "change_summary": getattr(req, "change_summary", getattr(req, "feedback", "")),
+                    "from_status": prev_status.value
+                }
             )
         except Exception as audit_err:
-            logger.warning("Audit logging failed on request_revision: %s", audit_err)
+            logger.warning("Audit logging failed on submit_revised_version: %s", audit_err)
 
         return item
 
@@ -475,11 +478,14 @@ class WorkflowService:
                 severity=AuditEventSeverity.WARNING,
                 resource_type="workflow_item",
                 resource_id=item_id,
-                action="REQUEST_REVISION",
-                details={"feedback": req.feedback, "from_status": prev_status.value}
+                action="SUBMIT_REVISION",
+                details={
+                    "change_summary": getattr(req, "change_summary", getattr(req, "feedback", "")),
+                    "from_status": prev_status.value
+                }
             )
         except Exception as audit_err:
-            logger.warning("Audit logging failed on request_revision: %s", audit_err)
+            logger.warning("Audit logging failed on submit_revised_version: %s", audit_err)
 
         return item
 
