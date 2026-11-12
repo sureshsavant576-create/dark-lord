@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/brands", tags=["Brand Onboarding & Governance"])
 
 @router.get("", response_model=List[BrandProfile])
+@router.get("/list", response_model=List[BrandProfile])
 def list_brands(user: UserContext = Depends(get_current_user)) -> List[BrandProfile]:
     brands = brand_service.list_brand_profiles()
     if is_platform_demo_admin(user):

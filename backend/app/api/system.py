@@ -18,6 +18,7 @@ def get_health() -> Dict[str, Any]:
     }
 
 @router.get("/status")
+@router.get("/system/status")
 def get_system_status() -> Dict[str, Any]:
     provider_config = settings.get_provider_status_dict()
     gateway_status = ai_gateway.get_status()

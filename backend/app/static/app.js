@@ -1786,6 +1786,11 @@ function onSelectDevBrand(brandId) {
   state.dev.selectedBrandId = brandId;
   const sel = document.getElementById('dev-brand-select');
   if (sel && sel.value !== brandId) sel.value = brandId;
+  const brand = state.brands.find((b) => b.brand_id === brandId);
+  const nameEl = document.getElementById('check-company-name');
+  if (nameEl && brand) {
+    nameEl.value = brand.brand_name || brandId;
+  }
   renderDevTargetPreview();
 }
 

@@ -51,6 +51,7 @@ async def submit_content_for_review(
 
 
 @router.get("/items", response_model=List[WorkflowItem])
+@router.get("/queue", response_model=List[WorkflowItem])
 async def list_workflow_items(
     org_id: str = Query(..., description="Organization ID for company-level data isolation"),
     brand_id: Optional[str] = Query(default=None),
