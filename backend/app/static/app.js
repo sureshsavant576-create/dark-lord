@@ -6371,14 +6371,120 @@ function openWorkflowDecisionModal() {
 window.openWorkflowDecisionModal = openWorkflowDecisionModal;
 
 // 10. Content Review Detail Loader (Section 5.3 & Section 8 Auto-Fix)
-function loadReviewDetail(reviewId) {
+async function loadReviewDetail(reviewId) {
   currentReviewId = reviewId || "rev-8a2f10b";
 
   const titleEl = document.getElementById("detail-review-title");
+  const subtitleEl = document.getElementById("detail-review-subtitle");
+  const assetTypeEl = document.getElementById("detail-asset-type");
+  const dimsList = document.getElementById("detail-dimensions-list");
+  const issuesDeck = document.getElementById("detail-detected-issues-deck");
+  const previewImg = document.getElementById("detail-preview-img");
+
   if (titleEl) titleEl.textContent = `Creative Inspection Report • ${currentReviewId}`;
 
-  // Populate Categories Breakdown
-  const dimsList = document.getElementById("detail-dimensions-list");
+  // Attempt to fetch actual saved report from database
+  try {
+    const res = await fetch(`${API_BASE}/reviews/${encodeURIComponent(currentReviewId)}`);
+    if (res.ok) {
+      const report = await res.json();
+      if (titleEl) {
+        titleEl.textContent = `Creative Inspection Report • ${report.review_id}`;
+      }
+      if (subtitleEl) {
+        const statusBadge = report.is_approved ? "APPROVED" : "REVISIONS REQUIRED";
+        subtitleEl.textContent = `Score: ${report.overall_score}% • Status: ${statusBadge} • Brand: ${report.brand_name || report.brand_id} • Analyzed on ${new Date(report.created_at).toLocaleString()}`;
+      }
+      if (assetTypeEl) {
+        assetTypeEl.textContent = report.content_type ? report.content_type.toUpperCase() : "CREATIVE ASSET";
+      }
+
+      // If review had an image file, point preview to it
+      if (previewImg && report.content_filename) {
+        previewImg.src = `/storage/uploads/${encodeURIComponent(report.content_filename)}`;
+      }
+
+      // Render actual detected dimensions
+      if (dimsList) {
+        const issues = report.detected_issues || [];
+        const critCount = issues.filter(i => (i.severity || '').toLowerCase() === 'critical').length;
+        const warnCount = issues.filter(i => (i.severity || '').toLowerCase() === 'warning').length;
+        const passCount = issues.filter(i => (i.severity || '').toLowerCase() === 'pass').length;
+
+        dimsList.innerHTML = `
+          <div class="dimension-row">
+            <span>Overall Compliance</span>
+            <strong style="color: ${report.overall_score >= 70 ? '#10B981' : '#EF4444'};">
+              ${report.overall_score >= 70 ? '✓' : '⚠️'} ${report.overall_score}% (${report.is_approved ? 'Passed Standard' : 'Action Required'})
+            </strong>
+          </div>
+          <div class="dimension-row">
+            <span>Critical Violations</span>
+            <strong style="color: ${critCount > 0 ? '#EF4444' : '#10B981'};">
+              ${critCount > 0 ? `🚨 ${critCount} Critical` : '✓ 0 Critical Issues'}
+            </strong>
+          </div>
+          <div class="dimension-row">
+            <span>Policy Warnings</span>
+            <strong style="color: ${warnCount > 0 ? '#F59E0B' : '#10B981'};">
+              ${warnCount > 0 ? `⚠️ ${warnCount} Warnings` : '✓ 0 Warnings'}
+            </strong>
+          </div>
+          <div class="dimension-row">
+            <span>Brand Standards Passed</span>
+            <strong style="color: #10B981;">
+              ✓ ${passCount} Checks Passed
+            </strong>
+          </div>
+          <div class="dimension-row">
+            <span>AI Provider Reasoning</span>
+            <strong style="color: #6366F1;">
+              ${escapeHtml(report.text_model_used || 'Gemini 3.1 Flash Lite')}
+            </strong>
+          </div>
+        `;
+      }
+
+      // Render actual detected issues
+      if (issuesDeck) {
+        const issues = report.detected_issues || [];
+        if (issues.length === 0) {
+          issuesDeck.innerHTML = `
+            <div class="p-6 text-center text-slate-400">
+              <span style="font-size: 2rem;">✓</span>
+              <p class="mt-2 font-medium text-slate-200">No brand violations detected.</p>
+              <p class="text-xs text-slate-400">This creative asset is fully compliant with all active brand governance rules.</p>
+            </div>
+          `;
+        } else {
+          issuesDeck.innerHTML = issues.map(iss => {
+            const sev = (iss.severity || 'warning').toLowerCase();
+            const sevClass = sev === 'critical' ? 'issue-critical' : (sev === 'pass' ? 'issue-pass' : 'issue-warning');
+            const pillClass = sev === 'critical' ? 'status-danger' : (sev === 'pass' ? 'status-success' : 'status-warning');
+            return `
+              <div class="standard-issue-card ${sevClass}">
+                <div class="issue-card-top">
+                  <span class="status-pill ${pillClass}">${escapeHtml((iss.severity || 'WARNING').toUpperCase())} &bull; ${escapeHtml(iss.category || 'GENERAL')}</span>
+                  <span class="guideline-ref">${escapeHtml(iss.rule_violated || 'Brand Governance Standard')}</span>
+                </div>
+                <strong class="issue-heading">${escapeHtml(iss.explanation || 'Issue detected')}</strong>
+                ${iss.recommended_correction ? `
+                  <div class="issue-correction-box">
+                    <strong>Recommended Correction:</strong> ${escapeHtml(iss.recommended_correction)}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('');
+        }
+      }
+      return;
+    }
+  } catch (err) {
+    console.warn("Could not fetch remote review detail, falling back to cached view:", err);
+  }
+
+  // Fallback default showcase cards when reviewId is a static demo ID
   if (dimsList) {
     dimsList.innerHTML = `
       <div class="dimension-row">
@@ -6404,8 +6510,6 @@ function loadReviewDetail(reviewId) {
     `;
   }
 
-  // Populate Detected Issues Deck
-  const issuesDeck = document.getElementById("detail-detected-issues-deck");
   if (issuesDeck) {
     issuesDeck.innerHTML = `
       <div class="standard-issue-card issue-critical">

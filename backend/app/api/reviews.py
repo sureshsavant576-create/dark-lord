@@ -2,9 +2,10 @@ from __future__ import annotations
 import logging
 import uuid
 from pathlib import Path
-from typing import Optional
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from typing import List, Optional
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 
+from backend.app.core.auth import UserContext, UserRole as AuthUserRole, get_current_user, verify_tenant_access
 from backend.app.core.config import settings
 from backend.app.core.security import (
     get_tenant_storage_path,
@@ -28,7 +29,10 @@ router = APIRouter(prefix="/reviews", tags=["AI Content Review System"])
 
 
 @router.post("/audit", response_model=ContentReviewReport)
-async def audit_content(request: ContentReviewRequest):
+async def audit_content(
+    request: ContentReviewRequest,
+    user: UserContext = Depends(get_current_user)
+):
     """
     Analyzes submitted creative copy or asset against the organisation's approved
     Brand DNA and official Knowledge Base.
@@ -44,6 +48,8 @@ async def audit_content(request: ContentReviewRequest):
     9. Incorrect or outdated information
     10. Accessibility problems
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, request.org_id)
     try:
         return await content_review_service.review_content(request)
     except Exception as exc:
@@ -58,7 +64,8 @@ async def upload_and_review_creative(
     org_id: str = Form(default="default-org"),
     content_type: ContentType = Form(default=ContentType.MARKETING_AD),
     copy_text: Optional[str] = Form(default=None),
-    campaign_context: Optional[str] = Form(default=None)
+    campaign_context: Optional[str] = Form(default=None),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Uploads a poster, image, PDF, or creative asset and performs an end-to-end
@@ -67,6 +74,8 @@ async def upload_and_review_creative(
     Enforces magic-bytes verification, organization tenant isolation, and audit logging.
     """
     clean_org = sanitize_org_id(org_id)
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, clean_org)
 
     try:
         content_bytes = await file.read()
@@ -148,3 +157,53 @@ async def upload_and_review_creative(
     except Exception as exc:
         logger.error("File upload review failed: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Creative upload audit failed: {str(exc)}")
+
+
+@router.get("", response_model=List[ContentReviewReport])
+async def list_content_reviews(
+    org_id: Optional[str] = Query(default=None),
+    brand_id: Optional[str] = Query(default=None),
+    user: UserContext = Depends(get_current_user)
+):
+    """
+    Lists historical content review reports strictly partitioned by organization.
+    """
+    if org_id and user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
+    effective_org = org_id or (None if user.role == AuthUserRole.ADMIN else user.org_id)
+    return content_review_service.list_reports(org_id=effective_org, brand_id=brand_id)
+
+
+@router.get("/{review_id}", response_model=ContentReviewReport)
+async def get_content_review(
+    review_id: str,
+    user: UserContext = Depends(get_current_user)
+):
+    """
+    Retrieves an existing content review report by review_id with tenant verification.
+    """
+    report = content_review_service.get_report(review_id)
+    if not report:
+        raise HTTPException(status_code=404, detail=f"Content review '{review_id}' not found.")
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, report.org_id)
+    return report
+
+
+@router.delete("/{review_id}")
+async def delete_content_review(
+    review_id: str,
+    user: UserContext = Depends(get_current_user)
+):
+    """
+    Deletes an isolated test or obsolete review report.
+    """
+    report = content_review_service.get_report(review_id)
+    if not report:
+        raise HTTPException(status_code=404, detail=f"Content review '{review_id}' not found.")
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, report.org_id)
+    deleted = content_review_service.delete_report(review_id)
+    if not deleted:
+        raise HTTPException(status_code=500, detail="Failed to delete content review report.")
+    return {"status": "success", "message": f"Content review '{review_id}' deleted."}

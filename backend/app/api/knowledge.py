@@ -70,12 +70,13 @@ def create_knowledge_item(
 @router.get("/items/{item_id}", response_model=KnowledgeItem)
 def get_knowledge_item(
     item_id: str,
-    org_id: str = Query(default="default-org", description="Tenant organization ID"),
+    org_id: Optional[str] = Query(default=None, description="Tenant organization ID"),
     user: UserContext = Depends(get_current_user)
 ):
+    target_org = org_id or user.org_id or "default-org"
     if user.role != AuthUserRole.ADMIN:
-        verify_tenant_access(user, org_id)
-    item = knowledge_service.get_item(item_id=item_id, org_id=org_id)
+        verify_tenant_access(user, target_org)
+    item = knowledge_service.get_item(item_id=item_id, org_id=target_org)
     if not item:
         raise HTTPException(status_code=404, detail="Knowledge item not found or access denied.")
     return item
@@ -85,7 +86,7 @@ def get_knowledge_item(
 def update_knowledge_item(
     item_id: str,
     update_in: KnowledgeItemUpdate,
-    org_id: str = Query(default="default-org", description="Tenant organization ID"),
+    org_id: Optional[str] = Query(default=None, description="Tenant organization ID"),
     user: UserContext = Depends(get_current_user)
 ):
     """
@@ -93,10 +94,11 @@ def update_knowledge_item(
     Creates an immutable version snapshot in the audit log, bumps the version number,
     and updates semantic vector embeddings.
     """
+    target_org = org_id or user.org_id or "default-org"
     if user.role != AuthUserRole.ADMIN:
-        verify_tenant_access(user, org_id)
+        verify_tenant_access(user, target_org)
     try:
-        return knowledge_service.update_item(item_id=item_id, org_id=org_id, update_in=update_in)
+        return knowledge_service.update_item(item_id=item_id, org_id=target_org, update_in=update_in)
     except KeyError:
         raise HTTPException(status_code=404, detail="Knowledge item not found.")
     except PermissionError as pe:
@@ -109,15 +111,34 @@ def update_knowledge_item(
 @router.get("/items/{item_id}/history", response_model=List[KnowledgeVersionSnapshot])
 def get_knowledge_item_history(
     item_id: str,
-    org_id: str = Query(default="default-org", description="Tenant organization ID"),
+    org_id: Optional[str] = Query(default=None, description="Tenant organization ID"),
     user: UserContext = Depends(get_current_user)
 ):
     """
     Retrieves full version history and changelog snapshots for a knowledge guideline.
     """
+    target_org = org_id or user.org_id or "default-org"
     if user.role != AuthUserRole.ADMIN:
-        verify_tenant_access(user, org_id)
-    return knowledge_service.get_version_history(item_id=item_id, org_id=org_id)
+        verify_tenant_access(user, target_org)
+    return knowledge_service.get_version_history(item_id=item_id, org_id=target_org)
+
+
+@router.delete("/items/{item_id}")
+def delete_knowledge_item(
+    item_id: str,
+    org_id: Optional[str] = Query(default=None, description="Tenant organization ID"),
+    user: UserContext = Depends(get_current_user)
+):
+    """
+    Deletes an isolated knowledge item.
+    """
+    target_org = org_id or user.org_id or "default-org"
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, target_org)
+    deleted = knowledge_service.delete_item(item_id=item_id, org_id=target_org)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Knowledge item not found.")
+    return {"status": "success", "message": f"Knowledge item '{item_id}' deleted."}
 
 
 @router.post("/search", response_model=List[KnowledgeSearchResult])

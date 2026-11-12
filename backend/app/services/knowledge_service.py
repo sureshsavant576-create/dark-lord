@@ -245,6 +245,22 @@ class KnowledgeBaseService:
             logger.info("Updated knowledge item %s to v%d (by %s)", item_id, updated_item.version, update_in.changed_by)
             return updated_item
 
+    def delete_item(self, item_id: str, org_id: str) -> bool:
+        """
+        Deletes or purges an isolated knowledge item, strictly checking tenant isolation.
+        """
+        with self._lock:
+            data = self._load_all()
+            raw = data.get(item_id)
+            if not raw:
+                return False
+            if raw.get("org_id") != org_id:
+                raise PermissionError("Access denied: Tenant organization mismatch.")
+            del data[item_id]
+            self._save_all(data)
+            logger.info("Deleted knowledge item %s for org %s", item_id, org_id)
+            return True
+
     def get_version_history(self, item_id: str, org_id: str) -> List[KnowledgeVersionSnapshot]:
         """
         Retrieves complete audit trail and prior version snapshots for an item.

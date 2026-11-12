@@ -299,6 +299,28 @@ class ContentReviewService:
                 logger.error("Failed to load content review reports: %s", e)
                 return {}
 
+    def get_report(self, review_id: str) -> Optional[ContentReviewReport]:
+        data = self._load_all()
+        raw = data.get(review_id)
+        if not raw:
+            return None
+        try:
+            return ContentReviewReport(**raw)
+        except Exception as e:
+            logger.error("Failed to parse content review %s: %s", review_id, e)
+            return None
+
+    def delete_report(self, review_id: str) -> bool:
+        with self._lock:
+            data = self._load_all()
+            if review_id in data:
+                del data[review_id]
+                tmp = self.db_path.with_suffix(".tmp")
+                tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                tmp.replace(self.db_path)
+                return True
+            return False
+
     def list_reports(self, org_id: Optional[str] = None, brand_id: Optional[str] = None) -> List[ContentReviewReport]:
         data = self._load_all()
         results: List[ContentReviewReport] = []
