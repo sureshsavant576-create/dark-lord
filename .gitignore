@@ -64,5 +64,6 @@ local_reports/
 .DS_Store
 Thumbs.db
 
+backend/app/static/brand/test_*.png
 test_data/
 tests/fixtures/
