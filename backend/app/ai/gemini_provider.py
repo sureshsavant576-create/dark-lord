@@ -83,35 +83,30 @@ class GeminiProvider(AIProviderBase):
         return self._client
 
     def _generate_with_fallback(self, contents: Any) -> Tuple[str, str]:
-        import time
         client = self._get_client()
-        models_to_try = list(dict.fromkeys(["gemini-3.1-flash-lite", self.model_name] + self.FALLBACK_MODELS))
+        models_to_try = list(dict.fromkeys([self.model_name] + self.FALLBACK_MODELS))
         last_error = None
 
-        for attempt in range(2):
-            saw_transient = False
-            for model in models_to_try:
-                try:
-                    response = client.models.generate_content(
-                        model=model,
-                        contents=contents,
-                        config=types.GenerateContentConfig(
-                            response_mime_type="application/json",
-                            temperature=0.2,
-                        )
+        for model in models_to_try:
+            try:
+                response = client.models.generate_content(
+                    model=model,
+                    contents=contents,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        temperature=0.2,
                     )
-                    if response and response.text:
-                        return response.text, model
-                except Exception as exc:
-                    last_error = exc
-                    msg = str(exc)
-                    if "503" in msg or "UNAVAILABLE" in msg:
-                        saw_transient = True
-                    logger.warning("Gemini model '%s' call failed: %s. Trying fallback...", model, exc)
-                    continue
-            if not saw_transient or attempt == 1:
-                break
-            time.sleep(0.8)
+                )
+                if response and response.text:
+                    return response.text, model
+            except Exception as exc:
+                last_error = exc
+                logger.warning("Gemini model '%s' call failed: %s.", model, exc)
+                msg = str(exc)
+                # If authentication or quota error, abort trying further models with the same key
+                if "API_KEY_INVALID" in msg or "401" in msg or "403" in msg or "PERMISSION_DENIED" in msg:
+                    break
+                continue
 
         raise last_error or RuntimeError("All Gemini model attempts failed.")
 

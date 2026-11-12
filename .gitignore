@@ -34,6 +34,7 @@ data/storage/guidelines/*
 data/storage/test_audit_tmp/
 data/backups/*.zip
 data/backups/*.tmp
+data/backups/*.json
 !data/backups/.gitkeep
 data/db/*.sqlite
 data/db/*.db
@@ -58,6 +59,11 @@ my_mistakes.md
 scratch/
 test_assets/
 local_reports/
+reports/
+docs/
+*.pdf
+generate_report.py
+run_*.py
 
 .vscode/
 .idea/

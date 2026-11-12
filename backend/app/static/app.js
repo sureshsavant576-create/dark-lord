@@ -97,20 +97,101 @@ function setFeedback(elId, message, type = 'info') {
   el.textContent = message;
 }
 
+function clearAllStoredSessions() {
+  state.session = null;
+  state.isDemo = false;
+  try {
+    localStorage.removeItem(STORAGE_SESSION_KEY);
+    localStorage.removeItem('sanket_session_token');
+    localStorage.removeItem('sanket_org_id');
+    localStorage.removeItem('sanket_company_name');
+    localStorage.removeItem('sanket_user_email');
+    localStorage.removeItem('sanket_user_role');
+  } catch (_) {}
+  updateAuthUI();
+}
+
+async function ensureDemoSession() {
+  if (state.session && state.session.session_token && state.session.email === 'demo@sanket.ai') {
+    try {
+      const check = await fetch('/api/v1/auth/me', {
+        headers: { Authorization: `Bearer ${state.session.session_token}` }
+      });
+      if (check.ok) {
+        state.isDemo = true;
+        updateDemoVisibility();
+        return state.session;
+      }
+    } catch (_) {}
+  }
+  try {
+    const res = await fetch('/api/v1/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'demo@sanket.ai', password: 'DemoJudge2026!' }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      saveSession(data);
+      state.isDemo = true;
+      updateDemoVisibility();
+      return data;
+    }
+  } catch (_) {}
+  return null;
+}
+
+async function checkSessionValidity() {
+  if (!state.session || !state.session.session_token) return;
+  try {
+    const resp = await fetch('/api/v1/auth/me', {
+      headers: { Authorization: `Bearer ${state.session.session_token}` }
+    });
+    if (!resp.ok && resp.status === 401) {
+      if (isDemoSession()) {
+        await ensureDemoSession();
+      } else {
+        clearAllStoredSessions();
+      }
+    }
+  } catch (_) {}
+}
+
+function isTokenExpired(token) {
+  if (!token || typeof token !== 'string') return true;
+  const parts = token.split('|');
+  if (parts.length === 5) {
+    const exp = parseInt(parts[3], 10);
+    if (!isNaN(exp) && exp < Math.floor(Date.now() / 1000)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function loadSavedSession() {
   try {
     const raw = localStorage.getItem(STORAGE_SESSION_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.session_token) {
+        if (isTokenExpired(parsed.session_token)) {
+          clearAllStoredSessions();
+          return;
+        }
         state.session = parsed;
         updateAuthUI();
+        checkSessionValidity();
         return;
       }
     }
     // Fallback: pick up token stored by the Next.js frontend
     const nextToken = localStorage.getItem('sanket_session_token');
     if (nextToken) {
+      if (isTokenExpired(nextToken)) {
+        clearAllStoredSessions();
+        return;
+      }
       const nextOrg = localStorage.getItem('sanket_company_name') || localStorage.getItem('sanket_org_id') || 'default-org';
       const nextEmail = localStorage.getItem('sanket_user_email') || '';
       const nextRole = localStorage.getItem('sanket_user_role') || 'User';
@@ -121,6 +202,9 @@ function loadSavedSession() {
         email: nextEmail,
         role_label: nextRole,
       };
+      updateAuthUI();
+      checkSessionValidity();
+      return;
     }
   } catch (_) {
     state.session = null;
@@ -131,18 +215,24 @@ function loadSavedSession() {
 function saveSession(sessionObj) {
   state.session = sessionObj;
   try {
-    if (sessionObj) {
+    if (sessionObj && sessionObj.session_token) {
       localStorage.setItem(STORAGE_SESSION_KEY, JSON.stringify(sessionObj));
+      localStorage.setItem('sanket_session_token', sessionObj.session_token);
+      localStorage.setItem('sanket_org_id', sessionObj.org_id || 'default-org');
+      localStorage.setItem('sanket_company_name', sessionObj.company_name || sessionObj.org_id || 'default-org');
+      localStorage.setItem('sanket_user_email', sessionObj.email || '');
+      localStorage.setItem('sanket_user_role', sessionObj.role_label || sessionObj.role || 'User');
     } else {
-      localStorage.removeItem(STORAGE_SESSION_KEY);
+      clearAllStoredSessions();
+      return;
     }
   } catch (_) {}
   updateAuthUI();
 }
 
 function getSessionInitials(session) {
-  if (!session) return 'AC';
-  const source = (session.org_id || session.full_name || session.email || 'AC').trim();
+  if (!session) return 'GV';
+  const source = (session.company_name || session.org_id || session.full_name || session.email || 'GV').trim();
   const parts = source.split(/[\s._-]+/).filter(Boolean);
   if (parts.length >= 2) {
     return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -151,7 +241,14 @@ function getSessionInitials(session) {
 }
 
 function isDemoSession() {
-  return Boolean(state.isDemo || (state.session && state.session.email === 'demo@sanket.ai'));
+  if (state.isDemo) return true;
+  if (!state.session) return false;
+  if (state.session.email === 'demo@sanket.ai') return true;
+  if (state.session.org_id === 'apex-cloud') return true;
+  if (typeof state.session.session_token === 'string') {
+    return state.session.session_token.startsWith('user_88bbba6639') || state.session.session_token.includes('apex-cloud');
+  }
+  return false;
 }
 
 function updateDemoVisibility() {
@@ -196,14 +293,12 @@ function updateAuthUI() {
   const companyInitials = document.getElementById('company-avatar-initials');
   const companyEmail = document.getElementById('company-account-email');
   const companyOrg = document.getElementById('company-account-org');
-  if (!dot || !label) return;
-
   if (state.session && state.session.session_token) {
     state.isDemo = state.session.email === 'demo@sanket.ai';
     const initials = getSessionInitials(state.session);
-    dot.classList.add('online');
+    if (dot) dot.classList.add('online');
     const displayOrg = state.session.company_name || state.session.org_id || state.session.email || 'Signed In';
-    label.textContent = displayOrg;
+    if (label) label.textContent = displayOrg;
     if (splitShell) splitShell.classList.add('hidden');
     if (authHub) authHub.classList.remove('hidden');
     if (hubInitials) hubInitials.textContent = initials;
@@ -250,8 +345,8 @@ function updateAuthUI() {
     }
   } else {
     state.isDemo = false;
-    dot.classList.remove('online');
-    label.textContent = state.page === 'home' ? 'Sign In' : 'Default Workspace';
+    if (dot) dot.classList.remove('online');
+    if (label) label.textContent = state.page === 'home' ? 'Sign In' : 'Default Workspace';
     if (splitShell) splitShell.classList.remove('hidden');
     if (authHub) authHub.classList.add('hidden');
     toggleHubAccountMenu(false);
@@ -283,6 +378,21 @@ function updateAuthUI() {
     document.getElementById('modal-demo-card')?.classList.remove('hidden');
   }
   updateDemoVisibility();
+  const signedIn = Boolean(state.session && state.session.session_token);
+  const updateMenuBtn = (id) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    if (signedIn) {
+      btn.textContent = 'Sign Out';
+      btn.onclick = () => logoutSession();
+    } else {
+      btn.textContent = 'Sign In';
+      btn.onclick = () => openAuthModal('login');
+    }
+  };
+  updateMenuBtn('hub-menu-auth-btn');
+  updateMenuBtn('company-menu-auth-btn');
+  updateMenuBtn('check-menu-auth-btn');
 }
 
 function showAuthFormsForSwitch() {
@@ -291,10 +401,11 @@ function showAuthFormsForSwitch() {
   document.getElementById('modal-demo-card')?.classList.remove('hidden');
 }
 
-async function apiFetch(url, options = {}) {
+async function apiFetch(url, options = {}, isRetry = false) {
   const opts = { ...options };
   const headers = new Headers(opts.headers || {});
-  if (state.session && state.session.session_token && !headers.has('Authorization')) {
+  const hadCustomAuth = headers.has('Authorization');
+  if (state.session && state.session.session_token && !hadCustomAuth) {
     headers.set('Authorization', `Bearer ${state.session.session_token}`);
   }
   opts.headers = headers;
@@ -309,6 +420,28 @@ async function apiFetch(url, options = {}) {
     data = txt ? { detail: txt } : null;
   }
   if (!resp.ok) {
+    if (resp.status === 401 && !isRetry) {
+      const wasDemo = isDemoSession();
+      if (wasDemo) {
+        try {
+          const fresh = await ensureDemoSession();
+          if (fresh && fresh.session_token) {
+            const retryHeaders = new Headers(options.headers || {});
+            retryHeaders.set('Authorization', `Bearer ${fresh.session_token}`);
+            return await apiFetch(url, { ...options, headers: retryHeaders }, true);
+          }
+        } catch (_) {}
+      }
+
+      clearAllStoredSessions();
+
+      const isPublicEndpoint = !url.includes('/auth/') && !url.includes('/storage/uploads') && !url.includes('/storage/guidelines');
+      if (isPublicEndpoint && (!options.headers || !new Headers(options.headers).has('Authorization'))) {
+        const guestHeaders = new Headers(options.headers || {});
+        guestHeaders.delete('Authorization');
+        return await apiFetch(url, { ...options, headers: guestHeaders }, true);
+      }
+    }
     const msg = (data && (data.detail || data.message)) || `Request failed (${resp.status})`;
     const err = new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
     err.status = resp.status;
@@ -651,13 +784,30 @@ async function copyDemoText(text, label = 'Credential') {
   }
 }
 
+function toggleHomeDemoDropdown(forceState) {
+  const badge = document.getElementById('home-demo-badge');
+  if (!badge) return;
+  const isOpen = forceState !== undefined ? forceState : !badge.classList.contains('is-open');
+  if (isOpen) {
+    badge.classList.add('is-open');
+  } else {
+    badge.classList.remove('is-open');
+  }
+  const btn = badge.querySelector('.demo-badge-header');
+  if (btn) {
+    btn.setAttribute('aria-expanded', String(isOpen));
+  }
+}
+
 /* ----------------------------------------------------------------------------
  * Auth Modal Handlers (Overlay only, never a 4th page)
  * ------------------------------------------------------------------------- */
-function openAuthModal() {
+function openAuthModal(tab = 'login') {
   const modal = document.getElementById('auth-modal');
   if (modal) modal.classList.remove('hidden');
+  switchAuthTab(tab);
 }
+window.loginAsDemoJudge = launchDemoWorkspace;
 
 function closeAuthModal() {
   const modal = document.getElementById('auth-modal');
@@ -1036,51 +1186,196 @@ function handleSetupLogoUpload(input) {
   const file = input && input.files && input.files[0];
   if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    state.company.logoUrl = e.target.result;
-    state.company.logoName = file.name;
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Logo file size exceeds 10MB limit.', 'warning');
+    return;
+  }
 
-    const logoImg = document.getElementById('c-setup-logo-img');
-    const logoFallback = document.getElementById('c-setup-logo-fallback');
-    if (logoImg) {
-      logoImg.src = state.company.logoUrl;
-      logoImg.classList.remove('hidden');
-    }
-    if (logoFallback) {
-      logoFallback.classList.add('hidden');
-    }
+  // Instant local client preview
+  const objectUrl = URL.createObjectURL(file);
+  state.company.logoUrl = objectUrl;
+  state.company.logoName = file.name;
 
-    updateStepSummary();
-    showToast(`Logo attached: ${file.name}`, 'success');
-  };
-  reader.readAsDataURL(file);
+  const logoImg = document.getElementById('c-setup-logo-img');
+  const logoFallback = document.getElementById('c-setup-logo-fallback');
+  if (logoImg) {
+    logoImg.src = state.company.logoUrl;
+    logoImg.classList.remove('hidden');
+  }
+  if (logoFallback) {
+    logoFallback.classList.add('hidden');
+  }
+
+  updateStepSummary();
+  showToast(`Logo attached: ${file.name}`, 'success');
+
+  // Background upload to server for a hosted URL
+  const fd = new FormData();
+  fd.append('file', file);
+  apiFetch('/api/v1/brands/upload-logo', { method: 'POST', body: fd })
+    .then((res) => {
+      if (res && res.logo_url) {
+        state.company.logoUrl = res.logo_url;
+      }
+    })
+    .catch((err) => {
+      console.warn('Logo upload to storage failed, using local preview:', err);
+    });
 }
 
 function handleSetupAssetUpload(input) {
   const files = input && input.files;
   if (!files || !files.length) return;
+  addSetupAssetFiles(files);
+  input.value = '';
+}
+
+function handleSetupAssetDrop(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (event.currentTarget) {
+    event.currentTarget.style.borderColor = '';
+  }
+  const dt = event.dataTransfer;
+  if (dt && dt.files && dt.files.length) {
+    const validFiles = [];
+    const allowedExts = ['png', 'jpg', 'jpeg', 'svg', 'webp', 'gif', 'pdf'];
+    for (let i = 0; i < dt.files.length; i++) {
+      const f = dt.files[i];
+      const ext = (f.name.split('.').pop() || '').toLowerCase();
+      if (!allowedExts.includes(ext) && !f.type.startsWith('image/') && f.type !== 'application/pdf') {
+        showToast(`Skipped '${f.name}': only PNG, JPG, SVG, and PDF files are allowed.`, 'warning');
+        continue;
+      }
+      validFiles.push(f);
+    }
+    if (validFiles.length) {
+      addSetupAssetFiles(validFiles);
+    }
+  }
+}
+
+function addSetupAssetFiles(fileList) {
+  if (!fileList || !fileList.length) return;
 
   if (!Array.isArray(state.company.assets)) {
     state.company.assets = [];
   }
 
-  for (let i = 0; i < files.length; i++) {
-    const f = files[i];
+  let addedCount = 0;
+  for (let i = 0; i < fileList.length; i++) {
+    const f = fileList[i];
+
+    // Enforce 30MB limit
+    if (f.size > 30 * 1024 * 1024) {
+      showToast(`'${f.name}' exceeds the 30MB file size limit.`, 'warning');
+      continue;
+    }
+
+    // Prevent duplicate entries
+    if (state.company.assets.some((a) => a.name === f.name && a.size === formatFileSize(f.size))) {
+      showToast(`'${f.name}' is already attached.`, 'info');
+      continue;
+    }
+
+    let previewUrl = null;
+    if (f.type && f.type.startsWith('image/')) {
+      try {
+        previewUrl = URL.createObjectURL(f);
+      } catch (e) {
+        previewUrl = null;
+      }
+    }
     state.company.assets.push({
       name: f.name,
       size: formatFileSize(f.size),
       type: f.type,
+      previewUrl: previewUrl,
+      rawFile: f,
     });
+    addedCount++;
   }
 
+  if (addedCount > 0) {
+    renderSetupAssetsList();
+    updateStepSummary();
+    showToast(`Added ${addedCount} brand asset(s)`, 'success');
+  }
+}
+
+function renderSetupAssetsList() {
+  const container = document.getElementById('c-setup-assets-list');
   const assetLabel = document.getElementById('c-setup-asset-btn-label');
+
+  const assets = Array.isArray(state.company.assets) ? state.company.assets : [];
+
   if (assetLabel) {
-    assetLabel.textContent = `${state.company.assets.length} file(s) attached`;
+    if (assets.length === 0) {
+      assetLabel.textContent = 'Upload assets';
+    } else {
+      assetLabel.textContent = `+ Add more files (${assets.length} attached)`;
+    }
   }
 
+  if (!container) return;
+
+  if (assets.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const itemsHtml = assets
+    .map((a, idx) => {
+      const ext = (a.name.split('.').pop() || 'FILE').toUpperCase();
+      const isPdf = ext === 'PDF';
+      const isSvg = ext === 'SVG';
+
+      let iconHtml = '';
+      if (a.previewUrl) {
+        iconHtml = `<img src="${escapeHtml(a.previewUrl)}" class="company-asset-row-thumb" alt="${escapeHtml(a.name)}">`;
+      } else if (isPdf) {
+        iconHtml = `<span class="company-asset-row-badge pdf">PDF</span>`;
+      } else if (isSvg) {
+        iconHtml = `<span class="company-asset-row-badge svg">SVG</span>`;
+      } else {
+        iconHtml = `<span class="company-asset-row-badge">${escapeHtml(ext.slice(0, 4))}</span>`;
+      }
+
+      return `
+        <div class="company-asset-row-item" data-idx="${idx}">
+          ${iconHtml}
+          <div class="company-asset-row-info">
+            <span class="company-asset-row-name" title="${escapeHtml(a.name)}">${escapeHtml(a.name)}</span>
+            <span class="company-asset-row-meta">${escapeHtml(a.size || ext)} &bull; ${escapeHtml(ext)}</span>
+          </div>
+          <button type="button" class="company-asset-row-remove" onclick="removeSetupAsset(${idx})" title="Remove ${escapeHtml(a.name)}" aria-label="Remove ${escapeHtml(a.name)}">
+            &times;
+          </button>
+        </div>
+      `;
+    })
+    .join('');
+
+  container.innerHTML = `
+    <div class="company-uploaded-assets-wrap">
+      <div class="company-uploaded-assets-header">
+        <span class="company-uploaded-count">${assets.length} file${assets.length === 1 ? '' : 's'} attached</span>
+      </div>
+      <div class="company-uploaded-assets-items">
+        ${itemsHtml}
+      </div>
+    </div>
+  `;
+}
+
+function removeSetupAsset(idx) {
+  if (!Array.isArray(state.company.assets)) return;
+  const removed = state.company.assets.splice(idx, 1);
+  renderSetupAssetsList();
   updateStepSummary();
-  showToast(`Added ${files.length} brand asset(s)`, 'success');
+  if (removed && removed[0]) {
+    showToast(`Removed asset: ${removed[0].name}`, 'info');
+  }
 }
 
 function readCompanySetupInputs() {
@@ -1208,7 +1503,7 @@ function updateStepSummary() {
 
   if (sumAssets) {
     if (state.company.assets && state.company.assets.length > 0) {
-      const shown = state.company.assets.slice(0, 2);
+      const shown = state.company.assets.slice(0, 4);
       const remaining = state.company.assets.length - shown.length;
       let html = shown
         .map((a) => `<span class="company-summary-chip" title="${escapeHtml(a.name)}">${escapeHtml(a.name.length > 14 ? a.name.slice(0, 12) + '...' : a.name)}</span>`)
@@ -1269,13 +1564,7 @@ function renderCompanyFormFromState() {
   renderSetupColours();
   setVal('c-setup-font', state.company.typography);
 
-  const assetLabel = document.getElementById('c-setup-asset-btn-label');
-  if (assetLabel) {
-    assetLabel.textContent =
-      state.company.assets && state.company.assets.length
-        ? `${state.company.assets.length} file(s) attached`
-        : 'Upload assets';
-  }
+  renderSetupAssetsList();
 
   updateStepSummary();
 }
@@ -1399,7 +1688,17 @@ async function saveCompleteCompanySetup() {
     fd.append('palette', JSON.stringify(state.company.palette || ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C']));
     fd.append('disallowed_elements', JSON.stringify(state.company.keywords || []));
     fd.append('tagline_or_mission', state.company.description || '');
+    fd.append('typography', state.company.typography || '');
     fd.append('logo_url', state.company.logoUrl || '');
+
+    // Persist all attached reference files
+    if (Array.isArray(state.company.assets)) {
+      for (const a of state.company.assets) {
+        if (a.rawFile) {
+          fd.append('reference_files', a.rawFile);
+        }
+      }
+    }
 
     const draft = await apiFetch('/api/v1/brands/draft', { method: 'POST', body: fd });
     const brandId = draft.brand_id;
@@ -1413,6 +1712,7 @@ async function saveCompleteCompanySetup() {
         mood: state.company.feeling ? [state.company.feeling] : [],
         communication_tone: state.company.tone ? [state.company.tone] : [],
         visual_style: state.company.traits || [],
+        typography: state.company.typography ? [state.company.typography] : [],
         target_audience: state.company.industry || '',
         approved_palette: state.company.palette || ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'],
         disallowed_elements: state.company.keywords || [],
@@ -2089,12 +2389,18 @@ function syncCheckCompanyField() {
 }
 
 async function fillDemoVibesCheck() {
-  if (!isDemoSession()) return;
+  await ensureDemoSession();
+  if (!state.brands.length) {
+    try {
+      await loadBrands();
+    } catch (_) {}
+  }
 
   const targetBrand =
-    state.brands.find((b) => b.brand_id === 'omnigpt_ai') ||
+    state.brands.find((b) => b.brand_id === 'omnigpt_ai' || b.brand_id === 'omnigpt-ai') ||
     state.brands.find((b) => (b.brand_name || '').toLowerCase().includes('omni')) ||
-    state.brands[0];
+    state.brands[0] ||
+    { brand_id: 'omnigpt_ai', brand_name: 'OmniGPT AI' };
 
   const nameEl = document.getElementById('check-company-name');
   const urlEl = document.getElementById('check-website-url');
@@ -2107,7 +2413,7 @@ async function fillDemoVibesCheck() {
   if (socialEl) socialEl.value = '@omnigpt_ai — Frontier cognitive reasoning and generative neural intelligence.';
   if (copyEl) copyEl.value = 'Enterprise conversational models engineered for precision, ethical alignment, and zero drift.';
 
-  if (targetBrand) {
+  if (targetBrand && targetBrand.brand_id) {
     onSelectDevBrand(targetBrand.brand_id);
   } else {
     state.dev.selectedBrandId = 'omnigpt_ai';
@@ -2119,16 +2425,16 @@ async function fillDemoVibesCheck() {
   showToast('Live Demo populated with OmniGPT AI & creative poster', 'info');
 }
 
-function loadLiveDemoResultsPreview() {
-  if (!isDemoSession()) {
-    showToast('Live Demo preview is available only in Demo Mode.', 'info');
-    return;
-  }
+async function loadLiveDemoResultsPreview() {
+  await ensureDemoSession();
 
   const demoBrand =
-    state.brands.find((b) => b.brand_id === 'omnigpt_ai') ||
+    state.brands.find((b) => b.brand_id === 'omnigpt_ai' || b.brand_id === 'omnigpt-ai') ||
+    state.brands.find((b) => (b.brand_name || '').toLowerCase().includes('omni')) ||
     state.brands[0] ||
     { brand_id: 'omnigpt_ai', brand_name: 'OmniGPT AI' };
+
+  state.dev.selectedBrandId = demoBrand.brand_id;
 
   state.dev.lastReport = {
     inspection_id: 'demo-preview-omnigpt',
@@ -2221,7 +2527,7 @@ async function openImprovementPlan() {
 
   const feed = document.getElementById('copilot-messages');
   const report = state.dev.lastReport || state.dev.lastScan;
-  const brandId = state.dev.selectedBrandId || state.brands[0]?.brand_id;
+  const brandId = state.dev.selectedBrandId || report?.brand_id || state.brands[0]?.brand_id || 'omnigpt_ai';
   if (!feed || !brandId) return;
 
   // Active AI generation status
@@ -2376,7 +2682,40 @@ async function loadCheckReviews(notify = false) {
 
     if (notify) showToast('Reviews refreshed', 'info');
   } catch (err) {
-    host.innerHTML = `<div class="inline-feedback error">${escapeHtml(err.message || 'Unable to load reviews')}</div>`;
+    const isAuthErr = err.status === 401 || (err.message && (
+      err.message.toLowerCase().includes('session') ||
+      err.message.toLowerCase().includes('token') ||
+      err.message.toLowerCase().includes('unauthorized') ||
+      err.message.toLowerCase().includes('auth')
+    ));
+    if (isAuthErr) {
+      host.innerHTML = `
+        <div class="vibes-empty-state" style="grid-column:1 / -1;">
+          <h2>Session Expired</h2>
+          <p>Your previous session token is invalid or expired. Sign in to view your reviews, or launch an instant demo workspace.</p>
+          <div style="display:flex;gap:12px;justify-content:center;margin-top:1.25rem;flex-wrap:wrap;">
+            <button type="button" class="vibes-run-btn vibes-btn-inline" onclick="openAuthModal('login')">
+              <span>Sign In</span>
+            </button>
+            <button type="button" class="vibes-outline-btn vibes-btn-inline" onclick="launchDemoWorkspace()">
+              <span>Launch Demo</span>
+            </button>
+            <button type="button" class="cream-accent-link" onclick="switchCheckSubView('input')">Start a Vibes Check &rarr;</button>
+          </div>
+        </div>`;
+    } else {
+      host.innerHTML = `
+        <div class="vibes-empty-state" style="grid-column:1 / -1;">
+          <h2>Unable to Load Reviews</h2>
+          <p>${escapeHtml(err.message || 'An error occurred while loading audit reviews.')}</p>
+          <div style="display:flex;gap:12px;justify-content:center;margin-top:1.25rem;flex-wrap:wrap;">
+            <button type="button" class="vibes-run-btn vibes-btn-inline" onclick="loadCheckReviews(true)">
+              <span>Retry</span>
+            </button>
+            <button type="button" class="cream-accent-link" onclick="switchCheckSubView('input')">Start a Vibes Check &rarr;</button>
+          </div>
+        </div>`;
+    }
   }
 }
 
@@ -2402,8 +2741,13 @@ async function viewSavedReview(inspectionId) {
  * Inline Remediation: Auto-Fix Colors & Groq Brand Co-Pilot
  * ------------------------------------------------------------------------- */
 async function runVisualAutoFix() {
-  const brandId = state.dev.selectedBrandId;
-  if (!brandId) return;
+  let brandId = state.dev.selectedBrandId || state.dev.lastReport?.brand_id;
+  if (!brandId) {
+    const name = (document.getElementById('check-company-name')?.value || '').trim().toLowerCase();
+    const matched = (state.brands || []).find((b) => (b.brand_name || '').toLowerCase() === name || b.brand_id === name);
+    brandId = matched?.brand_id || (state.brands && state.brands[0]?.brand_id) || 'omnigpt_ai';
+    state.dev.selectedBrandId = brandId;
+  }
   if (!state.dev.selectedFile && !state.dev.sampleUrl) {
     return;
   }
@@ -2519,7 +2863,7 @@ function toggleCopilotBox() {
 }
 
 async function askBrandCopilot() {
-  const brandId = state.dev.selectedBrandId || state.brands[0]?.brand_id;
+  const brandId = state.dev.selectedBrandId || state.dev.lastReport?.brand_id || state.brands[0]?.brand_id || 'omnigpt_ai';
   const input = document.getElementById('copilot-prompt');
   const feed = document.getElementById('copilot-messages');
   if (!input || !feed) return;

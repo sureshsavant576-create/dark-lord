@@ -22,6 +22,7 @@ export default function CompanyVibesPage() {
   const [palette, setPalette] = useState<string[]>(["#3B82F6", "#0F172A", "#10B981"]);
   const [hexInput, setHexInput] = useState("#3B82F6");
   const [logoUrl, setLogoUrl] = useState("");
+  const [brandAssets, setBrandAssets] = useState<{ name: string; url: string; preview?: string }[]>([]);
   const [dnaProfile, setDnaProfile] = useState<any>(null);
   const [busy, setBusy] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
@@ -57,6 +58,7 @@ export default function CompanyVibesPage() {
       setDescription("");
       setPalette(["#3B82F6", "#0F172A", "#10B981"]);
       setLogoUrl("");
+      setBrandAssets([]);
       return;
     }
     const b = brandSource.find((x) => x.brand_id === id);
@@ -72,6 +74,13 @@ export default function CompanyVibesPage() {
     setDescription(b.synthesis_explanation || "");
     setPalette(b.approved_palette || []);
     setLogoUrl(b.logo_url || "");
+    setBrandAssets(
+      Array.isArray(b.brand_assets)
+        ? b.brand_assets.map((a: any) =>
+            typeof a === "string" ? { name: a.split("/").pop() || a, url: a } : a
+          )
+        : []
+    );
   }
 
   const csv = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
@@ -115,6 +124,28 @@ export default function CompanyVibesPage() {
     } catch (err: any) {
       setStatusMsg(err?.message || "Logo upload failed");
     }
+  }
+
+  async function handleUploadAsset(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setStatusMsg(`Uploading ${files.length} asset(s)...`);
+    const results: { name: string; url: string; preview?: string }[] = [];
+    for (const file of files) {
+      const previewUrl = file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined;
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await api.secureUpload(fd);
+        results.push({ name: file.name, url: res.path || previewUrl || file.name, preview: previewUrl });
+      } catch {
+        results.push({ name: file.name, url: previewUrl || file.name, preview: previewUrl });
+      }
+    }
+    setBrandAssets((prev) => [...prev, ...results]);
+    setStatusMsg(`Added ${results.length} brand asset(s).`);
+    // reset input so same file can be re-picked
+    e.target.value = "";
   }
 
   async function handleGenerateDna() {
@@ -190,6 +221,7 @@ export default function CompanyVibesPage() {
       fd.append("disallowed_elements", JSON.stringify(csv(disallowed)));
       fd.append("tagline_or_mission", mission.trim() || description.trim());
       fd.append("logo_url", logoUrl);
+      fd.append("brand_assets", JSON.stringify(brandAssets));
 
       const draft = await api.createBrandDraft(fd);
       const confirmed = await api.confirmBrand({
@@ -362,6 +394,84 @@ export default function CompanyVibesPage() {
               />
             </label>
 
+            {/* Brand Assets Upload */}
+            <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <div className="text-xs font-semibold text-slate-300">Brand Assets <span className="font-normal text-slate-500">(Optional)</span></div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">Add other key assets like icons, patterns or imagery.</div>
+                </div>
+                <label className="cursor-pointer inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  {brandAssets.length > 0 ? "Add more" : "Upload files"}
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,.svg,.pdf"
+                    hidden
+                    onChange={handleUploadAsset}
+                  />
+                </label>
+              </div>
+
+              {brandAssets.length === 0 ? (
+                <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-700 bg-slate-900/40 py-4 text-center hover:border-slate-500 hover:bg-slate-900/60 transition-all">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="mb-1.5 h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  <span className="text-xs text-slate-400">Drag &amp; drop or click to browse</span>
+                  <span className="mt-0.5 font-mono text-[10px] text-slate-600">PNG, SVG, JPG, PDF</span>
+                  <input type="file" multiple accept="image/*,.svg,.pdf" hidden onChange={handleUploadAsset} />
+                </label>
+              ) : (
+                <div className="space-y-1.5">
+                  {brandAssets.map((asset, i) => {
+                    const ext = asset.name.split(".").pop()?.toUpperCase() || "FILE";
+                    const isImage = /\.(png|jpg|jpeg|gif|svg|webp)$/i.test(asset.name);
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center gap-2.5 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2"
+                      >
+                        {/* Icon / thumbnail */}
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-800 overflow-hidden">
+                          {isImage && (asset.preview || (asset.url && (asset.url.startsWith("blob:") || asset.url.startsWith("http") || asset.url.startsWith("/")))) ? (
+                            <img src={asset.preview || asset.url} alt={asset.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="font-mono text-[9px] font-bold text-slate-400">{ext}</span>
+                          )}
+                        </div>
+                        {/* File name */}
+                        <span className="flex-1 truncate text-xs text-slate-200" title={asset.name}>
+                          {asset.name}
+                        </span>
+                        {/* Badge */}
+                        <span className="shrink-0 rounded-full border border-slate-700 px-2 py-0.5 font-mono text-[9px] text-slate-500">
+                          {ext}
+                        </span>
+                        {/* Remove */}
+                        <button
+                          type="button"
+                          onClick={() => setBrandAssets((prev) => prev.filter((_, idx) => idx !== i))}
+                          className="shrink-0 text-slate-500 hover:text-red-400 transition-colors"
+                          title="Remove"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    );
+                  })}
+                  <div className="pt-0.5 text-right font-mono text-[10px] text-slate-600">
+                    {brandAssets.length} file{brandAssets.length !== 1 ? "s" : ""} attached
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
@@ -403,6 +513,26 @@ export default function CompanyVibesPage() {
                   ))}
                 </div>
               </div>
+
+              {brandAssets.length > 0 && (
+                <div>
+                  <div className="mb-2 font-mono text-[11px] text-slate-400">BRAND ASSETS</div>
+                  <div className="flex flex-wrap gap-2">
+                    {brandAssets.map((asset, i) => (
+                      <span
+                        key={i}
+                        title={asset.name}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#decfae] bg-[#f0e7d6] px-2.5 py-1 font-mono text-xs font-semibold text-[#2c333e] shadow-sm"
+                      >
+                        <svg className="h-3 w-3 shrink-0 text-[#786951]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                        <span className="max-w-[120px] truncate">{asset.name.length > 14 ? asset.name.slice(0, 12) + "..." : asset.name}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {dnaProfile?.ai_recommendations && (
                 <div className="space-y-2 rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-4 text-xs">

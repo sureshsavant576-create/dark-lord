@@ -128,10 +128,36 @@ class AIGateway:
                 error_message=f"Cannot synthesize brand profile without GEMINI_API_KEY or GROQ_API_KEY in environment."
             )
 
-        return await provider.synthesize_brand_identity(
-            questionnaire_data=questionnaire_data,
-            reference_texts=reference_texts,
-            reference_images_info=reference_images_info
+        res = None
+        try:
+            res = await provider.synthesize_brand_identity(
+                questionnaire_data=questionnaire_data,
+                reference_texts=reference_texts,
+                reference_images_info=reference_images_info
+            )
+        except Exception as exc:
+            logger.warning("Primary provider '%s' failed synthesis: %s", provider.provider_name(), exc)
+
+        # Failover to Groq if primary provider (Gemini) failed or was unavailable
+        if (res is None or res.status != ProviderStatus.OPERATIONAL) and provider.provider_name() == "gemini":
+            groq = self.providers.get("groq")
+            if groq and groq.is_configured():
+                logger.info("Failing over to Groq for brand identity synthesis...")
+                try:
+                    return await groq.synthesize_brand_identity(
+                        questionnaire_data=questionnaire_data,
+                        reference_texts=reference_texts,
+                        reference_images_info=reference_images_info
+                    )
+                except Exception as groq_exc:
+                    logger.warning("Fallback Groq provider also failed: %s", groq_exc)
+
+        return res or BrandSynthesisEvaluation(
+            provider="gemini",
+            model_used=settings.DEFAULT_VISION_MODEL,
+            status=ProviderStatus.ERROR,
+            is_ai_generated=False,
+            error_message="All synthesis providers failed or unavailable."
         )
 
 

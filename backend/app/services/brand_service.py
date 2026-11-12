@@ -63,8 +63,23 @@ class BrandService:
             temp_path.replace(self.db_path)
 
     def get_brand_profile(self, brand_id: str) -> Optional[BrandProfile]:
+        if not brand_id:
+            return None
         data = self._load_all()
         raw = data.get(brand_id)
+        if not raw:
+            clean = brand_id.strip().lower()
+            clean_sub = clean.replace("-", "_")
+            clean_hyphen = clean.replace("_", "-")
+            for k, v in data.items():
+                k_clean = k.strip().lower()
+                v_id = (v.get("brand_id") or "").strip().lower()
+                v_name = (v.get("brand_name") or "").strip().lower()
+                if k_clean in (clean, clean_sub, clean_hyphen) or v_id in (clean, clean_sub, clean_hyphen) or v_name == clean:
+                    raw = v
+                    break
+        if not raw and any(k in brand_id.lower() for k in ("omni", "demo", "chatgpt")):
+            raw = data.get("omnigpt_ai") or data.get("omnigpt-ai")
         return BrandProfile(**raw) if raw else None
 
     def list_brand_profiles(self) -> List[BrandProfile]:

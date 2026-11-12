@@ -51,6 +51,7 @@ html, body {
 
 /* Topbar */
 .topbar {
+  display: none !important;
   position: sticky;
   top: 0;
   z-index: 40;
@@ -445,23 +446,46 @@ body.is-home .page-shell {
   color: #f3dfbe;
 }
 
-/* Hero Demo Account Credentials Badge */
+/* Hero Demo Account Credentials Badge - Click-to-Drop Accordion */
 .home-demo-credentials-badge {
   margin-top: 1.5rem;
-  padding: 1.1rem 1.25rem;
-  background: rgba(14, 18, 25, 0.85);
+  padding: 0.75rem 1.15rem;
+  background: rgba(14, 18, 25, 0.88);
   border: 1px solid rgba(200, 169, 126, 0.35);
   border-radius: 12px;
   backdrop-filter: blur(12px);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   max-width: 480px;
+  transition: padding 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-demo-credentials-badge:hover {
+  border-color: rgba(200, 169, 126, 0.55);
+}
+
+.home-demo-credentials-badge.is-open {
+  padding: 1.1rem 1.25rem;
+  border-color: rgba(200, 169, 126, 0.65);
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(200, 169, 126, 0.15);
 }
 
 .demo-badge-header {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+  color: inherit;
+}
+
+.home-demo-credentials-badge.is-open .demo-badge-header {
+  margin-bottom: 0.75rem;
 }
 
 .demo-badge-pulse {
@@ -471,6 +495,7 @@ body.is-home .page-shell {
   background: #10b981;
   box-shadow: 0 0 10px #10b981;
   animation: pulse-dot 2s infinite ease-in-out;
+  flex-shrink: 0;
 }
 
 @keyframes pulse-dot {
@@ -495,6 +520,47 @@ body.is-home .page-shell {
   background: rgba(255, 255, 255, 0.06);
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
+}
+
+.demo-badge-chevron {
+  color: #c8a97e;
+  font-size: 0.85rem;
+  margin-left: 0.2rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.85;
+}
+
+.demo-badge-header:hover .demo-badge-chevron {
+  opacity: 1;
+  transform: translateY(1px);
+}
+
+.home-demo-credentials-badge.is-open .demo-badge-chevron {
+  transform: rotate(180deg);
+}
+
+.demo-badge-body {
+  display: none;
+  animation: demoBadgeFadeDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.home-demo-credentials-badge.is-open .demo-badge-body {
+  display: block;
+}
+
+@keyframes demoBadgeFadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .demo-badge-creds {
@@ -4405,6 +4471,139 @@ textarea:focus,
   font-size: 0.78rem;
   font-weight: 700;
   color: #4a515d;
+}
+
+/* Uploaded Brand Assets List (Step 3) */
+.company-uploaded-assets-wrap {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.company-uploaded-assets-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.15rem;
+}
+
+.company-uploaded-count {
+  font-size: 0.74rem;
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  color: #797166;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.company-uploaded-assets-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.company-asset-row-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 0.65rem;
+  background: #fbf8f2;
+  border: 1px solid #dcd4c6;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.company-asset-row-item:hover {
+  border-color: #bfa576;
+  background: #f5eedf;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.company-asset-row-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #ffffff;
+  border: 1px solid #dcd4c5;
+  flex-shrink: 0;
+}
+
+.company-asset-row-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: #ede6d9;
+  border: 1px solid #dcd4c5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #553e1a;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.company-asset-row-badge.pdf {
+  background: #fae8e8;
+  border-color: #f1c5c5;
+  color: #b91c1c;
+}
+
+.company-asset-row-badge.svg {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.company-asset-row-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  gap: 0.1rem;
+}
+
+.company-asset-row-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1e242e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.company-asset-row-meta {
+  font-size: 0.72rem;
+  color: #78716c;
+  font-family: var(--font-mono, monospace);
+}
+
+.company-asset-row-remove {
+  background: transparent;
+  border: none;
+  color: #9c9588;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  font-size: 1.15rem;
+  line-height: 1;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.company-asset-row-remove:hover {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
 }
 
 @media (max-width: 960px) {

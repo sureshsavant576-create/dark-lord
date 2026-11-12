@@ -154,37 +154,6 @@ export default function TopNav({ active, onAuthChange }: TopNavProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-[#090d16]/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
-          <Link href="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-slate-100">
-            <span className="h-2.5 w-2.5 rounded-full bg-indigo-500 shadow-[0_0_14px_rgba(99,102,241,0.9)]" />
-            <span>
-              Sanket <em className="not-italic text-indigo-400">AI</em>
-            </span>
-          </Link>
-
-          <nav aria-label="Primary 3-page navigation" className="flex items-center gap-1 rounded-full border border-slate-800 bg-slate-950/80 p-1">
-            {navItems.map((item) => {
-              const isActive = active === item.key;
-              return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-                    isActive
-                      ? "bg-indigo-600 text-white shadow-sm"
-                      : "text-slate-400 hover:bg-slate-900 hover:text-slate-200"
-                  }`}
-                >
-                  <span className="font-mono text-[10px] opacity-75">{item.num}</span>
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-        </div>
-      </header>
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">

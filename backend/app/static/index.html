@@ -13,37 +13,6 @@
 <body>
   <div class="ambient-grid" aria-hidden="true"></div>
 
-  <!-- Minimal 3-Page Top Navigation -->
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a href="/" class="brand-mark" data-nav="home">
-        <span class="brand-dot"></span>
-        <span class="brand-wordmark">Sanket <em>AI</em></span>
-      </a>
-
-      <nav class="nav-pills" aria-label="Primary 3-page navigation">
-        <a href="/" class="nav-pill active" id="nav-home" data-nav="home">
-          <span class="nav-num">01</span>
-          <span>Home</span>
-        </a>
-        <a href="/company" class="nav-pill" id="nav-company" data-nav="company">
-          <span class="nav-num">02</span>
-          <span>Company Vibes</span>
-        </a>
-        <a href="/check" class="nav-pill" id="nav-check" data-nav="check">
-          <span class="nav-num">03</span>
-          <span>Developer Check</span>
-        </a>
-      </nav>
-
-      <div class="topbar-actions">
-        <button type="button" class="org-pill-btn" id="btn-open-auth" onclick="handleTopbarAuthClick()">
-          <span class="org-status-dot" id="auth-dot"></span>
-          <span id="auth-pill-label">Sign In</span>
-        </button>
-      </div>
-    </div>
-  </header>
 
   <main class="page-shell">
     <!-- =================================================================== -->
@@ -94,32 +63,35 @@
                 </button>
               </div>
 
-              <!-- Demo Account Banner for Evaluators & Judges -->
-              <div class="home-demo-credentials-badge">
-                <div class="demo-badge-header">
+              <!-- Demo Account Banner for Evaluators & Judges (Collapsible Dropdown) -->
+              <div class="home-demo-credentials-badge" id="home-demo-badge">
+                <button type="button" class="demo-badge-header" onclick="toggleHomeDemoDropdown()" aria-expanded="false" aria-controls="home-demo-dropdown-body" title="Click to toggle demo credentials">
                   <span class="demo-badge-pulse" aria-hidden="true"></span>
                   <span class="demo-badge-title">DEMO ACCOUNT CREDENTIALS</span>
                   <span class="demo-badge-role">Admin Clearance</span>
-                </div>
-                <div class="demo-badge-creds">
-                  <button type="button" class="demo-cred-item" onclick="copyDemoText('demo@sanket.ai', 'Email')" title="Click to copy email">
-                    <span class="demo-cred-label">Email:</span>
-                    <span class="demo-cred-val">demo@sanket.ai</span>
-                    <span class="demo-cred-copy-icon" aria-hidden="true">📋</span>
-                  </button>
-                  <button type="button" class="demo-cred-item" onclick="copyDemoText('DemoJudge2026!', 'Password')" title="Click to copy password">
-                    <span class="demo-cred-label">Password:</span>
-                    <span class="demo-cred-val">DemoJudge2026!</span>
-                    <span class="demo-cred-copy-icon" aria-hidden="true">📋</span>
-                  </button>
-                </div>
-                <div class="demo-badge-actions">
-                  <button type="button" class="demo-badge-btn primary" onclick="launchDemoWorkspace()">
-                    ⚡ 1-Click Instant Login
-                  </button>
-                  <button type="button" class="demo-badge-btn ghost" onclick="openHomeSignin(); fillDemoCredentials('home');">
-                    Auto-Fill Form &rarr;
-                  </button>
+                  <span class="demo-badge-chevron" aria-hidden="true">▾</span>
+                </button>
+                <div class="demo-badge-body" id="home-demo-dropdown-body">
+                  <div class="demo-badge-creds">
+                    <button type="button" class="demo-cred-item" onclick="copyDemoText('demo@sanket.ai', 'Email')" title="Click to copy email">
+                      <span class="demo-cred-label">Email:</span>
+                      <span class="demo-cred-val">demo@sanket.ai</span>
+                      <span class="demo-cred-copy-icon" aria-hidden="true">📋</span>
+                    </button>
+                    <button type="button" class="demo-cred-item" onclick="copyDemoText('DemoJudge2026!', 'Password')" title="Click to copy password">
+                      <span class="demo-cred-label">Password:</span>
+                      <span class="demo-cred-val">DemoJudge2026!</span>
+                      <span class="demo-cred-copy-icon" aria-hidden="true">📋</span>
+                    </button>
+                  </div>
+                  <div class="demo-badge-actions">
+                    <button type="button" class="demo-badge-btn primary" onclick="launchDemoWorkspace()">
+                      ⚡ 1-Click Instant Login
+                    </button>
+                    <button type="button" class="demo-badge-btn ghost" onclick="openHomeSignin(); fillDemoCredentials('home');">
+                      Auto-Fill Form &rarr;
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -387,14 +359,14 @@
                 aria-controls="hub-account-menu"
                 title="Workspace account"
               >
-                <span id="hub-avatar-initials">AC</span>
+                <span id="hub-avatar-initials">GV</span>
               </button>
               <div id="hub-account-menu" class="hub-account-menu hidden" role="menu">
                 <div class="hub-account-meta">
-                  <strong id="hub-account-email">demo@sanket.ai</strong>
-                  <span id="hub-account-org">apex-cloud</span>
+                  <strong id="hub-account-email">Guest Workspace</strong>
+                  <span id="hub-account-org">default-org</span>
                 </div>
-                <button type="button" class="hub-menu-item" onclick="logoutSession()">Sign Out</button>
+                <button type="button" class="hub-menu-item" id="hub-menu-auth-btn" onclick="openAuthModal('login')">Sign In</button>
               </div>
             </div>
           </div>
@@ -486,7 +458,7 @@
                 aria-controls="company-account-menu"
                 title="Workspace menu"
               >
-                <span id="company-avatar-initials">AC</span>
+                <span id="company-avatar-initials">GV</span>
               </button>
               <div id="company-account-menu" class="hub-account-menu hidden" role="menu">
                 <div class="hub-account-meta">
@@ -495,7 +467,7 @@
                 </div>
                 <button type="button" class="hub-menu-item" onclick="navigateTo('home'); toggleCompanyAccountMenu(false);">Home Hub</button>
                 <button type="button" class="hub-menu-item" onclick="navigateTo('check'); toggleCompanyAccountMenu(false);">Check Brand Vibes</button>
-                <button type="button" class="hub-menu-item" onclick="logoutSession()">Sign Out</button>
+                <button type="button" class="hub-menu-item" id="company-menu-auth-btn" onclick="openAuthModal('login')">Sign In</button>
               </div>
             </div>
           </div>
@@ -863,7 +835,7 @@
                       <div class="company-field">
                         <label class="company-label">Brand Assets (Optional)</label>
                         <span class="company-label-sub">Add other key assets like icons, patterns or imagery.</span>
-                        <div class="company-logo-dropzone" style="padding:0.75rem 1rem;" onclick="document.getElementById('c-setup-asset-file').click()" role="button" tabindex="0">
+                        <div class="company-logo-dropzone" style="padding:0.75rem 1rem;" onclick="document.getElementById('c-setup-asset-file').click()" ondragover="event.preventDefault(); this.style.borderColor='#b38d58';" ondragleave="this.style.borderColor='';" ondrop="handleSetupAssetDrop(event)" role="button" tabindex="0">
                           <input type="file" id="c-setup-asset-file" accept="image/*,.pdf" multiple hidden onchange="handleSetupAssetUpload(this)">
                           <span style="display:inline-flex;align-items:center;gap:0.4rem;font-weight:600;color:#2c333e;">
                             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:16px;height:16px;margin:0;">
@@ -873,6 +845,7 @@
                           </span>
                           <span class="mono-sm" style="color:#8a8377;">PNG, SVG, JPG, PDF</span>
                         </div>
+                        <div id="c-setup-assets-list" class="company-uploaded-assets-list"></div>
                       </div>
                     </div>
 
@@ -1079,7 +1052,7 @@
                 aria-controls="check-account-menu"
                 title="Workspace menu"
               >
-                <span id="check-avatar-initials">AC</span>
+                <span id="check-avatar-initials">GV</span>
               </button>
               <div id="check-account-menu" class="hub-account-menu hidden" role="menu">
                 <div class="hub-account-meta">
@@ -1088,7 +1061,7 @@
                 </div>
                 <button type="button" class="hub-menu-item" onclick="navigateTo('home'); toggleCheckAccountMenu(false);">Home Hub</button>
                 <button type="button" class="hub-menu-item" onclick="navigateTo('company'); toggleCheckAccountMenu(false);">Set Up Company</button>
-                <button type="button" class="hub-menu-item" onclick="logoutSession()">Sign Out</button>
+                <button type="button" class="hub-menu-item" id="check-menu-auth-btn" onclick="openAuthModal('login')">Sign In</button>
               </div>
             </div>
           </div>

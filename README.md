@@ -26,21 +26,6 @@ Pre-seeded demo environment with full administrative clearance and certified rev
 
 ---
 
-## 📁 Submission Documentation
-
-All formal documents live in [`docs/`](docs/):
-
-| # | Document | Description |
-| :--- | :--- | :--- |
-| 1 | [Product Specification PDF](docs/Sanket_AI_Product_Specification.pdf) | Executive-ready product specification |
-| 2 | [Feature List](docs/FEATURE_LIST.md) | Full audit of Working / Partial / Blocked / Planned features |
-| 3 | [Technical Architecture](docs/TECHNICAL_ARCHITECTURE.md) | CV math, AI Gateway, pgvector RLS, security deep-dive |
-| 4 | [Round 2 → Round 3 Improvements](docs/ROUND2_TO_ROUND3_IMPROVEMENTS.md) | Full change log, UI restructuring, motion design system |
-| 5 | [Testing Report](docs/TESTING_REPORT.md) | 129-test automated audit, reliability & user journey results |
-| 6 | [Product Roadmap](docs/PRODUCT_ROADMAP.md) | Strategic development plan Q1 2027 through 2028+ |
-
----
-
 ## 💡 The Problem We Solve
 
 Marketing teams ship hundreds of assets every month. Brand violations slip through constantly:
@@ -109,7 +94,7 @@ Standard LLMs alone hallucinate exact HEX values, miscalculate spatial contrast,
 | **9** | Client-Side Pre-Flight Scanner | `check-vibe.html`, `app.js` | Drag-and-drop, 9 metrics, 7 visual styles — zero server round-trip |
 | **10** | Review & Approval Workflow Engine | `workflow_service.py`, `company-portal.html` | 4 roles, 7 statuses, versioning, comments, escalation, immutable audit |
 
-> **Beyond requirements:** Brand Insights aggregation (#11) and full Infrastructure & Security hardening (#12) are also implemented — see the [Feature List](docs/FEATURE_LIST.md).
+> **Beyond requirements:** Brand Insights aggregation (#11) and full Infrastructure & Security hardening (#12) are also fully implemented in the backend services.
 
 ---
 

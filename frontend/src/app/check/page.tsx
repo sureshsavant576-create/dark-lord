@@ -87,10 +87,12 @@ export default function DeveloperCheckPage() {
   }
 
   async function handleFullCheck() {
-    if (!brandId) {
+    const targetBrand = brandId || (brands.length ? brands[0].brand_id : "");
+    if (!targetBrand) {
       setErrorMsg("Select a target company vibe profile.");
       return;
     }
+    if (!brandId) setBrandId(targetBrand);
     if (!file && !copyText.trim()) {
       setErrorMsg("Provide a creative upload or copy text.");
       return;
@@ -102,7 +104,7 @@ export default function DeveloperCheckPage() {
       const fd = new FormData();
       if (file) fd.append("file", file);
       if (copyText.trim()) fd.append("copy_text", copyText.trim());
-      const res = await api.inspectContent(brandId, fd);
+      const res = await api.inspectContent(targetBrand, fd);
       setReport(res);
       setPreflight(null);
     } catch (err: any) {
@@ -113,15 +115,18 @@ export default function DeveloperCheckPage() {
   }
 
   async function handleAutoFix() {
-    if (!brandId || !file) {
+    const targetBrand = brandId || (brands.length ? brands[0].brand_id : "");
+    if (!targetBrand || !file) {
       setErrorMsg("Upload an image file to run Auto-Fix.");
       return;
     }
+    if (!brandId) setBrandId(targetBrand);
     setBusy(true);
+    setErrorMsg("");
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await api.autoRemediate(brandId, fd);
+      const res = await api.autoRemediate(targetBrand, fd);
       setRemediation(res);
     } catch (err: any) {
       setErrorMsg(err?.message || "Auto-Fix failed");
@@ -132,13 +137,15 @@ export default function DeveloperCheckPage() {
 
   async function handleAskCopilot(e: React.FormEvent) {
     e.preventDefault();
-    if (!brandId || !copilotInput.trim()) return;
+    const targetBrand = brandId || (brands.length ? brands[0].brand_id : "");
+    if (!targetBrand || !copilotInput.trim()) return;
+    if (!brandId) setBrandId(targetBrand);
     const msg = copilotInput.trim();
     setCopilotInput("");
     setMessages((prev) => [...prev, { role: "You", text: msg }]);
     try {
-      const res = await api.copilotChat(brandId, {
-        brand_id: brandId,
+      const res = await api.copilotChat(targetBrand, {
+        brand_id: targetBrand,
         message: msg,
         inspection_id: report?.inspection_id,
         copy_text: copyText.trim() || undefined,

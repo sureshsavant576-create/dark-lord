@@ -138,6 +138,12 @@ def save_upload_safely(
             detail=f"File exceeds maximum allowed size of {max_size_bytes // (1024 * 1024)}MB."
         )
 
+    try:
+        if hasattr(upload_file, "file") and hasattr(upload_file.file, "seek"):
+            upload_file.file.seek(0)
+    except Exception:
+        pass
+
     with open(dest_path, "wb") as buffer:
         while True:
             chunk = upload_file.file.read(chunk_size)

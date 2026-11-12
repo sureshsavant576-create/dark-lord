@@ -116,7 +116,7 @@ export interface AuditEvent {
 // HTTP Request Helper
 // ---------------------------------------------------------------------------
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(endpoint: string, options: RequestInit = {}, isRetry = false): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
   const token =
     typeof window !== "undefined" ? window.localStorage.getItem("sanket_session_token") : null;
@@ -130,6 +130,40 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   });
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== "undefined" && !isRetry) {
+      const email = window.localStorage.getItem("sanket_user_email");
+      const isDemo = email === "demo@sanket.ai" || token?.startsWith("user_88bbba6639") || token?.includes("apex-cloud");
+      if (isDemo) {
+        try {
+          const loginRes = await fetch(`${API_BASE}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: "demo@sanket.ai", password: "DemoJudge2026!" }),
+          });
+          if (loginRes.ok) {
+            const data = await loginRes.json();
+            window.localStorage.setItem("sanket_session_token", data.session_token);
+            window.localStorage.setItem("sanket_org_id", data.org_id || "default-org");
+            window.localStorage.setItem("sanket_company_name", data.company_name || data.org_id || "default-org");
+            window.localStorage.setItem("sanket_user_email", data.email || "");
+            window.localStorage.setItem("sanket_user_role", data.role_label || data.role || "User");
+            return request<T>(endpoint, options, true);
+          }
+        } catch {}
+      }
+
+      window.localStorage.removeItem("sanket_session_token");
+      window.localStorage.removeItem("sanket_user_email");
+      window.localStorage.removeItem("sanket_user_role");
+      window.localStorage.removeItem("sanket_org_id");
+      window.localStorage.removeItem("sanket_company_name");
+      window.localStorage.removeItem("sanket_workspace_session");
+
+      const isPublic = !endpoint.includes("/auth/") && !endpoint.includes("/storage/uploads") && !endpoint.includes("/storage/guidelines");
+      if (isPublic) {
+        return request<T>(endpoint, options, true);
+      }
+    }
     let errorDetail = `HTTP ${response.status} ${response.statusText}`;
     try {
       const errJson = await response.json();

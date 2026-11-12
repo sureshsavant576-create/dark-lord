@@ -39,6 +39,11 @@ class BrandCopilotService:
     async def chat(self, req: CopilotChatRequest) -> CopilotChatResponse:
         brand_id = req.brand_id or "default"
         brand = self.brand_service.get_brand_profile(brand_id)
+        if not brand and any(k in str(brand_id).lower() for k in ("omni", "demo", "chatgpt", "apex")):
+            brand = self.brand_service.get_brand_profile("omnigpt_ai") or self.brand_service.get_brand_profile("apex_cloud")
+        if not brand:
+            all_b = self.brand_service.list_brand_profiles()
+            brand = all_b[0] if all_b else None
         if not brand:
             raise ValueError(f"Brand '{brand_id}' not found.")
 
