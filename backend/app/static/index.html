@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css?v=5">
+  <link rel="stylesheet" href="/static/style.css?v=6">
 </head>
 <body>
   <div class="ambient-grid" aria-hidden="true"></div>
@@ -1113,11 +1113,12 @@
                     </svg>
                     <span>Social Media</span>
                   </button>
-                  <button type="button" class="vibes-source-card" data-source="assets" onclick="selectBrandInputSource('assets')">
+                  <button type="button" class="vibes-source-card" data-source="assets" id="tab-btn-assets" onclick="selectBrandInputSource('assets')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                       <path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-10Z"/>
                     </svg>
                     <span>Brand Assets</span>
+                    <span id="tab-assets-badge" class="vibes-source-badge hidden">&check; Attached</span>
                   </button>
                   <button type="button" class="vibes-source-card" data-source="others" onclick="selectBrandInputSource('others')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
@@ -1165,6 +1166,7 @@
                     </div>
                     <div id="dev-file-preview" class="vibes-dropzone-preview hidden">
                       <img id="dev-preview-img" alt="Uploaded design preview" class="hidden">
+                      <div class="laser-scanner-beam" aria-hidden="true"></div>
                       <div class="vibes-preview-meta">
                         <span id="dev-preview-name" class="mono-sm"></span>
                         <button type="button" class="cream-accent-link" onclick="clearDevFile(event)">Remove file</button>
@@ -1176,6 +1178,42 @@
                 <!-- Source Panel 4: Others / Copy -->
                 <div id="source-panel-others" class="vibes-source-panel hidden">
                   <textarea id="dev-copy-input" class="vibes-cream-textarea" rows="3" placeholder="Paste headline, landing copy, campaign claims, or messaging guidelines to evaluate with AI..."></textarea>
+                </div>
+              </div>
+
+              <!-- Uploaded & Attached Content Preview Tray -->
+              <div id="check-attached-tray" class="vibes-attached-tray hidden">
+                <div class="vibes-tray-header">
+                  <span class="vibes-tray-title">Attached Inputs Ready for AI Check:</span>
+                  <button type="button" class="cream-text-link mono-sm" onclick="clearAllCheckInputs()">Clear all</button>
+                </div>
+                <div id="check-tray-items" class="vibes-tray-items">
+                  <div id="tray-file-item" class="vibes-tray-card hidden">
+                    <img id="tray-file-thumb" src="" alt="Uploaded Asset Preview" class="vibes-tray-thumb">
+                    <div class="vibes-tray-card-info">
+                      <strong id="tray-file-name" class="vibes-tray-filename">omnigpt_ai_poster.png</strong>
+                      <span class="vibes-tray-subtext" id="tray-file-meta">Creative Image Asset</span>
+                    </div>
+                    <div class="vibes-tray-card-actions">
+                      <button type="button" class="cream-text-link" onclick="selectBrandInputSource('assets')">View</button>
+                      <button type="button" class="cream-accent-link" onclick="clearDevFile(event)">Remove</button>
+                    </div>
+                  </div>
+                  <div id="tray-url-item" class="vibes-tray-pill hidden">
+                    <span class="vibes-pill-icon">&compfn;</span>
+                    <span id="tray-url-text" class="vibes-pill-text">https://...</span>
+                    <button type="button" class="vibes-pill-remove" onclick="clearUrlInput(event)" aria-label="Clear URL">&times;</button>
+                  </div>
+                  <div id="tray-social-item" class="vibes-tray-pill hidden">
+                    <span class="vibes-pill-icon">&commat;</span>
+                    <span id="tray-social-text" class="vibes-pill-text">@...</span>
+                    <button type="button" class="vibes-pill-remove" onclick="clearSocialInput(event)" aria-label="Clear Social">&times;</button>
+                  </div>
+                  <div id="tray-copy-item" class="vibes-tray-pill hidden">
+                    <span class="vibes-pill-icon">&para;</span>
+                    <span id="tray-copy-text" class="vibes-pill-text">Copy text...</span>
+                    <button type="button" class="vibes-pill-remove" onclick="clearCopyInput(event)" aria-label="Clear Copy">&times;</button>
+                  </div>
                 </div>
               </div>
 
@@ -1236,6 +1274,37 @@
                 <p class="vibes-results-sub" id="res-verdict-summary">A complete brand governance scan across your submitted touchpoints.</p>
               </div>
               <button type="button" class="vibes-outline-btn" onclick="switchCheckSubView('input')">New Check</button>
+            </div>
+
+            <!-- Showcase of Evaluated Uploaded Assets & Content -->
+            <div id="res-uploaded-showcase" class="vibes-card vibes-evaluated-showcase hidden">
+              <div class="vibes-card-head">
+                <h3>Evaluated Brand Content &amp; Uploaded Assets</h3>
+                <span class="mono-sm" id="res-showcase-count">1 Asset Inspected</span>
+              </div>
+              <div class="vibes-showcase-grid">
+                <div id="res-showcase-asset-box" class="vibes-showcase-asset-box hidden">
+                  <div class="vibes-showcase-thumb-wrap">
+                    <img id="res-showcase-img" src="" alt="Evaluated Creative" class="vibes-showcase-thumb">
+                  </div>
+                  <div class="vibes-showcase-meta">
+                    <span class="vibes-showcase-label">UPLOADED CREATIVE FILE</span>
+                    <strong id="res-showcase-filename" class="vibes-showcase-filename">asset.png</strong>
+                    <p id="res-showcase-desc" class="vibes-showcase-sub">Evaluated for aesthetic alignment, palette compliance, and visual hierarchy.</p>
+                    <div id="res-showcase-tags" class="vibes-chips-row"></div>
+                  </div>
+                </div>
+                <div id="res-showcase-inputs-box" class="vibes-showcase-inputs-box">
+                  <div class="vibes-showcase-field" id="res-showcase-url-row">
+                    <span class="vibes-showcase-k">Website / Touchpoint</span>
+                    <span id="res-showcase-url" class="vibes-showcase-v mono-sm">-</span>
+                  </div>
+                  <div class="vibes-showcase-field" id="res-showcase-copy-row">
+                    <span class="vibes-showcase-k">Submitted Copy / Social</span>
+                    <blockquote id="res-showcase-copy" class="vibes-showcase-quote">-</blockquote>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Row 1: Score Ring + Brand Preview -->
@@ -1413,6 +1482,6 @@
 
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <script src="/static/app.js?v=5"></script>
+  <script src="/static/app.js?v=6"></script>
 </body>
 </html>

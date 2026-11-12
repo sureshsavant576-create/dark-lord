@@ -1678,6 +1678,13 @@ async function saveCompleteCompanySetup() {
   if (btn) btn.disabled = true;
 
   try {
+    // Proactively verify & renew demo session if in demo mode or if token has expired
+    if (isDemoSession()) {
+      await ensureDemoSession();
+    } else if (state.session && isTokenExpired(state.session.session_token)) {
+      clearAllStoredSessions();
+    }
+
     const fd = new FormData();
     fd.append('brand_name', name);
     fd.append('personality', (state.company.traits || []).join(', '));
@@ -1735,6 +1742,25 @@ async function saveCompleteCompanySetup() {
     showToast(`Saved and registered '${confirmed.brand_name}'!`, 'success');
     navigateTo('check');
   } catch (err) {
+    const isAuthErr = err.status === 401 || (err.message && (
+      err.message.toLowerCase().includes('session') ||
+      err.message.toLowerCase().includes('token') ||
+      err.message.toLowerCase().includes('unauthorized') ||
+      err.message.toLowerCase().includes('auth')
+    ));
+    if (isAuthErr) {
+      if (isDemoSession()) {
+        try {
+          await ensureDemoSession();
+          showToast('Demo session refreshed. Please click Save again to lock your vibes.', 'info');
+          return;
+        } catch (_) {}
+      } else {
+        clearAllStoredSessions();
+        showToast('Your session has expired. You can save your vibes as a guest or sign in.', 'warning');
+        return;
+      }
+    }
     showToast(err.message || 'Failed to complete setup', 'error');
   } finally {
     if (btn) btn.disabled = false;
@@ -1831,6 +1857,13 @@ function bindDeveloperDropzone() {
 async function runInstantPreflightScan(file) {
   if (!file || !file.type || !file.type.startsWith('image/')) return;
   try {
+    // Proactively verify & renew demo session if in demo mode or if token has expired
+    if (isDemoSession()) {
+      await ensureDemoSession();
+    } else if (state.session && isTokenExpired(state.session.session_token)) {
+      clearAllStoredSessions();
+    }
+
     const fd = new FormData();
     fd.append('file', file);
     if (state.dev.selectedBrandId) {
@@ -1967,7 +2000,28 @@ function setScoreRingProgress(scoreNum) {
   }
 
   const clamped = Math.max(0, Math.min(100, Math.round(scoreNum)));
-  if (scoreEl) scoreEl.textContent = `${clamped}%`;
+
+  if (scoreEl) {
+    const rawPrev = parseInt(scoreEl.textContent, 10);
+    const startVal = Number.isFinite(rawPrev) ? rawPrev : 0;
+    const duration = 850;
+    const startTime = performance.now();
+    function tick(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Quintic ease-out deceleration (strictly smooth, no cartoon bounce)
+      const ease = 1 - Math.pow(1 - progress, 5);
+      const current = Math.round(startVal + (clamped - startVal) * ease);
+      scoreEl.textContent = `${current}%`;
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        scoreEl.textContent = `${clamped}%`;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
   if (ring) {
     const offset = circumference - (clamped / 100) * circumference;
     ring.style.strokeDashoffset = offset.toFixed(2);
@@ -2764,6 +2818,13 @@ async function runVisualAutoFix() {
   }
 
   try {
+    // Proactively verify & renew demo session if in demo mode or if token has expired
+    if (isDemoSession()) {
+      await ensureDemoSession();
+    } else if (state.session && isTokenExpired(state.session.session_token)) {
+      clearAllStoredSessions();
+    }
+
     const fd = new FormData();
     if (state.dev.selectedFile) {
       fd.append('file', state.dev.selectedFile);

@@ -2001,6 +2001,245 @@ body.is-check .page-shell {
   background: #faf7f1;
 }
 
+.vibes-source-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  background: #233b2e;
+  color: #8ce4ad;
+  border-radius: 999px;
+  margin-left: 0.35rem;
+  letter-spacing: 0.02em;
+}
+
+.vibes-attached-tray {
+  margin: 0.65rem 0 0.35rem;
+  padding: 0.85rem 1rem;
+  background: #f4efe6;
+  border: 1px solid #dfd6c7;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.vibes-tray-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.vibes-tray-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #4f4738;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.vibes-tray-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.vibes-tray-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #ffffff;
+  border: 1px solid #d9d0bf;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.vibes-tray-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid #d9d0bf;
+  background: #ede7dc;
+}
+
+.vibes-tray-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.vibes-tray-filename {
+  font-size: 0.84rem;
+  color: #1a202c;
+  word-break: break-all;
+}
+
+.vibes-tray-subtext {
+  font-size: 0.72rem;
+  color: #3b7c52;
+  font-weight: 600;
+}
+
+.vibes-tray-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-left: 0.4rem;
+  font-size: 0.78rem;
+}
+
+.vibes-tray-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.65rem;
+  background: #ffffff;
+  border: 1px solid #d9d0bf;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: #2d3748;
+}
+
+.vibes-pill-text {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vibes-pill-remove {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #8c8273;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 0.15rem;
+}
+
+.vibes-pill-remove:hover {
+  color: #b83232;
+}
+
+.vibes-evaluated-showcase {
+  margin-bottom: 1.25rem;
+  background: #faf7f1;
+  border: 1.5px solid #dcd3c3;
+  border-radius: 8px;
+  padding: 1.35rem 1.45rem;
+}
+
+.vibes-showcase-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.25rem;
+  margin-top: 0.85rem;
+}
+
+.vibes-showcase-asset-box {
+  display: flex;
+  gap: 1.1rem;
+  align-items: flex-start;
+  padding: 0.9rem;
+  background: #ffffff;
+  border: 1px solid #ded5c5;
+  border-radius: 6px;
+}
+
+.vibes-showcase-thumb-wrap {
+  flex-shrink: 0;
+  width: 110px;
+  max-height: 140px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #d4cab9;
+  background: #f0ebe1;
+}
+
+.vibes-showcase-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.vibes-showcase-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.vibes-showcase-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8c6f3d;
+}
+
+.vibes-showcase-filename {
+  font-size: 1rem;
+  color: #171d24;
+  word-break: break-all;
+}
+
+.vibes-showcase-sub {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #5c6370;
+  line-height: 1.35;
+}
+
+.vibes-showcase-inputs-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  background: #ffffff;
+  border: 1px solid #ded5c5;
+  border-radius: 6px;
+}
+
+.vibes-showcase-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.vibes-showcase-k {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6a6458;
+}
+
+.vibes-showcase-v {
+  font-size: 0.88rem;
+  color: #181d24;
+  word-break: break-all;
+}
+
+.vibes-showcase-quote {
+  margin: 0;
+  padding: 0.45rem 0.7rem;
+  background: #f7f3eb;
+  border-left: 3px solid #9e7945;
+  border-radius: 3px;
+  font-size: 0.84rem;
+  color: #272d37;
+  font-style: italic;
+  line-height: 1.4;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
 .vibes-demo-only-bar {
   display: flex;
   flex-wrap: wrap;
@@ -4633,5 +4872,1076 @@ textarea:focus,
   }
   .company-personality-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* ==========================================================================
+   MASTER MOTION DESIGN SYSTEM — CINEMATIC & ATMOSPHERIC (AWWWARDS / PRO GRADE)
+   Orchestrated motion design with weight, momentum, and tactile elegance.
+   Strictly non-fun: No cartoon bouncing, no playful wobbles, no spring toys.
+   Pure architectural luxury, dark titanium physics, and quantum illumination.
+   ========================================================================== */
+
+:root {
+  /* Motion Curves (Precision Deceleration & Inertia) */
+  --ease-cinema: cubic-bezier(0.16, 1.0, 0.3, 1.0);
+  --ease-velvet: cubic-bezier(0.22, 1.0, 0.36, 1.0);
+  --ease-mechanical: cubic-bezier(0.4, 0.0, 0.2, 1.0);
+  --ease-press: cubic-bezier(0.25, 1.0, 0.5, 1.0);
+  --ease-slow-in: cubic-bezier(0.7, 0.0, 0.84, 0.0);
+
+  /* Orchestrated Durations */
+  --motion-instant: 120ms;
+  --motion-micro: 180ms;
+  --motion-hover: 220ms;
+  --motion-standard: 340ms;
+  --motion-reveal: 480ms;
+  --motion-cinematic: 700ms;
+  --motion-ambient: 6000ms;
+  --motion-drift: 38000ms;
+}
+
+/* --------------------------------------------------------------------------
+   1. AMBIENT LIVING ATMOSPHERE & ARCHITECTURAL FRAMING
+   -------------------------------------------------------------------------- */
+.ambient-grid {
+  animation: ambientDrift var(--motion-drift) ease-in-out infinite alternate;
+  will-change: background-position, opacity;
+}
+
+@keyframes ambientDrift {
+  0% {
+    background-position: 0% 0%, 100% 0%, 0 0, 0 0;
+    opacity: 0.88;
+  }
+  50% {
+    background-position: 3% 4%, 97% 6%, 0 0, 0 0;
+    opacity: 1;
+  }
+  100% {
+    background-position: 5% 8%, 95% 4%, 0 0, 0 0;
+    opacity: 0.92;
+  }
+}
+
+/* Architectural Hairline Lines (Gold/Champagne) */
+.home-arch-lines,
+.hub-arch-left,
+.hub-arch-right {
+  animation: archEntrance 1.6s var(--ease-cinema) forwards, archLuminance 7s ease-in-out 1.6s infinite alternate;
+  will-change: opacity, transform;
+}
+
+@keyframes archEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes archLuminance {
+  0% {
+    filter: drop-shadow(0 0 0px rgba(209, 179, 134, 0));
+    opacity: 0.75;
+  }
+  50% {
+    filter: drop-shadow(0 0 3px rgba(209, 179, 134, 0.28));
+    opacity: 1;
+  }
+  100% {
+    filter: drop-shadow(0 0 1px rgba(209, 179, 134, 0.12));
+    opacity: 0.8;
+  }
+}
+
+/* Custom Sleek Obsidian Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090d14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e2638;
+  border-radius: 4px;
+  border: 2px solid #090d14;
+  transition: background var(--motion-hover) ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #33415e;
+}
+
+/* --------------------------------------------------------------------------
+   2. PAGE VIEW & SUBVIEW ORCHESTRATION
+   -------------------------------------------------------------------------- */
+.page-view.active {
+  animation: pageViewEntrance var(--motion-reveal) var(--ease-cinema) forwards;
+}
+
+@keyframes pageViewEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vibes-subview:not(.hidden) {
+  animation: subviewSlideIn var(--motion-standard) var(--ease-cinema) forwards;
+}
+
+@keyframes subviewSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. NAVIGATION BARS & IDENTITY LOCKUPS
+   -------------------------------------------------------------------------- */
+.topbar,
+.company-header,
+.vibes-header {
+  transition: background var(--motion-hover) ease, border-color var(--motion-hover) ease, box-shadow var(--motion-hover) ease;
+}
+
+/* Brand Quantum Dot */
+.brand-dot,
+.org-status-dot {
+  position: relative;
+  animation: beaconBreathing 3.6s ease-in-out infinite;
+}
+
+@keyframes beaconBreathing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(59, 130, 246, 0);
+    transform: scale(1.08);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    transform: scale(1);
+  }
+}
+
+/* Brand Mark / Logo */
+.brand-mark,
+.hub-brand {
+  transition: transform var(--motion-hover) var(--ease-cinema);
+}
+
+.brand-mark:hover,
+.hub-brand:hover {
+  transform: translateY(-0.5px);
+}
+
+.home-monogram-img {
+  transition: transform var(--motion-hover) var(--ease-cinema), filter var(--motion-hover) ease;
+}
+
+.brand-mark:hover .home-monogram-img,
+.hub-brand:hover .home-monogram-img {
+  transform: scale(1.03);
+  filter: drop-shadow(0 4px 12px rgba(209, 179, 134, 0.4));
+}
+
+/* Nav Pills */
+.nav-pill {
+  position: relative;
+  overflow: hidden;
+  transition: color var(--motion-hover) ease, background-color var(--motion-hover) ease, border-color var(--motion-hover) ease, transform var(--motion-micro) var(--ease-cinema), box-shadow var(--motion-hover) ease;
+}
+
+.nav-pill:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.35);
+}
+
+.nav-pill:active {
+  transform: scale(0.97);
+}
+
+.nav-pill.active {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 16px -2px rgba(0, 0, 0, 0.5);
+}
+
+.nav-pill .nav-num {
+  transition: color var(--motion-hover) ease;
+}
+
+.nav-pill:hover .nav-num {
+  color: #60a5fa;
+}
+
+/* Interactive Topbar & Header Action Buttons */
+.org-pill-btn,
+.hub-avatar-btn,
+.hub-bell-btn {
+  transition: transform var(--motion-micro) var(--ease-press), border-color var(--motion-hover) ease, box-shadow var(--motion-hover) ease, background-color var(--motion-hover) ease;
+}
+
+.org-pill-btn:hover,
+.hub-avatar-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(200, 169, 126, 0.65);
+  box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.4), 0 0 10px rgba(200, 169, 126, 0.2);
+}
+
+.org-pill-btn:active,
+.hub-avatar-btn:active,
+.hub-bell-btn:active {
+  transform: scale(0.96);
+}
+
+.hub-bell-btn svg {
+  transition: transform var(--motion-hover) var(--ease-cinema);
+}
+
+.hub-bell-btn:hover svg {
+  transform: rotate(8deg);
+}
+
+/* Account Dropdown Menu */
+.hub-account-menu:not(.hidden) {
+  animation: dropdownCinematic var(--motion-hover) var(--ease-cinema) forwards;
+  transform-origin: top right;
+}
+
+@keyframes dropdownCinematic {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.hub-menu-item {
+  transition: background-color var(--motion-hover) ease, color var(--motion-hover) ease, transform var(--motion-micro) var(--ease-cinema);
+}
+
+.hub-menu-item:hover {
+  transform: translateX(3px);
+}
+
+/* --------------------------------------------------------------------------
+   4. PAGE 1: ARCHITECTURAL HERO & ACCORDION DEMO BADGE
+   -------------------------------------------------------------------------- */
+.home-hero-title {
+  animation: heroTitleReveal 0.85s var(--ease-cinema) forwards;
+}
+
+@keyframes heroTitleReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.home-hero-accent {
+  background: linear-gradient(135deg, #d1b386 0%, #f6e6cf 50%, #b5925d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: goldLuminanceSweep 7s ease-in-out infinite;
+}
+
+@keyframes goldLuminanceSweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.home-hero-subtitle {
+  animation: heroSubReveal 0.9s var(--ease-cinema) 0.15s both;
+}
+
+@keyframes heroSubReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Primary Hero CTA with Specular Sheen Sweep */
+.home-cta-primary {
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--motion-hover) var(--ease-cinema), box-shadow var(--motion-hover) var(--ease-cinema), background-color var(--motion-hover) ease;
+}
+
+.home-cta-primary::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -120%;
+  width: 80%;
+  height: 200%;
+  background: linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.45) 50%, transparent 80%);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: transform 0.65s var(--ease-cinema);
+}
+
+.home-cta-primary:hover::after {
+  transform: skewX(-20deg) translateX(360%);
+}
+
+.home-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(245, 241, 234, 0.22);
+}
+
+.home-cta-primary:active {
+  transform: scale(0.97) translateY(0);
+}
+
+.home-cta-primary span:last-child {
+  display: inline-block;
+  transition: transform var(--motion-hover) var(--ease-cinema);
+}
+
+.home-cta-primary:hover span:last-child {
+  transform: translateX(4px);
+}
+
+/* Demo Pill & Ghost CTA */
+.home-demo-pill,
+.home-cta-ghost {
+  position: relative;
+  transition: transform var(--motion-hover) var(--ease-cinema), border-color var(--motion-hover) ease, background-color var(--motion-hover) ease, box-shadow var(--motion-hover) ease, color var(--motion-hover) ease;
+}
+
+.home-demo-pill:hover,
+.home-cta-ghost:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.4), 0 0 14px rgba(200, 169, 126, 0.2);
+}
+
+.home-demo-pill:active,
+.home-cta-ghost:active {
+  transform: scale(0.97);
+}
+
+.home-demo-pill span:last-child {
+  display: inline-block;
+  transition: transform var(--motion-hover) var(--ease-cinema);
+}
+
+.home-demo-pill:hover span:last-child {
+  transform: translateX(3px);
+}
+
+/* Demo Credentials Accordion Badge */
+.home-demo-credentials-badge {
+  transition: border-color var(--motion-hover) ease, box-shadow var(--motion-hover) ease, padding var(--motion-standard) var(--ease-cinema);
+}
+
+.home-demo-credentials-badge:hover {
+  border-color: rgba(200, 169, 126, 0.55);
+}
+
+.demo-badge-pulse {
+  animation: radarBeaconPing 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes radarBeaconPing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    opacity: 0.85;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    opacity: 1;
+  }
+}
+
+.demo-badge-chevron {
+  transition: transform var(--motion-standard) var(--ease-cinema);
+}
+
+.home-demo-credentials-badge.is-open .demo-badge-chevron {
+  transform: rotate(180deg);
+}
+
+/* Credential Copy Rows & Click Feedback */
+.demo-cred-row {
+  position: relative;
+  overflow: hidden;
+  transition: background-color var(--motion-hover) ease, border-color var(--motion-hover) ease, transform var(--motion-micro) var(--ease-cinema);
+}
+
+.demo-cred-row:hover {
+  transform: translateY(-1px);
+}
+
+.demo-cred-row:active {
+  transform: scale(0.98);
+}
+
+.demo-cred-row.copied {
+  animation: copyFeedbackRipple 0.4s var(--ease-cinema);
+}
+
+@keyframes copyFeedbackRipple {
+  0% {
+    background-color: rgba(16, 185, 129, 0.25);
+    border-color: rgba(16, 185, 129, 0.6);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.demo-quick-login-btn {
+  transition: transform var(--motion-hover) var(--ease-cinema), background-color var(--motion-hover) ease, box-shadow var(--motion-hover) ease;
+}
+
+.demo-quick-login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -3px rgba(16, 185, 129, 0.35);
+}
+
+.demo-quick-login-btn:active {
+  transform: scale(0.97);
+}
+
+/* Pull-Out Slidebar Handle & Drawer Panel */
+.home-slidebar-handle {
+  transition: transform var(--motion-hover) var(--ease-cinema), background-color var(--motion-hover) ease, box-shadow var(--motion-hover) ease, color var(--motion-hover) ease;
+}
+
+.home-slidebar-handle:hover {
+  transform: translateX(-3px);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(200, 169, 126, 0.25);
+}
+
+.home-slidebar-panel {
+  transition: transform var(--motion-reveal) var(--ease-cinema), box-shadow var(--motion-reveal) var(--ease-cinema);
+}
+
+/* --------------------------------------------------------------------------
+   5. POST-SIGN-IN HUB CARDS
+   -------------------------------------------------------------------------- */
+.hub-card,
+.brand-card,
+.insights-stat-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--motion-hover) var(--ease-cinema), box-shadow var(--motion-hover) var(--ease-cinema), border-color var(--motion-hover) ease;
+}
+
+.hub-card:hover,
+.brand-card:hover,
+.insights-stat-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(200, 169, 126, 0.65);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.45), 0 0 20px rgba(200, 169, 126, 0.15);
+}
+
+.hub-card:active,
+.brand-card:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+.hub-card-link-arrow {
+  display: inline-block;
+  transition: transform var(--motion-hover) var(--ease-cinema);
+}
+
+.hub-card:hover .hub-card-link-arrow {
+  transform: translateX(5px);
+}
+
+/* --------------------------------------------------------------------------
+   6. PAGE 2: COMPANY SETUP STUDIO WIZARD (BRANDVISTA)
+   -------------------------------------------------------------------------- */
+.company-step-item {
+  transition: transform var(--motion-hover) var(--ease-cinema), color var(--motion-hover) ease;
+}
+
+.company-step-item:hover {
+  transform: translateX(3px);
+}
+
+.company-step-item.active .step-num-circle {
+  animation: activeStepPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes activeStepPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(179, 141, 88, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(179, 141, 88, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(179, 141, 88, 0);
+  }
+}
+
+.company-step-item .step-check {
+  animation: checkmarkPop var(--motion-standard) var(--ease-velvet) forwards;
+}
+
+@keyframes checkmarkPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.company-progress-fill {
+  transition: width var(--motion-reveal) var(--ease-cinema);
+}
+
+/* Inputs, Textareas, Selects Halo Focus */
+.company-input,
+.company-textarea,
+.company-select,
+.cream-input-group input,
+.vibes-cream-textarea,
+.text-input {
+  transition: border-color var(--motion-hover) ease, box-shadow var(--motion-hover) ease, background-color var(--motion-hover) ease;
+}
+
+.company-input:focus,
+.company-textarea:focus,
+.company-select:focus,
+.cream-input-group input:focus,
+.vibes-cream-textarea:focus,
+.text-input:focus {
+  outline: none;
+  border-color: #b38d58;
+  box-shadow: 0 0 0 1px #b38d58, 0 0 16px -2px rgba(179, 141, 88, 0.3);
+}
+
+.cream-input-group:focus-within {
+  border-color: #b38d58;
+  box-shadow: 0 0 0 1px #b38d58, 0 0 16px -2px rgba(179, 141, 88, 0.25);
+}
+
+.cream-input-group:focus-within .cream-input-icon svg {
+  color: #b38d58;
+  transform: scale(1.05);
+}
+
+.cream-input-icon svg {
+  transition: color var(--motion-hover) ease, transform var(--motion-hover) var(--ease-cinema);
+}
+
+/* Personality Chips & Archetype Cards */
+.personality-chip,
+.tag-pill,
+.vibe-pill {
+  transition: transform var(--motion-micro) var(--ease-cinema), background-color var(--motion-hover) ease, border-color var(--motion-hover) ease, color var(--motion-hover) ease, box-shadow var(--motion-hover) ease;
+}
+
+.personality-chip:hover,
+.tag-pill:hover,
+.vibe-pill:hover {
+  transform: translateY(-1.5px);
+  border-color: rgba(179, 141, 88, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.personality-chip:active,
+.tag-pill:active,
+.vibe-pill:active {
+  transform: scale(0.96);
+}
+
+.personality-chip.active,
+.tag-pill.active {
+  box-shadow: 0 4px 14px rgba(179, 141, 88, 0.25);
+}
+
+/* Archetype Inspiration Cards */
+.archetype-card,
+.inspiration-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--motion-hover) var(--ease-cinema), box-shadow var(--motion-hover) var(--ease-cinema), border-color var(--motion-hover) ease;
+}
+
+.archetype-card:hover,
+.inspiration-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(179, 141, 88, 0.7);
+  box-shadow: 0 14px 28px -4px rgba(0, 0, 0, 0.12), 0 0 14px rgba(179, 141, 88, 0.15);
+}
+
+.archetype-card img,
+.inspiration-card img {
+  transition: transform 0.5s var(--ease-cinema);
+}
+
+.archetype-card:hover img,
+.inspiration-card:hover img {
+  transform: scale(1.035);
+}
+
+/* Dropzones with Laser Scanner Sweep & Breathing Borders */
+.company-dropzone,
+.company-logo-dropzone,
+.dropzone,
+.vibes-dropzone {
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--motion-hover) ease, background-color var(--motion-hover) ease, transform var(--motion-micro) var(--ease-cinema), box-shadow var(--motion-hover) ease;
+}
+
+.company-dropzone:hover,
+.company-logo-dropzone:hover,
+.dropzone:hover,
+.vibes-dropzone:hover,
+.vibes-dropzone.dragover {
+  border-color: #b38d58;
+  background-color: rgba(246, 239, 228, 0.85);
+  box-shadow: 0 0 20px rgba(179, 141, 88, 0.12);
+}
+
+.company-dropzone svg,
+.company-logo-dropzone svg,
+.dropzone-empty svg,
+.vibes-dropzone-empty svg {
+  transition: transform var(--motion-hover) var(--ease-cinema);
+}
+
+.company-dropzone:hover svg,
+.company-logo-dropzone:hover svg,
+.dropzone:hover svg,
+.vibes-dropzone:hover svg {
+  transform: translateY(-2px);
+}
+
+/* Telemetry Laser Scanline Beam */
+.laser-scanner-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #b38d58, #f5d49e, #b38d58, transparent);
+  box-shadow: 0 0 12px 2px rgba(179, 141, 88, 0.75), 0 0 24px rgba(245, 212, 158, 0.4);
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  animation: laserScanSweep 2.2s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
+}
+
+@keyframes laserScanSweep {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 98%;
+    opacity: 0;
+  }
+}
+
+/* Swatch Items */
+.swatch-item,
+.palette-chip,
+.mini-swatch {
+  transition: transform var(--motion-hover) var(--ease-cinema), box-shadow var(--motion-hover) var(--ease-cinema);
+}
+
+.swatch-item:hover,
+.palette-chip:hover,
+.mini-swatch:hover {
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  z-index: 5;
+}
+
+/* Live Preview Mockup Card Dynamic Color Morphing */
+.mockup-preview-card,
+.live-mockup {
+  transition: background-color 0.4s var(--ease-cinema), color 0.4s var(--ease-cinema), border-color 0.4s var(--ease-cinema), box-shadow 0.4s var(--ease-cinema);
+}
+
+/* --------------------------------------------------------------------------
+   7. PAGE 3: DEVELOPER CHECK & RESULTS TELEMETRY
+   -------------------------------------------------------------------------- */
+.vibes-subtab {
+  position: relative;
+  transition: color var(--motion-hover) ease;
+}
+
+.vibes-subtab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: #9e7945;
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--motion-hover) var(--ease-cinema);
+}
+
+.vibes-subtab.active::after {
+  transform: scaleX(1);
+}
+
+.vibes-subtab:hover {
+  color: #181c23;
+}
+
+/* Input Source Cards (Website / Social / Assets / Others) */
+.vibes-source-card {
+  transition: transform var(--motion-hover) var(--ease-cinema), border-color var(--motion-hover) ease, background-color var(--motion-hover) ease, box-shadow var(--motion-hover) ease;
+}
+
+.vibes-source-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(179, 141, 88, 0.65);
+  box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.08);
+}
+
+.vibes-source-card:active {
+  transform: scale(0.97);
+}
+
+.vibes-source-card.active {
+  box-shadow: 0 6px 20px -2px rgba(179, 141, 88, 0.22);
+}
+
+.vibes-source-card svg {
+  transition: transform var(--motion-hover) var(--ease-cinema);
+}
+
+.vibes-source-card:hover svg {
+  transform: scale(1.08);
+}
+
+/* Run Vibes Check Action Button */
+.vibes-run-btn {
+  position: relative;
+  overflow: hidden;
+  transition: background-color var(--motion-hover) ease, transform var(--motion-micro) var(--ease-cinema), box-shadow var(--motion-hover) ease;
+}
+
+.vibes-run-btn::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -120%;
+  width: 80%;
+  height: 200%;
+  background: linear-gradient(105deg, transparent 20%, rgba(214, 182, 132, 0.3) 50%, transparent 80%);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: transform 0.65s var(--ease-cinema);
+}
+
+.vibes-run-btn:hover:not(:disabled)::after {
+  transform: skewX(-20deg) translateX(360%);
+}
+
+.vibes-run-btn:hover:not(:disabled) {
+  background: #11161e;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.4), 0 0 16px rgba(214, 182, 132, 0.25);
+}
+
+.vibes-run-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.vibes-run-btn span:last-child {
+  display: inline-block;
+  transition: transform var(--motion-hover) var(--ease-cinema);
+}
+
+.vibes-run-btn:hover:not(:disabled) span:last-child {
+  transform: translateX(4px);
+}
+
+.vibes-run-btn:disabled {
+  animation: runButtonAnalyzing 2s ease-in-out infinite;
+}
+
+@keyframes runButtonAnalyzing {
+  0%, 100% {
+    opacity: 0.7;
+    box-shadow: 0 0 0 0 rgba(214, 182, 132, 0);
+  }
+  50% {
+    opacity: 0.95;
+    box-shadow: 0 0 18px 2px rgba(214, 182, 132, 0.35);
+  }
+}
+
+/* Results Dashboard Telemetry Gauge */
+.vibes-ring-fill {
+  transition: stroke-dashoffset 0.95s var(--ease-velvet), stroke 0.4s ease;
+  will-change: stroke-dashoffset;
+}
+
+.vibes-ring-center strong {
+  transition: color var(--motion-hover) ease, transform var(--motion-hover) var(--ease-cinema);
+}
+
+/* Status Chips Breathing Halo */
+.vibes-status-chip {
+  transition: transform var(--motion-micro) var(--ease-cinema), box-shadow var(--motion-hover) ease;
+}
+
+.vibes-status-chip:hover {
+  transform: translateY(-1px);
+}
+
+.vibes-status-chip:not(.warn) {
+  animation: chipCompliantHalo 4s ease-in-out infinite alternate;
+}
+
+@keyframes chipCompliantHalo {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 8px 1px rgba(16, 185, 129, 0.2);
+  }
+}
+
+.vibes-status-chip.warn {
+  animation: chipWarningHalo 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes chipWarningHalo {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 8px 1px rgba(245, 158, 11, 0.25);
+  }
+}
+
+/* Compliance Breakdown Progress Bars & Row Hover Drift */
+.vibes-bar-row {
+  transition: transform var(--motion-hover) var(--ease-cinema), background-color var(--motion-hover) ease;
+  border-radius: 6px;
+  padding: 0.25rem 0.4rem;
+}
+
+.vibes-bar-row:hover {
+  transform: translateX(4px);
+  background-color: rgba(235, 228, 215, 0.45);
+}
+
+.vibes-bar-fill {
+  transition: width 0.85s var(--ease-cinema);
+  will-change: width;
+}
+
+/* Visual Preview Tiles */
+.vibes-preview-tile {
+  transition: transform var(--motion-hover) var(--ease-cinema), box-shadow var(--motion-hover) var(--ease-cinema), border-color var(--motion-hover) ease;
+}
+
+.vibes-preview-tile:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 22px -4px rgba(0, 0, 0, 0.18);
+  border-color: rgba(179, 141, 88, 0.7);
+}
+
+.vibes-preview-tile img {
+  transition: transform 0.4s var(--ease-cinema);
+}
+
+.vibes-preview-tile:hover img {
+  transform: scale(1.04);
+}
+
+/* Remediation & Action Items */
+.vibes-insight-item {
+  transition: transform var(--motion-hover) var(--ease-cinema), background-color var(--motion-hover) ease;
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+}
+
+.vibes-insight-item:hover {
+  transform: translateX(3px);
+  background-color: rgba(240, 231, 214, 0.4);
+}
+
+.vibes-insight-dot {
+  transition: transform var(--motion-hover) var(--ease-cinema), background-color var(--motion-hover) ease;
+}
+
+.vibes-insight-item:hover .vibes-insight-dot {
+  transform: scale(1.12);
+  background-color: #e4d7c0;
+}
+
+/* --------------------------------------------------------------------------
+   8. MODALS, DIALOGS & OVERLAYS
+   -------------------------------------------------------------------------- */
+.modal-backdrop:not(.hidden) {
+  animation: modalBackdropFadeIn var(--motion-reveal) var(--ease-cinema) forwards;
+}
+
+@keyframes modalBackdropFadeIn {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(12px);
+  }
+}
+
+.modal-backdrop:not(.hidden) .modal-card {
+  animation: modalCardCinematicIn var(--motion-reveal) var(--ease-cinema) forwards;
+}
+
+@keyframes modalCardCinematicIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-tab {
+  transition: color var(--motion-hover) ease, border-color var(--motion-hover) ease, background-color var(--motion-hover) ease;
+}
+
+.modal-tab:hover {
+  color: var(--text);
+}
+
+.modal-tab:active {
+  transform: scale(0.98);
+}
+
+/* --------------------------------------------------------------------------
+   9. UNIVERSAL BUTTONS, CARDS, CHIPS & CONTROLS
+   -------------------------------------------------------------------------- */
+.btn {
+  position: relative;
+  transition: transform var(--motion-micro) var(--ease-press), box-shadow var(--motion-hover) ease, background-color var(--motion-hover) ease, border-color var(--motion-hover) ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 18px -2px rgba(0, 0, 0, 0.3);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97) translateY(0);
+}
+
+.btn-secondary:hover:not(:disabled),
+.vibes-outline-btn:hover:not(:disabled) {
+  border-color: rgba(200, 169, 126, 0.6);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.btn-icon {
+  transition: transform var(--motion-micro) var(--ease-cinema), background-color var(--motion-hover) ease, color var(--motion-hover) ease;
+}
+
+.btn-icon:hover {
+  transform: scale(1.1);
+}
+
+.btn-icon:active {
+  transform: scale(0.92);
+}
+
+/* Toast Notifications */
+.toast,
+.toast-notification {
+  animation: toastSlideDown var(--motion-standard) var(--ease-cinema) forwards;
+}
+
+@keyframes toastSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. ACCESSIBILITY COMPLIANCE: PREFERS-REDUCED-MOTION
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

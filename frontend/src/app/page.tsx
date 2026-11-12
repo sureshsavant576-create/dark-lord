@@ -98,14 +98,14 @@ export default function HomePage() {
                   console.error(e);
                 }
               }}
-              className="rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 transition shadow-sm"
+              className="btn-interactive rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 transition shadow-sm"
             >
               ⚡ 1-Click Demo Login &rarr;
             </button>
           </div>
 
           <div className="mt-8 grid gap-5 md:grid-cols-2">
-            <article className="flex flex-col justify-between rounded-2xl border border-indigo-500/30 bg-slate-950/70 p-6">
+            <article className="card-hover-lift flex flex-col justify-between rounded-2xl border border-indigo-500/30 bg-slate-950/70 p-6">
               <div>
                 <div className="mb-3 flex items-center justify-between text-xs">
                   <span className="font-mono text-indigo-300">PAGE 02 &middot; FOR COMPANIES</span>
@@ -118,13 +118,13 @@ export default function HomePage() {
               </div>
               <Link
                 href="/company"
-                className="mt-6 inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500"
+                className="btn-interactive mt-6 inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500"
               >
                 Open Company Vibes Studio &rarr;
               </Link>
             </article>
 
-            <article className="flex flex-col justify-between rounded-2xl border border-emerald-500/30 bg-slate-950/70 p-6">
+            <article className="card-hover-lift flex flex-col justify-between rounded-2xl border border-emerald-500/30 bg-slate-950/70 p-6">
               <div>
                 <div className="mb-3 flex items-center justify-between text-xs">
                   <span className="font-mono text-emerald-300">PAGE 03 &middot; FOR DEVELOPERS</span>
@@ -137,7 +137,7 @@ export default function HomePage() {
               </div>
               <Link
                 href="/check"
-                className="mt-6 inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500"
+                className="btn-interactive mt-6 inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500"
               >
                 Open Developer Match Check &rarr;
               </Link>
@@ -171,7 +171,7 @@ export default function HomePage() {
               {brands.map((b) => {
                 const locked = b.is_human_confirmed || b.status === "CONFIRMED";
                 return (
-                  <article key={b.brand_id} className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+                  <article key={b.brand_id} className="card-hover-lift flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
                     <div>
                       <div className="flex items-start justify-between gap-2">
                         <div>
