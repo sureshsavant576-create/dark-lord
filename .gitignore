@@ -31,6 +31,9 @@ data/storage/uploads/*
 !data/storage/uploads/.gitkeep
 data/storage/guidelines/*
 !data/storage/guidelines/.gitkeep
+data/backups/*.zip
+data/backups/*.tmp
+!data/backups/.gitkeep
 data/db/*.sqlite
 data/db/*.db
 data/db/*.json

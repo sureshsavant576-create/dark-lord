@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     GUIDELINES_DIR: Path = Field(default_factory=lambda: Path("data/storage/guidelines"))
     STATIC_DIR: Path = Field(default_factory=lambda: Path("backend/app/static"))
     DB_DIR: Path = Field(default_factory=lambda: Path("data/db"))
+    BACKUP_DIR: Path = Field(default_factory=lambda: Path("data/backups"))
 
     GEMINI_API_KEY: Optional[str] = Field(default=None, description="Google Gemini API Key")
     OPENAI_API_KEY: Optional[str] = Field(default=None, description="OpenAI API Key (optional fallback)")
@@ -46,7 +47,7 @@ class Settings(BaseSettings):
     )
 
     def init_directories(self) -> None:
-        for path in [self.DATA_DIR, self.STORAGE_DIR, self.UPLOADS_DIR, self.GUIDELINES_DIR, self.DB_DIR]:
+        for path in [self.DATA_DIR, self.STORAGE_DIR, self.UPLOADS_DIR, self.GUIDELINES_DIR, self.DB_DIR, self.BACKUP_DIR]:
             path.mkdir(parents=True, exist_ok=True)
 
     @property

@@ -70,6 +70,26 @@ class UserAccountService:
             USERS_DB_PATH.write_text("{}", encoding="utf-8")
         if not REVOKED_SESSIONS_PATH.exists():
             REVOKED_SESSIONS_PATH.write_text("[]", encoding="utf-8")
+        self._ensure_demo_user()
+
+    def _ensure_demo_user(self) -> None:
+        demo_email = "demo@sanket.ai"
+        with self._lock:
+            users = self._load_users()
+            has_demo = any(u.get("email") == demo_email for u in users.values())
+            if not has_demo:
+                user_id = f"user_{hashlib.sha256(demo_email.encode()).hexdigest()[:10]}"
+                hashed = self.hash_password("DemoJudge2026!")
+                record = UserRecord(
+                    user_id=user_id,
+                    email=demo_email,
+                    hashed_password=hashed,
+                    role=UserRole.ADMIN,
+                    org_id="apex-cloud",
+                )
+                users[user_id] = record.model_dump()
+                self._save_users(users)
+                logger.info("Initialized default demo administrator account: %s", demo_email)
 
     def _load_users(self) -> Dict[str, dict]:
         with self._lock:
