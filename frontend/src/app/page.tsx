@@ -110,7 +110,7 @@ export default function HomePage() {
                       localStorage.setItem("sanket_session_token", res.session_token);
                       localStorage.setItem("sanket_org_id", res.org_id);
                       refresh();
-                      window.location.href = "/company";
+                      window.location.href = "/company?brand=omnigpt_ai";
                     } catch (e) {
                       console.error(e);
                     }

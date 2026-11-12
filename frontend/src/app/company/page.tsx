@@ -37,7 +37,12 @@ export default function CompanyVibesPage() {
     refreshBrands().then((list) => {
       const params = new URLSearchParams(window.location.search);
       const qBrand = params.get("brand");
-      if (qBrand) selectBrand(qBrand, list);
+      if (qBrand) {
+        selectBrand(qBrand, list);
+      } else {
+        const omni = list.find((b: any) => b.brand_id === "omnigpt_ai" || b.brand_id === "omnigpt-ai");
+        if (omni) selectBrand(omni.brand_id, list);
+      }
     });
   }, []);
 

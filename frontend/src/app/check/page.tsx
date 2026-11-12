@@ -27,8 +27,13 @@ export default function DeveloperCheckPage() {
     const qBrand = params.get("brand");
     if (qBrand && arr.some((b) => b.brand_id === qBrand)) {
       setBrandId(qBrand);
-    } else if (arr.length && !brandId) {
-      setBrandId(arr[0].brand_id);
+    } else {
+      const omni = arr.find((b: any) => b.brand_id === "omnigpt_ai" || b.brand_id === "omnigpt-ai");
+      if (omni) {
+        setBrandId(omni.brand_id);
+      } else if (arr.length && !brandId) {
+        setBrandId(arr[0].brand_id);
+      }
     }
   }
 

@@ -1653,22 +1653,22 @@ function onSelectCompanyBrand(brandId) {
 function syncCompanyStudioForSession() {
   if (isDemoSession()) {
     state.company.selectedBrandId = 'omnigpt_ai';
-    state.company.name = 'Acme Technologies';
-    state.company.website = 'https://acme.com';
+    state.company.name = 'OmniGPT AI';
+    state.company.website = 'https://omnigpt.ai';
     state.company.description =
-      'Enterprise cloud infrastructure and intelligent cognitive workflows engineered for high-precision brand governance.';
+      'Frontier cognitive reasoning and generative neural intelligence engineered for human-aligned enterprise brand governance.';
     state.company.industry = 'Technology';
     state.company.size = '201 - 500';
-    state.company.traits = ['Modern', 'Professional', 'Trustworthy'];
+    state.company.traits = ['Modern', 'Innovative', 'Trustworthy'];
     state.company.tone = 'Confident';
     state.company.feeling = 'Reliable';
-    state.company.keywords = ['reliable', 'growth-focused', 'human'];
-    state.company.palette = ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'];
-    state.company.typography = 'Inter';
+    state.company.keywords = ['gimmicky', 'hallucinated claims', 'chaotic neon'];
+    state.company.palette = ['#0B132B', '#10A37F', '#1C2541', '#5BC0BE', '#F8FAFC'];
+    state.company.typography = 'Plus Jakarta Sans';
     state.company.logoUrl = '/static/brand/omni_ai_logo.svg';
     state.company.logoName = 'omni_ai_logo.svg';
     state.company.assets = [
-      { name: 'acme_brand_guidelines.pdf', size: '2.4 MB' },
+      { name: 'omnigpt_brand_guidelines.pdf', size: '2.4 MB' },
     ];
   } else {
     // Standard non-demo user: clean empty form
