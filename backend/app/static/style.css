@@ -456,17 +456,21 @@ body.is-home .page-shell {
   backdrop-filter: blur(12px);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   max-width: 480px;
+  cursor: pointer;
+  user-select: none;
   transition: padding 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .home-demo-credentials-badge:hover {
-  border-color: rgba(200, 169, 126, 0.55);
+  border-color: rgba(200, 169, 126, 0.65);
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.5), 0 0 15px rgba(200, 169, 126, 0.15);
 }
 
 .home-demo-credentials-badge.is-open {
   padding: 1.1rem 1.25rem;
   border-color: rgba(200, 169, 126, 0.65);
   box-shadow: 0 20px 42px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(200, 169, 126, 0.15);
+  cursor: default;
 }
 
 .demo-badge-header {
@@ -523,9 +527,9 @@ body.is-home .page-shell {
 }
 
 .demo-badge-chevron {
+  margin-left: 0.45rem;
   color: #c8a97e;
   font-size: 0.85rem;
-  margin-left: 0.2rem;
   line-height: 1;
   display: inline-flex;
   align-items: center;
@@ -589,6 +593,21 @@ body.is-home .page-shell {
 .demo-cred-item:hover {
   border-color: rgba(200, 169, 126, 0.7);
   background: rgba(20, 26, 36, 0.95);
+}
+
+.demo-cred-item.copied {
+  border-color: rgba(16, 185, 129, 0.8) !important;
+  background: rgba(16, 185, 129, 0.16) !important;
+  color: #34d399 !important;
+}
+
+.demo-cred-item.copied .demo-cred-val {
+  color: #6ee7b7 !important;
+}
+
+.demo-cred-item.copied .demo-cred-copy-icon {
+  color: #10b981 !important;
+  opacity: 1 !important;
 }
 
 .demo-cred-label {

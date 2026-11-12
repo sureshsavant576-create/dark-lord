@@ -798,6 +798,7 @@ function toggleHomeDemoDropdown(forceState) {
     btn.setAttribute('aria-expanded', String(isOpen));
   }
 }
+window.toggleHomeDemoDropdown = toggleHomeDemoDropdown;
 
 /* ----------------------------------------------------------------------------
  * Auth Modal Handlers (Overlay only, never a 4th page)

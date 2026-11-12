@@ -9,6 +9,7 @@ export default function HomePage() {
   const [brands, setBrands] = useState<any[]>([]);
   const [providers, setProviders] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
+  const [demoOpen, setDemoOpen] = useState(false);
 
   async function refresh() {
     setLoading(true);
@@ -68,40 +69,58 @@ export default function HomePage() {
             Companies lock their visual palette, tone, and brand rules in one studio. Developers test designs, posters, PDFs, or copy directly against them.
           </p>
 
-          {/* Quick Demo Credentials Banner */}
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-indigo-500/30 bg-indigo-950/40 p-4">
-            <div className="flex flex-wrap items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5 font-semibold text-indigo-200">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                Demo Credentials:
-              </span>
-              <span className="font-mono text-slate-300">
-                Email: <strong className="text-white select-all">demo@sanket.ai</strong>
-              </span>
-              <span className="text-slate-500">&bull;</span>
-              <span className="font-mono text-slate-300">
-                Password: <strong className="text-white select-all">DemoJudge2026!</strong>
-              </span>
-              <span className="text-slate-500">&bull;</span>
-              <span className="font-mono text-slate-400">Role: Administrator (apex-cloud)</span>
-            </div>
+          {/* Quick Demo Credentials Dropdown */}
+          <div className="mt-6 rounded-2xl border border-indigo-500/30 bg-indigo-950/40 p-4 transition-all">
             <button
               type="button"
-              onClick={async () => {
-                try {
-                  const res = await api.login("demo@sanket.ai", "DemoJudge2026!");
-                  localStorage.setItem("sanket_session_token", res.session_token);
-                  localStorage.setItem("sanket_org_id", res.org_id);
-                  refresh();
-                  window.location.href = "/company";
-                } catch (e) {
-                  console.error(e);
-                }
-              }}
-              className="btn-interactive rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 transition shadow-sm"
+              onClick={() => setDemoOpen(!demoOpen)}
+              className="flex w-full items-center justify-between text-left cursor-pointer group"
+              aria-expanded={demoOpen}
+              title="Click to toggle demo credentials"
             >
-              ⚡ 1-Click Demo Login &rarr;
+              <div className="flex items-center gap-2.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-indigo-200 group-hover:text-white transition">
+                  DEMO ACCOUNT CREDENTIALS
+                </span>
+              </div>
+              <span className={`font-mono text-xs text-indigo-400 transition-transform duration-200 ${demoOpen ? "rotate-180" : ""}`}>
+                ▼
+              </span>
             </button>
+
+            {demoOpen && (
+              <div className="mt-4 pt-3.5 border-t border-indigo-500/20 flex flex-wrap items-center justify-between gap-3 text-xs animate-in fade-in duration-200">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="font-mono text-slate-300">
+                    Email: <strong className="text-white select-all">demo@sanket.ai</strong>
+                  </span>
+                  <span className="text-slate-500">&bull;</span>
+                  <span className="font-mono text-slate-300">
+                    Password: <strong className="text-white select-all">DemoJudge2026!</strong>
+                  </span>
+                  <span className="text-slate-500">&bull;</span>
+                  <span className="font-mono text-slate-400">Role: Administrator (apex-cloud)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const res = await api.login("demo@sanket.ai", "DemoJudge2026!");
+                      localStorage.setItem("sanket_session_token", res.session_token);
+                      localStorage.setItem("sanket_org_id", res.org_id);
+                      refresh();
+                      window.location.href = "/company";
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }}
+                  className="btn-interactive rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 transition shadow-sm"
+                >
+                  ⚡ 1-Click Demo Login &rarr;
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="mt-8 grid gap-5 md:grid-cols-2">

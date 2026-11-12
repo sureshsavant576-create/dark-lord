@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css?v=6">
+  <link rel="stylesheet" href="/static/style.css?v=8">
 </head>
 <body>
   <div class="ambient-grid" aria-hidden="true"></div>
@@ -64,21 +64,60 @@
               </div>
 
               <!-- Demo Account Banner for Evaluators & Judges (Collapsible Dropdown) -->
-              <div class="home-demo-credentials-badge" id="home-demo-badge">
-                <button type="button" class="demo-badge-header" onclick="toggleHomeDemoDropdown()" aria-expanded="false" aria-controls="home-demo-dropdown-body" title="Click to toggle demo credentials">
+              <script>
+                function toggleHomeDemoDropdown(forceState) {
+                  const badge = document.getElementById('home-demo-badge');
+                  if (!badge) return;
+                  const isOpen = forceState !== undefined ? forceState : !badge.classList.contains('is-open');
+                  if (isOpen) {
+                    badge.classList.add('is-open');
+                  } else {
+                    badge.classList.remove('is-open');
+                  }
+                  const btn = badge.querySelector('.demo-badge-header');
+                  if (btn) {
+                    btn.setAttribute('aria-expanded', String(isOpen));
+                  }
+                }
+                function copyDemoCredential(btn, text, label) {
+                  label = label || 'Credential';
+                  if (typeof copyDemoText === 'function') {
+                    copyDemoText(text, label);
+                  } else {
+                    try {
+                      if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text);
+                      }
+                    } catch (_) {}
+                  }
+                  if (btn) {
+                    btn.classList.add('copied');
+                    const icon = btn.querySelector('.demo-cred-copy-icon') || btn.querySelector('.copy-hint-pill');
+                    const orig = icon ? icon.textContent : '';
+                    if (icon) icon.textContent = '✓';
+                    setTimeout(function() {
+                      btn.classList.remove('copied');
+                      if (icon) icon.textContent = orig || '📋';
+                    }, 1600);
+                  }
+                }
+                window.toggleHomeDemoDropdown = toggleHomeDemoDropdown;
+                window.copyDemoCredential = copyDemoCredential;
+              </script>
+              <div class="home-demo-credentials-badge" id="home-demo-badge" onclick="if (!this.classList.contains('is-open')) toggleHomeDemoDropdown(true);">
+                <button type="button" class="demo-badge-header" onclick="event.stopPropagation(); toggleHomeDemoDropdown();" aria-expanded="false" aria-controls="home-demo-dropdown-body" title="Click to view demo account credentials">
                   <span class="demo-badge-pulse" aria-hidden="true"></span>
                   <span class="demo-badge-title">DEMO ACCOUNT CREDENTIALS</span>
-                  <span class="demo-badge-role">Admin Clearance</span>
                   <span class="demo-badge-chevron" aria-hidden="true">▾</span>
                 </button>
-                <div class="demo-badge-body" id="home-demo-dropdown-body">
+                <div class="demo-badge-body" id="home-demo-dropdown-body" onclick="event.stopPropagation();">
                   <div class="demo-badge-creds">
-                    <button type="button" class="demo-cred-item" onclick="copyDemoText('demo@sanket.ai', 'Email')" title="Click to copy email">
+                    <button type="button" class="demo-cred-item" onclick="copyDemoCredential(this, 'demo@sanket.ai', 'Email')" title="Click to copy email">
                       <span class="demo-cred-label">Email:</span>
                       <span class="demo-cred-val">demo@sanket.ai</span>
                       <span class="demo-cred-copy-icon" aria-hidden="true">📋</span>
                     </button>
-                    <button type="button" class="demo-cred-item" onclick="copyDemoText('DemoJudge2026!', 'Password')" title="Click to copy password">
+                    <button type="button" class="demo-cred-item" onclick="copyDemoCredential(this, 'DemoJudge2026!', 'Password')" title="Click to copy password">
                       <span class="demo-cred-label">Password:</span>
                       <span class="demo-cred-val">DemoJudge2026!</span>
                       <span class="demo-cred-copy-icon" aria-hidden="true">📋</span>
@@ -1482,6 +1521,6 @@
 
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <script src="/static/app.js?v=6"></script>
+  <script src="/static/app.js?v=8"></script>
 </body>
 </html>
