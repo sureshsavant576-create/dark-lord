@@ -275,11 +275,11 @@ async def extract_palette_from_image(file: UploadFile = File(...)):
 @router.post("/draft", response_model=BrandProfile)
 async def create_brand_draft(
     brand_name: str = Form(...),
-    personality: str = Form(...),
-    mood: str = Form(...),
-    communication_tone: str = Form(...),
-    target_audience: str = Form(...),
-    visual_style: str = Form(...),
+    personality: str = Form(default="Modern, Professional"),
+    mood: str = Form(default="Reliable, Inspiring"),
+    communication_tone: str = Form(default="Confident, Direct"),
+    target_audience: str = Form(default="General customers & brand stakeholders"),
+    visual_style: str = Form(default="Clean Contemporary Design"),
     palette: str = Form(default="[]", description="JSON array or comma-separated hex strings"),
     disallowed_elements: str = Form(default="[]", description="JSON array or comma-separated terms"),
     tagline_or_mission: Optional[str] = Form(default=""),
@@ -288,6 +288,13 @@ async def create_brand_draft(
     reference_files: Optional[List[UploadFile]] = File(default=None),
     user: UserContext = Depends(get_current_user)
 ) -> BrandProfile:
+    clean_brand_name = brand_name.strip()
+    clean_personality = personality.strip() if personality and personality.strip() else "Modern, Professional"
+    clean_mood = mood.strip() if mood and mood.strip() else "Reliable, Inspiring"
+    clean_communication_tone = communication_tone.strip() if communication_tone and communication_tone.strip() else "Confident, Direct"
+    clean_target_audience = target_audience.strip() if target_audience and target_audience.strip() else "General customers & brand stakeholders"
+    clean_visual_style = visual_style.strip() if visual_style and visual_style.strip() else "Clean Contemporary Design"
+
     try:
         parsed_palette = json.loads(palette) if palette.strip().startswith("[") else [p.strip() for p in palette.split(",") if p.strip()]
     except Exception:
@@ -299,12 +306,12 @@ async def create_brand_draft(
         parsed_disallowed = [d.strip() for d in disallowed_elements.split(",") if d.strip()]
 
     questionnaire = BrandQuestionnaire(
-        brand_name=brand_name,
-        personality=personality,
-        mood=mood,
-        communication_tone=communication_tone,
-        target_audience=target_audience,
-        visual_style=visual_style,
+        brand_name=clean_brand_name,
+        personality=clean_personality,
+        mood=clean_mood,
+        communication_tone=clean_communication_tone,
+        target_audience=clean_target_audience,
+        visual_style=clean_visual_style,
         typography=typography or "",
         logo_url=logo_url or "",
         palette=parsed_palette,

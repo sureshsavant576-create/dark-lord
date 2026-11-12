@@ -455,8 +455,23 @@ async function apiFetch(url, options = {}, isRetry = false) {
         return await apiFetch(url, { ...options, headers: guestHeaders }, true);
       }
     }
-    const msg = (data && (data.detail || data.message)) || `Request failed (${resp.status})`;
-    const err = new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+    let msg = `Request failed (${resp.status})`;
+    if (data) {
+      if (typeof data.detail === 'string') {
+        msg = data.detail;
+      } else if (Array.isArray(data.detail)) {
+        const missingFields = data.detail
+          .map(d => (d.loc && d.loc[d.loc.length - 1]) || d.msg)
+          .filter(Boolean)
+          .join(', ');
+        msg = missingFields ? `Please complete required fields: ${missingFields}` : 'Validation error';
+      } else if (typeof data.message === 'string') {
+        msg = data.message;
+      } else if (data.detail) {
+        msg = JSON.stringify(data.detail);
+      }
+    }
+    const err = new Error(msg);
     err.status = resp.status;
     err.payload = data;
     throw err;
@@ -1699,17 +1714,26 @@ async function saveCompleteCompanySetup() {
       clearAllStoredSessions();
     }
 
+    const personalityArr = (state.company.traits && state.company.traits.length > 0)
+      ? state.company.traits
+      : ['Modern', 'Professional'];
+    const personalityStr = personalityArr.join(', ');
+    const moodStr = state.company.feeling || 'Reliable';
+    const toneStr = state.company.tone || 'Confident & Direct';
+    const audienceStr = state.company.industry ? `Audience in ${state.company.industry}` : 'General customers & brand stakeholders';
+    const visualStyleStr = personalityStr;
+
     const fd = new FormData();
     fd.append('brand_name', name);
-    fd.append('personality', (state.company.traits || []).join(', '));
-    fd.append('mood', state.company.feeling || '');
-    fd.append('communication_tone', state.company.tone || '');
-    fd.append('target_audience', state.company.industry ? `Audience in ${state.company.industry}` : '');
-    fd.append('visual_style', (state.company.traits || []).join(', '));
+    fd.append('personality', personalityStr);
+    fd.append('mood', moodStr);
+    fd.append('communication_tone', toneStr);
+    fd.append('target_audience', audienceStr);
+    fd.append('visual_style', visualStyleStr);
     fd.append('palette', JSON.stringify(state.company.palette || ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C']));
     fd.append('disallowed_elements', JSON.stringify(state.company.keywords || []));
     fd.append('tagline_or_mission', state.company.description || '');
-    fd.append('typography', state.company.typography || '');
+    fd.append('typography', state.company.typography || 'Inter');
     fd.append('logo_url', state.company.logoUrl || '');
 
     // Persist all attached reference files
@@ -1729,12 +1753,12 @@ async function saveCompleteCompanySetup() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         brand_id: brandId,
-        personality: state.company.traits || [],
-        mood: state.company.feeling ? [state.company.feeling] : [],
-        communication_tone: state.company.tone ? [state.company.tone] : [],
-        visual_style: state.company.traits || [],
-        typography: state.company.typography ? [state.company.typography] : [],
-        target_audience: state.company.industry || '',
+        personality: personalityArr,
+        mood: [moodStr],
+        communication_tone: [toneStr],
+        visual_style: personalityArr,
+        typography: state.company.typography ? [state.company.typography] : ['Inter'],
+        target_audience: audienceStr,
         approved_palette: state.company.palette || ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'],
         disallowed_elements: state.company.keywords || [],
         mission_statement: state.company.description || '',

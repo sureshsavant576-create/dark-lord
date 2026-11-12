@@ -11,11 +11,11 @@ class ProfileStatus(str, Enum):
 
 class BrandQuestionnaire(BaseModel):
     brand_name: str = Field(description="Official name of the company / brand")
-    personality: str = Field(description="e.g. Youthful, Prestigious, Innovative, Rugged")
-    mood: str = Field(description="e.g. Energetic, Calm, Inspiring, Serious")
-    communication_tone: str = Field(description="e.g. Friendly, Formal, Playful, Direct")
-    target_audience: str = Field(description="e.g. Tech-savvy professionals, Gen-Z students")
-    visual_style: str = Field(description="e.g. Minimalist, Modern, High-contrast, Retro")
+    personality: str = Field(default="Modern, Professional", description="e.g. Youthful, Prestigious, Innovative, Rugged")
+    mood: str = Field(default="Reliable, Inspiring", description="e.g. Energetic, Calm, Inspiring, Serious")
+    communication_tone: str = Field(default="Confident, Direct", description="e.g. Friendly, Formal, Playful, Direct")
+    target_audience: str = Field(default="General customers & brand stakeholders", description="e.g. Tech-savvy professionals, Gen-Z students")
+    visual_style: str = Field(default="Clean Contemporary Design", description="e.g. Minimalist, Modern, High-contrast, Retro")
     typography: Optional[str] = Field(default="", description="e.g. Modern Sans-Serif, Inter, Playfair Display")
     palette: List[str] = Field(default_factory=list, description="Approved brand HEX colors, e.g. ['#0055FF', '#FFCC00']")
     disallowed_elements: List[str] = Field(default_factory=list, description="Explicit avoidances, forbidden words, or aesthetics")
@@ -67,14 +67,14 @@ class BrandProfile(BaseModel):
 
 class BrandProfileConfirmationRequest(BaseModel):
     brand_id: str
-    personality: List[str]
-    mood: List[str]
-    communication_tone: List[str]
-    visual_style: List[str]
+    personality: List[str] = Field(default_factory=lambda: ["Modern", "Professional"])
+    mood: List[str] = Field(default_factory=lambda: ["Reliable"])
+    communication_tone: List[str] = Field(default_factory=lambda: ["Confident", "Direct"])
+    visual_style: List[str] = Field(default_factory=lambda: ["Clean Contemporary Design"])
     typography: Optional[List[str]] = Field(default_factory=list)
-    target_audience: str
-    approved_palette: List[str]
-    disallowed_elements: List[str]
+    target_audience: str = Field(default="General customers & brand stakeholders")
+    approved_palette: List[str] = Field(default_factory=lambda: ["#1C2A38", "#C4A962", "#D9C59A", "#3C4D5C"])
+    disallowed_elements: List[str] = Field(default_factory=list)
     key_values: List[str] = Field(default_factory=list)
     mission_statement: Optional[str] = Field(default="")
     confirmed_by: str = Field(default="Brand Manager", description="Name or email of the approver")
