@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     SUPABASE_KNOWLEDGE_TABLE: str = Field(default="brand_knowledge_items", description="Supabase table for Brand Knowledge Base with RLS")
     SUPABASE_RLS_ENABLED: bool = Field(default=True, description="Enforce Row Level Security on Supabase knowledge queries")
 
+    ALLOWED_ORIGINS: str = Field(default="*", description="Comma-separated list of allowed CORS origins")
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

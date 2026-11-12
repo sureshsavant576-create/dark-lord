@@ -106,9 +106,9 @@ Every issue MUST contain EXACTLY these fields:
 
         models_to_try = list(dict.fromkeys([
             settings.DEFAULT_TEXT_MODEL,
-            "gemini-3.1-flash-lite",
-            "gemini-3.8-flash",
-            "gemini-3.5-flash"
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash"
         ]))
 
         response = None
@@ -131,9 +131,8 @@ Every issue MUST contain EXACTLY these fields:
                 continue
 
         if not response or not response.text:
-            if last_error:
-                raise last_error
-            return []
+            logger.warning("All remote Gemini text models unavailable. Falling back to deterministic Knowledge Base rules engine.")
+            return self.analyze_text_offline(text=copy_text, knowledge_context=knowledge_context)
 
         raw_json = json.loads(response.text)
         items = raw_json.get("findings", [])

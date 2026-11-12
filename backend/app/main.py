@@ -130,9 +130,25 @@ async def get_uploaded_storage_file(
     clean_name = sanitize_filename(file_name)
     target_path = safe_join_path(settings.UPLOADS_DIR, clean_name)
     if not target_path.exists() or not target_path.is_file():
-        return Response(status_code=404, content="File not found")
+        # Search across tenant uploads folders
+        found = False
+        base_tenants = settings.STORAGE_DIR / "tenants"
+        if base_tenants.exists():
+            for tenant_folder in base_tenants.iterdir():
+                cand = tenant_folder / "uploads" / clean_name
+                if cand.exists() and cand.is_file():
+                    target_path = cand
+                    found = True
+                    break
+        if not found:
+            sample_candidate = STATIC_DIR / "samples" / clean_name
+            if sample_candidate.exists() and sample_candidate.is_file():
+                target_path = sample_candidate
+                found = True
+        if not found:
+            return Response(status_code=404, content="File not found")
 
-    is_sample = any(k in clean_name.lower() for k in ("sample", "compliant", "nike", "grb", "preview"))
+    is_sample = any(k in clean_name.lower() for k in ("sample", "compliant", "nike", "grb", "preview", "creative"))
     if not is_sample:
         auth_hdr = request.headers.get("Authorization") or ""
         token = auth_hdr.split("Bearer ", 1)[1].strip() if auth_hdr.startswith("Bearer ") else None
@@ -185,6 +201,7 @@ async def get_favicon():
     if fav_path.exists():
         return FileResponse(fav_path, media_type="image/svg+xml")
     return Response(status_code=404)
+
 
 @app.get("/dashboard")
 @app.get("/brand-identity")

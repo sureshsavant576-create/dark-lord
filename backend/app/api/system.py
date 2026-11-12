@@ -8,6 +8,7 @@ from backend.app.core.config import settings
 router = APIRouter(tags=["System"])
 
 @router.get("/health")
+@router.get("/system/health")
 def get_health() -> Dict[str, Any]:
     return {
         "status": "healthy",

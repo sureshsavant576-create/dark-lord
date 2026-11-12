@@ -6035,6 +6035,18 @@ function initAppRouter() {
     }
   });
 
+  // Restore persisted session user info if present
+  const savedEmail = localStorage.getItem('sanket_user_email');
+  const savedRole = localStorage.getItem('sanket_user_role');
+  if (savedEmail) {
+    const nameEl = document.getElementById('topbar-user-name');
+    const roleEl = document.getElementById('topbar-user-role');
+    const avatarEl = document.getElementById('topbar-user-avatar');
+    if (nameEl) nameEl.textContent = savedEmail.includes('demo') ? 'Demo Judge (Compliance Lead)' : savedEmail;
+    if (roleEl && savedRole) roleEl.textContent = savedRole;
+    if (avatarEl) avatarEl.textContent = savedEmail.includes('demo') ? 'DJ' : savedEmail.substring(0, 2).toUpperCase();
+  }
+
   // Load organizations into topbar selector
   populateTopbarOrganizations();
 }
@@ -6946,6 +6958,7 @@ function setReviewModality(mode) {
     if (textContainer) textContainer.classList.remove("hidden");
     if (btnFile) btnFile.classList.remove("active");
     if (btnText) btnText.classList.add("active");
+    clearReviewFile();
   }
 }
 window.setReviewModality = setReviewModality;
@@ -6994,10 +7007,12 @@ async function handleContentReviewSubmit(e) {
 
   const fileInput = document.getElementById("review-file-input");
   const copyInput = document.getElementById("review-copy-input");
+  const btnText = document.getElementById("btn-modality-text");
+  const isTextMode = btnText && btnText.classList.contains("active");
 
   try {
     let report = null;
-    if (fileInput && fileInput.files && fileInput.files[0]) {
+    if (!isTextMode && fileInput && fileInput.files && fileInput.files[0]) {
       const formData = new FormData();
       formData.append("file", fileInput.files[0]);
       formData.append("brand_id", brandId);
@@ -7312,6 +7327,20 @@ async function loginAsDemoJudge() {
   }
 }
 window.loginAsDemoJudge = loginAsDemoJudge;
+
+function logoutUser() {
+  localStorage.removeItem('sanket_session_token');
+  localStorage.removeItem('sanket_user_role');
+  localStorage.removeItem('sanket_user_email');
+  const nameEl = document.getElementById('topbar-user-name');
+  const roleEl = document.getElementById('topbar-user-role');
+  const avatarEl = document.getElementById('topbar-user-avatar');
+  if (nameEl) nameEl.textContent = 'Guest User';
+  if (roleEl) roleEl.textContent = 'Unauthenticated';
+  if (avatarEl) avatarEl.textContent = 'GU';
+  showToast('Logged out successfully. Session ended.', 'info');
+}
+window.logoutUser = logoutUser;
 
 async function handleAuthSubmit(e) {
   e.preventDefault();
