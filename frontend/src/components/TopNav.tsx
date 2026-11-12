@@ -183,14 +183,6 @@ export default function TopNav({ active, onAuthChange }: TopNavProps) {
             })}
           </nav>
 
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-slate-200 hover:border-slate-700"
-          >
-            <span className={`h-2 w-2 rounded-full ${signedIn ? "bg-emerald-400" : "bg-amber-400"}`} />
-            <span>{sessionOrg}</span>
-          </button>
         </div>
       </header>
 

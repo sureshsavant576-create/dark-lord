@@ -62,10 +62,40 @@ def test_preflight_scanner(tmp_path):
     assert res["status"] == "PREFLIGHT_DIAGNOSED"
     assert res["color_temperature"]["category"] in ["WARM", "NEUTRAL", "COOL"]
     assert "density_ratio" in res["whitespace"]
+    assert "percentage" in res["whitespace"]
     assert len(res["dominant_swatches"]) > 0
     assert "predicted_vibe" in res
     assert res["brand_alignment"] is not None
     assert "alignment_score" in res["brand_alignment"]
+
+    # Test Visual Vibes: Cyberpunk, Minimalist, Bold
+    # 1. Cyberpunk: dark background with neon cyan/magenta accents
+    cyber_path = tmp_path / "cyberpunk_sample.png"
+    cyber_img = Image.new("RGB", (120, 120), color=(15, 12, 28))
+    # Draw neon cyan block
+    for x in range(30, 90):
+        for y in range(30, 90):
+            cyber_img.putpixel((x, y), (0, 240, 255))
+    cyber_img.save(cyber_path)
+    res_cyber = preflight_scanner_service.analyze_image_preflight(cyber_path)
+    assert res_cyber["predicted_style"]["style"] in ["Cyberpunk", "Bold"]
+
+    # 2. Minimalist: large clean whitespace
+    mini_path = tmp_path / "minimalist_sample.png"
+    mini_img = Image.new("RGB", (120, 120), color=(250, 250, 250))
+    for x in range(50, 60):
+        for y in range(50, 60):
+            mini_img.putpixel((x, y), (20, 20, 20))
+    mini_img.save(mini_path)
+    res_mini = preflight_scanner_service.analyze_image_preflight(mini_path)
+    assert res_mini["predicted_style"]["style"] == "Minimalist"
+
+    # 3. Bold: high saturation vibrant contrast
+    bold_path = tmp_path / "bold_sample.png"
+    bold_img = Image.new("RGB", (120, 120), color=(255, 20, 20))
+    bold_img.save(bold_path)
+    res_bold = preflight_scanner_service.analyze_image_preflight(bold_path)
+    assert res_bold["predicted_style"]["style"] in ["Bold", "Playful"]
 
 
 def test_creative_auto_remediation(tmp_path):

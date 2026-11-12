@@ -131,9 +131,9 @@ class PreflightScannerService:
         if whitespace_pct >= 48.0 and saturation < 60:
             predicted_style = "Minimalist"
             style_explanation = "High negative whitespace, restrained color palette, and spacious typography breathing room."
-        elif mean_lum < 55 and (mean_b > 90 or (mean_r < 60 and mean_g > 100)):
-            predicted_style = "Futuristic"
-            style_explanation = "Dark background canvas punctuated by high-contrast neon/cyan accents."
+        elif mean_lum < 75 and (mean_b > 75 or (mean_r < 80 and mean_g > 85) or saturation > 55):
+            predicted_style = "Cyberpunk"
+            style_explanation = "Dark background canvas punctuated by high-contrast neon/cyan accents, deep noir shadows, and high visual saturation."
         elif (mean_lum < 50 or mean_lum > 225) and contrast_ratio >= 8.0 and saturation < 50:
             predicted_style = "Luxury"
             style_explanation = "Monochrome or deep tonal canvas with extreme contrast and refined elegance."
@@ -206,6 +206,7 @@ class PreflightScannerService:
             "whitespace": {
                 "density_ratio": whitespace_ratio,
                 "percentage": whitespace_pct,
+                "score": whitespace_pct,
                 "label": f"{whitespace_pct}% Negative Space"
             },
             "layout": {

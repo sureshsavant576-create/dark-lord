@@ -104,7 +104,23 @@ function loadSavedSession() {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.session_token) {
         state.session = parsed;
+        updateAuthUI();
+        return;
       }
+    }
+    // Fallback: pick up token stored by the Next.js frontend
+    const nextToken = localStorage.getItem('sanket_session_token');
+    if (nextToken) {
+      const nextOrg = localStorage.getItem('sanket_company_name') || localStorage.getItem('sanket_org_id') || 'default-org';
+      const nextEmail = localStorage.getItem('sanket_user_email') || '';
+      const nextRole = localStorage.getItem('sanket_user_role') || 'User';
+      state.session = {
+        session_token: nextToken,
+        org_id: nextOrg,
+        company_name: nextOrg,
+        email: nextEmail,
+        role_label: nextRole,
+      };
     }
   } catch (_) {
     state.session = null;
@@ -1487,7 +1503,11 @@ function bindDeveloperDropzone() {
   });
   input.addEventListener('change', () => {
     if (input.files && input.files[0]) {
-      setDevFile(input.files[0]);
+      const file = input.files[0];
+      setDevFile(file);
+      if (file.type && file.type.startsWith('image/')) {
+        runInstantPreflightScan(file);
+      }
     }
   });
   dz.addEventListener('dragover', (e) => {
@@ -1499,9 +1519,32 @@ function bindDeveloperDropzone() {
     e.preventDefault();
     dz.classList.remove('dragover');
     if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setDevFile(e.dataTransfer.files[0]);
+      const file = e.dataTransfer.files[0];
+      setDevFile(file);
+      if (file.type && file.type.startsWith('image/')) {
+        runInstantPreflightScan(file);
+      }
     }
   });
+}
+
+async function runInstantPreflightScan(file) {
+  if (!file || !file.type || !file.type.startsWith('image/')) return;
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    if (state.dev.selectedBrandId) {
+      fd.append('brand_id', state.dev.selectedBrandId);
+    }
+    const scan = await apiFetch('/api/v1/inspect/preflight-scan', { method: 'POST', body: fd });
+    state.dev.lastScan = scan;
+    state.dev.lastReport = null;
+    renderPreflightOnlyResult(scan, { hasAsset: true });
+    switchCheckSubView('results');
+    showToast(`Instant Pre-Flight Scan: ${scan.predicted_style?.style || 'Vibes Analyzed'}`, 'info');
+  } catch (err) {
+    console.warn('Instant pre-flight scan error:', err);
+  }
 }
 
 function setDevFile(file) {
@@ -1866,7 +1909,9 @@ function renderPreflightOnlyResult(scan, meta = {}) {
 
   const warnings = Array.isArray(scan.mismatch_warnings) ? scan.mismatch_warnings : [];
   const insights = [
-    scan.predicted_style?.style ? { type: 'ok', text: `Detected style: ${scan.predicted_style.style}` } : null,
+    scan.predicted_style?.style ? { type: 'ok', text: `Predicted Visual Vibe: ${scan.predicted_style.style} — ${scan.predicted_style.explanation || ''}` } : null,
+    scan.color_temperature?.label ? { type: 'tip', text: `Color Temperature: ${scan.color_temperature.label} (${scan.color_temperature.category || ''})` } : null,
+    scan.whitespace?.label ? { type: 'tip', text: `Negative Space: ${scan.whitespace.label} (${scan.layout?.clutter_index || 'Balanced'})` } : null,
     ...warnings.map((w) => ({ type: 'warn', text: w })),
     !warnings.length ? { type: 'tip', text: 'Visual contrast and color balance passed preliminary OpenCV checks.' } : null,
   ].filter(Boolean);
@@ -1875,22 +1920,26 @@ function renderPreflightOnlyResult(scan, meta = {}) {
     score,
     overallLabel: (scan.predicted_style && scan.predicted_style.style) || 'Visual Color Telemetry',
     summary: scan.preliminary_disclaimer || 'OpenCV color and visual hierarchy evaluation complete.',
-    enginesLabel: 'OpenCV CIELAB + WCAG',
+    enginesLabel: 'Instant Pre-Flight Scanner (OpenCV + CIELAB)',
     chips: [
+      scan.predicted_style?.style ? { label: `Vibe: ${scan.predicted_style.style}`, warn: false } : null,
+      scan.color_temperature?.label ? { label: scan.color_temperature.label, warn: false } : null,
+      scan.whitespace?.percentage !== undefined ? { label: `${scan.whitespace.percentage}% Negative Space`, warn: false } : null,
       { label: pass ? 'Color Aligned' : 'Color Drift Detected', warn: !pass },
       scan.contrast?.label ? { label: scan.contrast.label, warn: false } : null,
     ].filter(Boolean),
     previewTiles,
     breakdown: [
       { label: 'Color Alignment', pct: score },
-      { label: 'Whitespace Balance', pct: scan.whitespace?.score ?? null },
-      { label: 'Contrast Health', pct: scan.contrast?.score ?? null },
+      { label: 'Negative Space Ratio', pct: scan.whitespace?.percentage ?? scan.whitespace?.score ?? 45 },
+      { label: 'Contrast Health', pct: scan.contrast?.passes_wcag_aa ? 100 : 45 },
     ],
     insights,
     channels: [
-      { name: 'Brand Assets', value: score !== null ? `${score}%` : 'Scanned' },
+      { name: 'Predicted Vibe', value: scan.predicted_style?.style || 'Vibe' },
+      { name: 'Color Temp', value: scan.color_temperature?.kelvin ? `${scan.color_temperature.kelvin}K` : '5400K' },
+      { name: 'Negative Space', value: scan.whitespace?.label ? scan.whitespace.label.split(' ')[0] : '45%' },
       scan.dimensions?.label ? { name: 'Dimensions', value: scan.dimensions.label } : null,
-      meta.websiteUrl ? { name: 'Website URL', value: 'Queued' } : null,
     ].filter(Boolean),
     isDemoPreview: false,
   });

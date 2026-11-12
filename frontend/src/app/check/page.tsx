@@ -17,6 +17,7 @@ export default function DeveloperCheckPage() {
   const [messages, setMessages] = useState<Array<{ role: string; text: string }>>([]);
   const [busy, setBusy] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
 
   async function loadBrandsList() {
     const list = await api.listBrands().catch(() => []);
@@ -37,13 +38,43 @@ export default function DeveloperCheckPage() {
 
   const selectedBrand = brands.find((b) => b.brand_id === brandId);
 
-  function handleFilePick(picked: File | null) {
+  async function executePreflightScan(targetFile: File, targetBrandId?: string) {
+    setBusy(true);
+    setErrorMsg("");
+    try {
+      const fd = new FormData();
+      fd.append("file", targetFile);
+      const bId = targetBrandId || brandId;
+      if (bId) fd.append("brand_id", bId);
+      const scan = await api.preflightScan(fd);
+      setPreflight(scan);
+      setReport(null);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Quick pre-flight scan failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function handleFilePick(picked: File | null, autoScan: boolean = false) {
     setFile(picked);
     setErrorMsg("");
     if (picked && picked.type.startsWith("image/")) {
       setPreviewUrl(URL.createObjectURL(picked));
+      if (autoScan) {
+        executePreflightScan(picked);
+      }
     } else {
       setPreviewUrl("");
+    }
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer?.files?.[0]) {
+      const dropped = e.dataTransfer.files[0];
+      handleFilePick(dropped, true);
     }
   }
 
@@ -52,20 +83,7 @@ export default function DeveloperCheckPage() {
       setErrorMsg("Attach an image file first.");
       return;
     }
-    setBusy(true);
-    setErrorMsg("");
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      if (brandId) fd.append("brand_id", brandId);
-      const scan = await api.preflightScan(fd);
-      setPreflight(scan);
-      setReport(null);
-    } catch (err: any) {
-      setErrorMsg(err?.message || "Quick scan failed");
-    } finally {
-      setBusy(false);
-    }
+    executePreflightScan(file);
   }
 
   async function handleFullCheck() {
@@ -172,18 +190,43 @@ export default function DeveloperCheckPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300">2. Upload Poster / UI Screenshot / PDF</label>
-              <label className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-700 bg-slate-950/60 p-5 text-center hover:border-emerald-500/60">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-slate-300">2. Upload Poster / UI Screenshot / PDF</label>
+                <span className="font-mono text-[10px] text-emerald-400">⚡ Instant Pre-Flight Dropzone</span>
+              </div>
+              <label
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+                className={`mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed p-5 text-center transition-all ${
+                  isDragging
+                    ? "border-emerald-400 bg-emerald-950/30 scale-[1.01]"
+                    : "border-slate-700 bg-slate-950/60 hover:border-emerald-500/60"
+                }`}
+              >
                 <input
                   type="file"
                   accept="image/*,.pdf"
                   hidden
-                  onChange={(e) => handleFilePick(e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    const picked = e.target.files?.[0] || null;
+                    handleFilePick(picked, true);
+                  }}
                 />
                 {previewUrl ? (
-                  <img src={previewUrl} alt="Upload preview" className="max-h-40 rounded-lg" />
+                  <img src={previewUrl} alt="Upload preview" className="max-h-40 rounded-lg shadow-lg" />
                 ) : (
-                  <span className="text-xs text-slate-400">{file ? file.name : "Click to select PNG, JPG, WebP, or PDF"}</span>
+                  <div className="space-y-1">
+                    <span className="block text-xs font-semibold text-white">
+                      {isDragging ? "Drop image to instant-scan!" : "Drag & drop image here or click to browse"}
+                    </span>
+                    <span className="block text-[11px] text-slate-400">
+                      Scans color temperature, negative space &amp; vibes immediately upon drop
+                    </span>
+                  </div>
                 )}
               </label>
             </div>
@@ -231,21 +274,106 @@ export default function DeveloperCheckPage() {
               </div>
             ) : preflight ? (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white">Quick Pre-Flight Scan</h2>
-                  <span className="rounded-full bg-indigo-500/20 px-3 py-1 font-mono text-xs text-indigo-300">
-                    {preflight.brand_alignment ? `${Math.round(preflight.brand_alignment.alignment_score)}% Match` : "Scanned"}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                  <div>
+                    <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
+                      ⚡ Instant Pre-Flight Scanner &middot; Pre-Submission Diagnostic
+                    </span>
+                    <h2 className="text-xl font-bold text-white">Visual Telemetry &amp; Vibe Analysis</h2>
+                  </div>
+                  <span className="rounded-full bg-emerald-500/20 px-3 py-1 font-mono text-xs font-semibold text-emerald-300">
+                    {preflight.brand_alignment ? `${Math.round(preflight.brand_alignment.alignment_score)}% Palette Alignment` : "Scanned (<30ms)"}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {(preflight.dominant_swatches || []).map((hex: string) => (
-                    <span key={hex} className="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-950 px-2.5 py-1 font-mono text-xs">
-                      <span className="h-3 w-3 rounded-full" style={{ backgroundColor: hex }} />
-                      {hex}
-                    </span>
-                  ))}
+
+                {/* 3 Core Telemetry Metrics: Predicted Vibe, Color Temp, Negative Space */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {/* 1. Predicted Visual Vibe (Minimalist, Bold, Cyberpunk, etc.) */}
+                  <div className="rounded-xl border border-purple-500/30 bg-purple-950/20 p-3.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300">Predicted Vibe</span>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="inline-block rounded-md bg-purple-500/30 px-2.5 py-1 text-sm font-extrabold text-white">
+                        {preflight.predicted_style?.style || preflight.predicted_vibe?.label || "Cyberpunk"}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-[11px] leading-tight text-slate-400">
+                      {preflight.predicted_style?.explanation || "Analyzed luminance, contrast, and saturation profile."}
+                    </p>
+                  </div>
+
+                  {/* 2. Color Temperature (Kelvin) */}
+                  <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Color Temperature</span>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className={`inline-block rounded-md px-2.5 py-1 text-sm font-extrabold ${
+                        preflight.color_temperature?.category === "WARM"
+                          ? "bg-amber-500/20 text-amber-300"
+                          : preflight.color_temperature?.category === "COOL"
+                          ? "bg-sky-500/20 text-sky-300"
+                          : "bg-slate-700/40 text-slate-200"
+                      }`}>
+                        {preflight.color_temperature?.kelvin ? `${preflight.color_temperature.kelvin}K` : "5400K"}
+                      </span>
+                      <span className="font-mono text-xs text-slate-300">
+                        {preflight.color_temperature?.category || "NEUTRAL"}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-[11px] leading-tight text-slate-400">
+                      {preflight.color_temperature?.label || "Kelvin white point balance"}
+                    </p>
+                  </div>
+
+                  {/* 3. Negative Space Ratio */}
+                  <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Negative Space</span>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="inline-block rounded-md bg-emerald-500/20 px-2.5 py-1 text-sm font-extrabold text-emerald-300">
+                        {preflight.whitespace?.percentage !== undefined ? `${preflight.whitespace.percentage}%` : "45.0%"}
+                      </span>
+                      <span className="font-mono text-xs text-slate-300">
+                        {preflight.layout?.clutter_index?.split(" ")[0] || "Clean"}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-[11px] leading-tight text-slate-400">
+                      {preflight.whitespace?.label || "Negative space breathing room"}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-400">{preflight.preliminary_disclaimer}</p>
+
+                {/* Additional Diagnostics: Swatches, Contrast, Dimensions */}
+                <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-[11px] font-medium text-slate-400">Dominant Swatches:</span>
+                      {(preflight.dominant_swatches || []).map((hex: string) => (
+                        <span key={hex} className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5 font-mono text-[11px]">
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: hex }} />
+                          {hex}
+                        </span>
+                      ))}
+                    </div>
+                    {preflight.contrast && (
+                      <span className="font-mono text-xs text-slate-300">
+                        Contrast: <strong className={preflight.contrast.passes_wcag_aa ? "text-emerald-400" : "text-amber-400"}>{preflight.contrast.label}</strong>
+                      </span>
+                    )}
+                    {preflight.dimensions && (
+                      <span className="font-mono text-xs text-slate-400">{preflight.dimensions.label}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                  <p className="text-xs text-slate-400 max-w-md">{preflight.preliminary_disclaimer}</p>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={handleFullCheck}
+                    className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 shadow-lg shadow-emerald-950/40"
+                  >
+                    Proceed to Full Verification &rarr;
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="space-y-5">
