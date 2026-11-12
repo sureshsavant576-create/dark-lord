@@ -72,9 +72,22 @@ function parseCsvList(raw) {
     .filter(Boolean);
 }
 
+let lastToastMsg = '';
+let lastToastTime = 0;
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
-  if (!container) return;
+  if (!container || !message) return;
+  const now = Date.now();
+  if (message === lastToastMsg && now - lastToastTime < 2500) {
+    return;
+  }
+  lastToastMsg = message;
+  lastToastTime = now;
+
+  while (container.children.length >= 4) {
+    container.removeChild(container.firstChild);
+  }
+
   const el = document.createElement('div');
   el.className = `toast toast-${type}`;
   el.textContent = message;
@@ -2608,7 +2621,14 @@ function syncCheckCompanyField() {
   if (!nameEl) return;
 
   if (isDemoSession()) {
-    fillDemoVibesCheck();
+    const demoBrand =
+      state.brands.find((b) => b.brand_id === 'omnigpt_ai' || b.brand_id === 'omnigpt-ai') ||
+      state.brands.find((b) => (b.brand_name || '').toLowerCase().includes('omni')) ||
+      state.brands[0] ||
+      { brand_id: 'omnigpt_ai', brand_name: 'OmniGPT AI' };
+    nameEl.value = demoBrand.brand_name || 'OmniGPT AI';
+    state.dev.selectedBrandId = demoBrand.brand_id || 'omnigpt_ai';
+    renderDevTargetPreview();
     return;
   }
 
@@ -2638,42 +2658,45 @@ function syncCheckCompanyField() {
   }
 }
 
+let isFillingDemoVibes = false;
 async function fillDemoVibesCheck() {
-  await ensureDemoSession();
-  if (!state.brands.length) {
-    try {
-      await loadBrands();
-    } catch (_) {}
+  if (isFillingDemoVibes) return;
+  isFillingDemoVibes = true;
+
+  try {
+    await ensureDemoSession();
+
+    const targetBrand =
+      state.brands.find((b) => b.brand_id === 'omnigpt_ai' || b.brand_id === 'omnigpt-ai') ||
+      state.brands.find((b) => (b.brand_name || '').toLowerCase().includes('omni')) ||
+      state.brands[0] ||
+      { brand_id: 'omnigpt_ai', brand_name: 'OmniGPT AI' };
+
+    const nameEl = document.getElementById('check-company-name');
+    const urlEl = document.getElementById('check-website-url');
+    const socialEl = document.getElementById('check-social-input');
+    const copyEl = document.getElementById('dev-copy-input');
+
+    const brandName = targetBrand?.brand_name || 'OmniGPT AI';
+    if (nameEl) nameEl.value = brandName;
+    if (urlEl) urlEl.value = 'https://omnigpt.ai';
+    if (socialEl) socialEl.value = '@omnigpt_ai — Frontier cognitive reasoning and generative neural intelligence.';
+    if (copyEl) copyEl.value = 'Enterprise conversational models engineered for precision, ethical alignment, and zero drift.';
+
+    if (targetBrand && targetBrand.brand_id) {
+      onSelectDevBrand(targetBrand.brand_id);
+    } else {
+      state.dev.selectedBrandId = 'omnigpt_ai';
+      renderDevTargetPreview();
+    }
+
+    await loadSampleAsset('/static/samples/omnigpt_ai_poster.png', 'omnigpt_ai_poster.png');
+    selectBrandInputSource('assets');
+    updateCheckAttachedTray();
+    showToast('Live Demo populated with OmniGPT AI & creative poster', 'info');
+  } finally {
+    isFillingDemoVibes = false;
   }
-
-  const targetBrand =
-    state.brands.find((b) => b.brand_id === 'omnigpt_ai' || b.brand_id === 'omnigpt-ai') ||
-    state.brands.find((b) => (b.brand_name || '').toLowerCase().includes('omni')) ||
-    state.brands[0] ||
-    { brand_id: 'omnigpt_ai', brand_name: 'OmniGPT AI' };
-
-  const nameEl = document.getElementById('check-company-name');
-  const urlEl = document.getElementById('check-website-url');
-  const socialEl = document.getElementById('check-social-input');
-  const copyEl = document.getElementById('dev-copy-input');
-
-  const brandName = targetBrand?.brand_name || 'OmniGPT AI';
-  if (nameEl) nameEl.value = brandName;
-  if (urlEl) urlEl.value = 'https://omnigpt.ai';
-  if (socialEl) socialEl.value = '@omnigpt_ai — Frontier cognitive reasoning and generative neural intelligence.';
-  if (copyEl) copyEl.value = 'Enterprise conversational models engineered for precision, ethical alignment, and zero drift.';
-
-  if (targetBrand && targetBrand.brand_id) {
-    onSelectDevBrand(targetBrand.brand_id);
-  } else {
-    state.dev.selectedBrandId = 'omnigpt_ai';
-    renderDevTargetPreview();
-  }
-
-  await loadSampleAsset('/static/samples/omnigpt_ai_poster.png', 'omnigpt_ai_poster.png');
-  selectBrandInputSource('assets');
-  updateCheckAttachedTray();
-  showToast('Live Demo populated with OmniGPT AI & creative poster', 'info');
 }
 
 async function loadLiveDemoResultsPreview() {
