@@ -13,10 +13,22 @@ const state = {
   brands: [],
   session: null,
   company: {
+    step: 1,
     selectedBrandId: '__new__',
-    palette: ['#3B82F6', '#0F172A', '#10B981'],
+    name: '',
+    website: '',
+    description: '',
+    industry: '',
+    size: '',
+    traits: [],
+    tone: '',
+    feeling: '',
+    keywords: [],
+    palette: ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'],
+    typography: '',
     logoUrl: '',
-    dnaProfile: null,
+    logoName: '',
+    assets: [],
   },
   dev: {
     selectedBrandId: '',
@@ -165,37 +177,54 @@ function updateAuthUI() {
   const checkInitials = document.getElementById('check-avatar-initials');
   const checkEmail = document.getElementById('check-account-email');
   const checkOrg = document.getElementById('check-account-org');
+  const companyInitials = document.getElementById('company-avatar-initials');
+  const companyEmail = document.getElementById('company-account-email');
+  const companyOrg = document.getElementById('company-account-org');
   if (!dot || !label) return;
 
   if (state.session && state.session.session_token) {
     state.isDemo = state.session.email === 'demo@sanket.ai';
     const initials = getSessionInitials(state.session);
     dot.classList.add('online');
-    label.textContent = state.session.org_id || state.session.email || 'Signed In';
+    const displayOrg = state.session.company_name || state.session.org_id || state.session.email || 'Signed In';
+    label.textContent = displayOrg;
     if (splitShell) splitShell.classList.add('hidden');
     if (authHub) authHub.classList.remove('hidden');
     if (hubInitials) hubInitials.textContent = initials;
     if (hubEmail) hubEmail.textContent = state.session.email || 'Signed in';
-    if (hubOrg) hubOrg.textContent = state.session.org_id || 'default-org';
+    if (hubOrg) hubOrg.textContent = displayOrg;
     if (checkInitials) checkInitials.textContent = initials;
     if (checkEmail) checkEmail.textContent = state.session.email || 'Signed in';
-    if (checkOrg) checkOrg.textContent = state.session.org_id || 'default-org';
+    if (checkOrg) checkOrg.textContent = displayOrg;
+    if (companyInitials) companyInitials.textContent = initials;
+    if (companyEmail) companyEmail.textContent = state.session.email || 'Signed in';
+    if (companyOrg) companyOrg.textContent = displayOrg;
+
+    if (homeSigninView) homeSigninView.classList.add('hidden');
+    if (homeRegView) homeRegView.classList.add('hidden');
 
     if (sessionBox) {
       sessionBox.classList.remove('hidden');
       sessionBox.innerHTML = `
         <div class="session-summary">
           <div><strong>${escapeHtml(state.session.email || '')}</strong></div>
-          <div class="mono-sm muted">Org: ${escapeHtml(state.session.org_id || 'default-org')} &middot; Role: ${escapeHtml(state.session.role_label || state.session.role || 'User')}</div>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="logoutSession()">Sign Out</button>
+          <div class="mono-sm muted">Org: ${escapeHtml(displayOrg)} &middot; Role: ${escapeHtml(state.session.role_label || state.session.role || 'User')}</div>
+          <div style="margin-top:8px;display:flex;gap:8px;">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="logoutSession()">Sign Out</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="showAuthFormsForSwitch()">Switch Account</button>
+          </div>
         </div>
       `;
     }
+    document.getElementById('form-login')?.classList.add('hidden');
+    document.getElementById('form-register')?.classList.add('hidden');
+    document.getElementById('modal-demo-card')?.classList.add('hidden');
+
     if (homeSignedIn) {
       homeSignedIn.classList.remove('hidden');
       homeSignedIn.innerHTML = `
         <div><strong>Active Session: ${escapeHtml(state.session.email || '')}</strong></div>
-        <div class="mono-sm" style="color:#5b616c;">Org: ${escapeHtml(state.session.org_id || 'default-org')} &middot; Role: ${escapeHtml(state.session.role_label || state.session.role || 'User')}</div>
+        <div class="mono-sm" style="color:#5b616c;">Org: ${escapeHtml(displayOrg)} &middot; Role: ${escapeHtml(state.session.role_label || state.session.role || 'User')}</div>
         <div class="drawer-signedin-actions">
           <button type="button" class="cream-submit-btn" style="padding:0.55rem 0.9rem;width:auto;" onclick="navigateTo('company')">Company Vibes &rarr;</button>
           <button type="button" class="cream-accent-link" onclick="navigateTo('check')">Developer Check</button>
@@ -211,9 +240,13 @@ function updateAuthUI() {
     if (authHub) authHub.classList.add('hidden');
     toggleHubAccountMenu(false);
     toggleCheckAccountMenu(false);
+    toggleCompanyAccountMenu(false);
     if (checkInitials) checkInitials.textContent = 'GV';
     if (checkEmail) checkEmail.textContent = 'Guest Workspace';
     if (checkOrg) checkOrg.textContent = 'default-org';
+    if (companyInitials) companyInitials.textContent = 'GV';
+    if (companyEmail) companyEmail.textContent = 'Guest Workspace';
+    if (companyOrg) companyOrg.textContent = 'default-org';
 
     if (sessionBox) {
       sessionBox.classList.add('hidden');
@@ -223,11 +256,23 @@ function updateAuthUI() {
       homeSignedIn.classList.add('hidden');
       homeSignedIn.innerHTML = '';
     }
-    if (homeSigninView && homeRegView && homeRegView.classList.contains('hidden')) {
+    if (homeSigninView) {
       homeSigninView.classList.remove('hidden');
     }
+    if (homeRegView) {
+      homeRegView.classList.add('hidden');
+    }
+    document.getElementById('form-login')?.classList.remove('hidden');
+    document.getElementById('form-register')?.classList.add('hidden');
+    document.getElementById('modal-demo-card')?.classList.remove('hidden');
   }
   updateDemoVisibility();
+}
+
+function showAuthFormsForSwitch() {
+  document.getElementById('auth-session-box')?.classList.add('hidden');
+  document.getElementById('form-login')?.classList.remove('hidden');
+  document.getElementById('modal-demo-card')?.classList.remove('hidden');
 }
 
 async function apiFetch(url, options = {}) {
@@ -290,9 +335,14 @@ function navigateTo(page, pushHistory = true) {
     pill.classList.toggle('active', pill.dataset.nav === target);
   });
 
-  if (target === 'check' && prevPage !== 'check') {
-    switchCheckSubView('input');
-    selectBrandInputSource(state.dev.activeSource || 'website');
+  if (target === 'check') {
+    if (prevPage !== 'check') {
+      switchCheckSubView('input');
+      selectBrandInputSource(state.dev.activeSource || 'website');
+    }
+    syncCheckCompanyField();
+  } else if (target === 'company') {
+    syncCompanyStudioForSession();
   }
 
   if (pushHistory) {
@@ -539,10 +589,49 @@ async function launchDemoWorkspace() {
     });
     saveSession(res);
     closeHomeSignin();
-    showToast(`Live Demo active (${res.org_id})`, 'success');
+    closeAuthModal();
+    showToast(`Live Demo active: ${res.email} (${res.org_id})`, 'success');
     await loadBrands();
   } catch (err) {
     showToast(err.message || 'Unable to launch demo session', 'error');
+  }
+}
+
+function fillDemoCredentials(targetForm = 'home') {
+  if (targetForm === 'home') {
+    const emailEl = document.getElementById('home-login-email');
+    const passEl = document.getElementById('home-login-password');
+    if (emailEl) emailEl.value = 'demo@sanket.ai';
+    if (passEl) passEl.value = 'DemoJudge2026!';
+    showToast('Demo credentials filled into form', 'info');
+    emailEl?.focus();
+  } else {
+    const emailEl = document.getElementById('login-email');
+    const passEl = document.getElementById('login-password');
+    if (emailEl) emailEl.value = 'demo@sanket.ai';
+    if (passEl) passEl.value = 'DemoJudge2026!';
+    showToast('Demo credentials filled into form', 'info');
+    emailEl?.focus();
+  }
+}
+
+async function copyDemoText(text, label = 'Credential') {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    showToast(`${label} copied to clipboard!`, 'success');
+  } catch (_) {
+    showToast('Copied: ' + text, 'info');
   }
 }
 
@@ -565,6 +654,7 @@ function switchAuthTab(tab) {
   });
   document.getElementById('form-login')?.classList.toggle('hidden', tab !== 'login');
   document.getElementById('form-register')?.classList.toggle('hidden', tab !== 'register');
+  document.getElementById('modal-demo-card')?.classList.toggle('hidden', tab !== 'login');
 }
 
 async function submitLogin(e) {
@@ -631,13 +721,19 @@ function resetCheckWorkspaceUI() {
 }
 
 async function logoutSession() {
+  const token = state.session?.session_token;
+  if (token) {
+    try {
+      await apiFetch('/api/v1/auth/logout', { method: 'POST' });
+    } catch (_) {}
+  }
   state.isDemo = false;
   saveSession(null);
   closeAuthModal();
   toggleHubAccountMenu(false);
   toggleCheckAccountMenu(false);
   resetCheckWorkspaceUI();
-  showToast('Signed out', 'info');
+  showToast('Signed out successfully', 'info');
   await loadBrands();
   navigateTo('home');
 }
@@ -743,24 +839,7 @@ function populateBrandSelectors() {
     companySel.value = state.brands.some((b) => b.brand_id === prev) ? prev : '__new__';
   }
 
-  if (devSel) {
-    const baseOption = '<option value="">Custom / Auto-match Company</option>';
-    if (!state.brands.length) {
-      devSel.innerHTML = baseOption;
-      state.dev.selectedBrandId = '';
-    } else {
-      const prev = state.dev.selectedBrandId;
-      devSel.innerHTML =
-        baseOption +
-        state.brands
-          .map((b) => `<option value="${escapeHtml(b.brand_id)}">${escapeHtml(b.brand_name)}</option>`)
-          .join('');
-      const chosen = prev && state.brands.some((b) => b.brand_id === prev) ? prev : '';
-      devSel.value = chosen;
-      state.dev.selectedBrandId = chosen;
-    }
-    renderDevTargetPreview();
-  }
+  syncCheckCompanyField();
 }
 
 function openBrandInCompany(brandId) {
@@ -774,40 +853,436 @@ function openBrandInCheck(brandId) {
 }
 
 /* ----------------------------------------------------------------------------
- * PAGE 2: COMPANY PUTS THEIR VIBES
+ * PAGE 2: SET UP COMPANY WIZARD (Steps 1 to 4)
  * ------------------------------------------------------------------------- */
+function toggleCompanyAccountMenu(forceState) {
+  const menu = document.getElementById('company-account-menu');
+  const btn = document.getElementById('company-avatar-btn');
+  if (!menu) return;
+  const open = typeof forceState === 'boolean' ? forceState : menu.classList.contains('hidden');
+  menu.classList.toggle('hidden', !open);
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function formatFileSize(bytes) {
+  if (!bytes || bytes <= 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
+}
+
+function goToCompanyStep(stepNumber) {
+  const step = Math.max(1, Math.min(4, parseInt(stepNumber, 10) || 1));
+  state.company.step = step;
+
+  for (let s = 1; s <= 4; s++) {
+    const view = document.getElementById(`company-step-${s}`);
+    if (view) {
+      view.classList.toggle('active', s === step);
+      view.classList.toggle('hidden', s !== step);
+    }
+    const navItem = document.getElementById(`step-nav-${s}`);
+    if (navItem) {
+      navItem.classList.toggle('active', s === step);
+      navItem.classList.toggle('completed', s < step);
+    }
+  }
+
+  const counter = document.getElementById('company-step-counter');
+  if (counter) counter.textContent = `STEP ${step} OF 4`;
+
+  const fill = document.getElementById('company-progress-fill');
+  if (fill) fill.style.width = `${(step / 4) * 100}%`;
+
+  updateStepSummary();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function jumpToCompanyStep(stepNumber) {
+  goToCompanyStep(stepNumber);
+}
+
+function onDescInput(textarea) {
+  if (!textarea) return;
+  const val = textarea.value || '';
+  const counter = document.getElementById('c-desc-count');
+  if (counter) counter.textContent = `${val.length} / 200`;
+  state.company.description = val;
+  updateStepSummary();
+}
+
+function onKeywordsInput(input) {
+  if (!input) return;
+  const raw = input.value || '';
+  const list = parseCsvList(raw);
+  const counter = document.getElementById('c-keywords-count');
+  if (counter) counter.textContent = `${Math.min(list.length, 5)} / 5`;
+  state.company.keywords = list.slice(0, 5);
+  updateStepSummary();
+}
+
+function updatePersonalityChipsUI() {
+  const chips = document.querySelectorAll('#c-personality-chips .company-vibe-chip');
+  chips.forEach((btn) => {
+    const trait = btn.dataset.trait;
+    const isSelected = (state.company.traits || []).includes(trait);
+    btn.classList.toggle('selected', isSelected);
+    btn.classList.toggle('active', isSelected);
+    btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+    const labelSpan = btn.querySelector('.chip-text');
+    if (labelSpan) {
+      labelSpan.textContent = (isSelected ? '✓ ' : '') + trait;
+    }
+  });
+}
+
+function toggleVibeTrait(trait, btn) {
+  if (!trait) return;
+  if (!Array.isArray(state.company.traits)) {
+    state.company.traits = [];
+  }
+  const idx = state.company.traits.indexOf(trait);
+  if (idx >= 0) {
+    state.company.traits.splice(idx, 1);
+  } else {
+    if (state.company.traits.length >= 3) {
+      showToast('Maximum 3 personality traits allowed.', 'info');
+      return;
+    }
+    state.company.traits.push(trait);
+  }
+  updatePersonalityChipsUI();
+  updateStepSummary();
+}
+
+function applyInspirationPreset(t1, t2, t3) {
+  state.company.traits = [t1, t2, t3].filter(Boolean);
+  updatePersonalityChipsUI();
+  updateStepSummary();
+  showToast(`Applied preset: ${t1} • ${t2} • ${t3}`, 'info');
+}
+
+function renderSetupColours() {
+  const container = document.getElementById('c-setup-colours-list');
+  if (!container) return;
+  const palette = (state.company.palette && state.company.palette.length)
+    ? state.company.palette
+    : ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'];
+
+  const swatchesHtml = palette
+    .map(
+      (hex, idx) => `
+    <div class="company-color-swatch-chip">
+      <div class="company-swatch-box" style="background:${escapeHtml(hex)};" title="${escapeHtml(hex)} (Click to remove)" onclick="removeSetupColour(${idx})">
+        <span class="company-swatch-remove" title="Remove colour" style="position:absolute;top:2px;right:4px;color:#fff;font-size:11px;font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,0.8);line-height:1;">&times;</span>
+      </div>
+      <span class="company-swatch-hex">${escapeHtml(hex)}</span>
+    </div>`
+    )
+    .join('');
+
+  const addBtnHtml =
+    palette.length < 8
+      ? `
+    <button type="button" class="company-add-color-btn" onclick="document.getElementById('c-setup-color-picker').click()" title="Add another brand colour">
+      <span>+ Add</span>
+    </button>`
+      : '';
+
+  container.innerHTML = swatchesHtml + addBtnHtml;
+}
+
+function onSetupColorPicked(hex) {
+  const normalized = normalizeHex(hex);
+  if (!normalized) return;
+  if (!Array.isArray(state.company.palette)) {
+    state.company.palette = [];
+  }
+  if (!state.company.palette.includes(normalized)) {
+    state.company.palette.push(normalized);
+  }
+  renderSetupColours();
+  updateStepSummary();
+}
+
+function removeSetupColour(idx) {
+  if (!Array.isArray(state.company.palette)) return;
+  if (state.company.palette.length <= 1) {
+    showToast('At least one brand colour is required.', 'info');
+    return;
+  }
+  state.company.palette.splice(idx, 1);
+  renderSetupColours();
+  updateStepSummary();
+}
+
+function handleSetupLogoUpload(input) {
+  const file = input && input.files && input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    state.company.logoUrl = e.target.result;
+    state.company.logoName = file.name;
+
+    const logoImg = document.getElementById('c-setup-logo-img');
+    const logoFallback = document.getElementById('c-setup-logo-fallback');
+    if (logoImg) {
+      logoImg.src = state.company.logoUrl;
+      logoImg.classList.remove('hidden');
+    }
+    if (logoFallback) {
+      logoFallback.classList.add('hidden');
+    }
+
+    updateStepSummary();
+    showToast(`Logo attached: ${file.name}`, 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleSetupAssetUpload(input) {
+  const files = input && input.files;
+  if (!files || !files.length) return;
+
+  if (!Array.isArray(state.company.assets)) {
+    state.company.assets = [];
+  }
+
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    state.company.assets.push({
+      name: f.name,
+      size: formatFileSize(f.size),
+      type: f.type,
+    });
+  }
+
+  const assetLabel = document.getElementById('c-setup-asset-btn-label');
+  if (assetLabel) {
+    assetLabel.textContent = `${state.company.assets.length} file(s) attached`;
+  }
+
+  updateStepSummary();
+  showToast(`Added ${files.length} brand asset(s)`, 'success');
+}
+
+function readCompanySetupInputs() {
+  const nameEl = document.getElementById('c-setup-name');
+  const webEl = document.getElementById('c-setup-website');
+  const descEl = document.getElementById('c-setup-desc');
+  const indEl = document.getElementById('c-setup-industry');
+  const sizeEl = document.getElementById('c-setup-size');
+  const toneEl = document.getElementById('c-setup-tone');
+  const feelEl = document.getElementById('c-setup-feeling');
+  const fontEl = document.getElementById('c-setup-font');
+
+  if (nameEl) state.company.name = nameEl.value.trim();
+  if (webEl) state.company.website = webEl.value.trim();
+  if (descEl) state.company.description = descEl.value.trim();
+  if (indEl) state.company.industry = indEl.value;
+  if (sizeEl) state.company.size = sizeEl.value;
+  if (toneEl) state.company.tone = toneEl.value;
+  if (feelEl) state.company.feeling = feelEl.value;
+  if (fontEl) state.company.typography = fontEl.value;
+}
+
+function updateStepSummary() {
+  readCompanySetupInputs();
+
+  // 1. Live Preview Card (Step 3)
+  const previewMark = document.getElementById('c-preview-mark');
+  const previewTagline = document.getElementById('c-preview-tagline');
+  const previewSwatches = document.getElementById('c-preview-swatches');
+
+  if (previewMark) {
+    if (state.company.logoUrl) {
+      previewMark.innerHTML = `<img src="${escapeHtml(state.company.logoUrl)}" alt="Logo" style="height:28px;max-width:44px;object-fit:contain;vertical-align:middle;filter:brightness(0) invert(1);">`;
+    } else {
+      const initial = state.company.name ? state.company.name.charAt(0).toUpperCase() : 'A';
+      previewMark.textContent = initial;
+    }
+  }
+
+  if (previewTagline) {
+    if (state.company.name) {
+      previewTagline.textContent = `${state.company.name}`;
+    } else {
+      previewTagline.textContent = 'Modern Solutions';
+    }
+  }
+
+  if (previewSwatches) {
+    const swatches = (state.company.palette && state.company.palette.length)
+      ? state.company.palette.slice(0, 5)
+      : ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'];
+    previewSwatches.innerHTML = swatches
+      .map((hex) => `<span class="company-preview-swatch-dot" style="background:${escapeHtml(hex)};" title="${escapeHtml(hex)}"></span>`)
+      .join('');
+  }
+
+  // 2. Summary Card 1: Company Details
+  const sumName = document.getElementById('sum-c-name');
+  const sumWeb = document.getElementById('sum-c-website');
+  const sumInd = document.getElementById('sum-c-industry');
+  const sumSize = document.getElementById('sum-c-size');
+
+  if (sumName) sumName.textContent = state.company.name || 'Not set';
+  if (sumWeb) sumWeb.textContent = state.company.website || 'Not set';
+  if (sumInd) sumInd.textContent = state.company.industry || 'Not set';
+  if (sumSize) sumSize.textContent = state.company.size || 'Not set';
+
+  // 3. Summary Card 2: Brand Vibes
+  const sumTraits = document.getElementById('sum-c-traits');
+  const sumTone = document.getElementById('sum-c-tone');
+  const sumFeeling = document.getElementById('sum-c-feeling');
+  const sumKeywords = document.getElementById('sum-c-keywords');
+
+  if (sumTraits) {
+    if (state.company.traits && state.company.traits.length > 0) {
+      sumTraits.innerHTML = state.company.traits
+        .map((t) => `<span class="company-summary-chip">${escapeHtml(t)}</span>`)
+        .join('');
+    } else {
+      sumTraits.innerHTML = '<span class="muted mono-sm">None selected</span>';
+    }
+  }
+
+  if (sumTone) sumTone.textContent = state.company.tone || 'Not set';
+  if (sumFeeling) sumFeeling.textContent = state.company.feeling || 'Not set';
+
+  if (sumKeywords) {
+    if (state.company.keywords && state.company.keywords.length > 0) {
+      sumKeywords.innerHTML = state.company.keywords
+        .map((k) => `<span class="company-summary-chip">${escapeHtml(k)}</span>`)
+        .join('');
+    } else {
+      sumKeywords.innerHTML = '<span class="muted mono-sm">None set</span>';
+    }
+  }
+
+  // 4. Summary Card 3: Visual Identity
+  const sumLogo = document.getElementById('sum-c-logo');
+  const sumColours = document.getElementById('sum-c-colours');
+  const sumTypo = document.getElementById('sum-c-typography');
+  const sumAssets = document.getElementById('sum-c-assets');
+
+  if (sumLogo) {
+    if (state.company.logoUrl) {
+      sumLogo.innerHTML = `<img src="${escapeHtml(state.company.logoUrl)}" alt="Logo" class="company-asset-thumb" style="width:38px;height:38px;background:#fff;padding:2px;border-radius:4px;border:1px solid #d4ccbd;object-fit:contain;">`;
+    } else {
+      const initial = state.company.name ? state.company.name.charAt(0).toUpperCase() : 'A';
+      sumLogo.innerHTML = `<span style="width:38px;height:38px;background:#e9dfce;border:1px solid #d4ccbd;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-weight:700;color:#553e1a;font-size:1.1rem;">${escapeHtml(initial)}</span>`;
+    }
+  }
+
+  if (sumColours) {
+    const palette = (state.company.palette && state.company.palette.length)
+      ? state.company.palette.slice(0, 6)
+      : ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'];
+    sumColours.innerHTML = palette
+      .map((hex) => `<span class="company-preview-swatch-dot" style="background:${escapeHtml(hex)};width:20px;height:20px;" title="${escapeHtml(hex)}"></span>`)
+      .join('');
+  }
+
+  if (sumTypo) {
+    const font = state.company.typography || 'Inter';
+    sumTypo.innerHTML = `<strong class="v" style="font-size:0.95rem;color:#171c24;">${escapeHtml(font)}</strong><span class="mono-sm muted" style="font-size:0.75rem;">Primary Typography</span>`;
+  }
+
+  if (sumAssets) {
+    if (state.company.assets && state.company.assets.length > 0) {
+      const shown = state.company.assets.slice(0, 2);
+      const remaining = state.company.assets.length - shown.length;
+      let html = shown
+        .map((a) => `<span class="company-summary-chip" title="${escapeHtml(a.name)}">${escapeHtml(a.name.length > 14 ? a.name.slice(0, 12) + '...' : a.name)}</span>`)
+        .join('');
+      if (remaining > 0) {
+        html += `<span class="company-asset-more">+${remaining}</span>`;
+      }
+      sumAssets.innerHTML = html;
+    } else {
+      sumAssets.innerHTML = '<span class="muted mono-sm">No extra assets</span>';
+    }
+  }
+}
+
+function renderCompanyFormFromState() {
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+  };
+
+  setVal('c-setup-name', state.company.name);
+  setVal('c-setup-website', state.company.website);
+  setVal('c-setup-desc', state.company.description);
+  const descEl = document.getElementById('c-setup-desc');
+  if (descEl) onDescInput(descEl);
+
+  setVal('c-setup-industry', state.company.industry);
+  setVal('c-setup-size', state.company.size);
+
+  updatePersonalityChipsUI();
+
+  setVal('c-setup-tone', state.company.tone);
+  setVal('c-setup-feeling', state.company.feeling);
+
+  setVal('c-setup-keywords', (state.company.keywords || []).join(', '));
+  const kwEl = document.getElementById('c-setup-keywords');
+  if (kwEl) onKeywordsInput(kwEl);
+
+  const logoImg = document.getElementById('c-setup-logo-img');
+  const logoFallback = document.getElementById('c-setup-logo-fallback');
+  if (state.company.logoUrl) {
+    if (logoImg) {
+      logoImg.src = state.company.logoUrl;
+      logoImg.classList.remove('hidden');
+    }
+    if (logoFallback) logoFallback.classList.add('hidden');
+  } else {
+    if (logoImg) {
+      logoImg.src = '';
+      logoImg.classList.add('hidden');
+    }
+    if (logoFallback) {
+      logoFallback.classList.remove('hidden');
+      logoFallback.textContent = state.company.name ? state.company.name.charAt(0).toUpperCase() : 'A';
+    }
+  }
+
+  renderSetupColours();
+  setVal('c-setup-font', state.company.typography);
+
+  const assetLabel = document.getElementById('c-setup-asset-btn-label');
+  if (assetLabel) {
+    assetLabel.textContent =
+      state.company.assets && state.company.assets.length
+        ? `${state.company.assets.length} file(s) attached`
+        : 'Upload assets';
+  }
+
+  updateStepSummary();
+}
+
 function resetCompanyForm() {
   state.company.selectedBrandId = '__new__';
-  state.company.palette = ['#3B82F6', '#0F172A', '#10B981'];
+  state.company.name = '';
+  state.company.website = '';
+  state.company.description = '';
+  state.company.industry = '';
+  state.company.size = '';
+  state.company.traits = [];
+  state.company.tone = '';
+  state.company.feeling = '';
+  state.company.keywords = [];
+  state.company.palette = ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'];
+  state.company.typography = '';
   state.company.logoUrl = '';
-  state.company.dnaProfile = null;
+  state.company.logoName = '';
+  state.company.assets = [];
 
-  const sel = document.getElementById('company-brand-select');
-  if (sel) sel.value = '__new__';
-
-  const setVal = (id, v = '') => {
-    const el = document.getElementById(id);
-    if (el) el.value = v;
-  };
-  setVal('c-brand-name', '');
-  setVal('c-industry', 'Technology');
-  setVal('c-audience', '');
-  setVal('c-products', '');
-  setVal('c-mission', '');
-  setVal('c-personality', '');
-  setVal('c-mood', '');
-  setVal('c-tone', '');
-  setVal('c-visual-style', '');
-  setVal('c-disallowed', '');
-  setVal('c-description', '');
-
-  const logoStatus = document.getElementById('c-logo-status');
-  if (logoStatus) logoStatus.textContent = '';
-  document.getElementById('bp-dna-section')?.classList.add('hidden');
-  setFeedback('company-action-status', '');
-
-  renderPaletteEditor();
-  renderLiveBlueprint();
+  renderCompanyFormFromState();
+  goToCompanyStep(1);
 }
 
 function onSelectCompanyBrand(brandId) {
@@ -819,373 +1294,113 @@ function onSelectCompanyBrand(brandId) {
   if (!brand) return;
 
   state.company.selectedBrandId = brand.brand_id;
-  state.company.palette = [...(brand.approved_palette || [])];
+  state.company.name = brand.brand_name || '';
+  state.company.website = brand.target_audience && brand.target_audience.startsWith('http') ? brand.target_audience : '';
+  state.company.description = brand.mission_statement || brand.synthesis_explanation || '';
+  state.company.industry = brand.target_audience || 'Technology';
+  state.company.size = '201 - 500';
+  state.company.traits = [...(brand.personality || [])].slice(0, 3);
+  state.company.tone = (brand.communication_tone || [])[0] || 'Confident';
+  state.company.feeling = (brand.mood || [])[0] || 'Reliable';
+  state.company.keywords = [...(brand.disallowed_elements || [])].slice(0, 5);
+  state.company.palette =
+    brand.approved_palette && brand.approved_palette.length
+      ? [...brand.approved_palette]
+      : ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'];
+  state.company.typography = 'Inter';
   state.company.logoUrl = brand.logo_url || '';
-  state.company.dnaProfile = null;
+  state.company.logoName = brand.logo_url ? 'brand_logo' : '';
+  state.company.assets = [];
 
-  const sel = document.getElementById('company-brand-select');
-  if (sel) sel.value = brand.brand_id;
-
-  const setVal = (id, v = '') => {
-    const el = document.getElementById(id);
-    if (el) el.value = v;
-  };
-  setVal('c-brand-name', brand.brand_name || '');
-  setVal('c-audience', brand.target_audience || '');
-  setVal('c-mission', brand.mission_statement || '');
-  setVal('c-personality', (brand.personality || []).join(', '));
-  setVal('c-mood', (brand.mood || []).join(', '));
-  setVal('c-tone', (brand.communication_tone || []).join(', '));
-  setVal('c-visual-style', (brand.visual_style || []).join(', '));
-  setVal('c-disallowed', (brand.disallowed_elements || []).join(', '));
-  setVal('c-description', brand.synthesis_explanation || '');
-
-  const logoStatus = document.getElementById('c-logo-status');
-  if (logoStatus) {
-    logoStatus.textContent = brand.logo_url ? 'Logo attached' : '';
-  }
-  document.getElementById('bp-dna-section')?.classList.add('hidden');
-  setFeedback('company-action-status', '');
-
-  renderPaletteEditor();
-  renderLiveBlueprint();
+  renderCompanyFormFromState();
+  goToCompanyStep(1);
 }
 
-function appendChip(inputId, value) {
-  const input = document.getElementById(inputId);
-  if (!input) return;
-  const items = parseCsvList(input.value);
-  if (!items.some((x) => x.toLowerCase() === value.toLowerCase())) {
-    items.push(value);
-  }
-  input.value = items.join(', ');
-  renderLiveBlueprint();
-}
-
-function addPaletteHex(customHex = null) {
-  const picker = document.getElementById('c-color-picker');
-  const textInput = document.getElementById('c-color-hex');
-  const raw = customHex || (textInput && textInput.value.trim()) || (picker && picker.value);
-  const hex = normalizeHex(raw);
-  if (!hex) {
-    showToast('Enter a valid 6-digit HEX code like #3B82F6', 'warning');
-    return;
-  }
-  if (!state.company.palette.includes(hex)) {
-    state.company.palette.push(hex);
-  }
-  if (textInput && !customHex) textInput.value = '';
-  renderPaletteEditor();
-  renderLiveBlueprint();
-}
-
-function removePaletteHex(hex) {
-  state.company.palette = state.company.palette.filter((c) => c !== hex);
-  renderPaletteEditor();
-  renderLiveBlueprint();
-}
-
-function renderPaletteEditor() {
-  const host = document.getElementById('c-palette-chips');
-  if (!host) return;
-  if (!state.company.palette.length) {
-    host.innerHTML = '<span class="muted mono-sm">Add at least one brand HEX color.</span>';
-    return;
-  }
-  host.innerHTML = state.company.palette
-    .map(
-      (hex) => `
-      <span class="swatch-chip">
-        <i class="swatch-dot" style="background:${escapeHtml(hex)}"></i>
-        <span>${escapeHtml(hex)}</span>
-        <button type="button" class="swatch-rm" onclick="removePaletteHex('${escapeHtml(hex)}')" aria-label="Remove ${escapeHtml(hex)}">&times;</button>
-      </span>`
-    )
-    .join('');
-}
-
-async function extractPaletteFromImage(inputEl) {
-  const file = inputEl && inputEl.files && inputEl.files[0];
-  if (!file) return;
-  const fd = new FormData();
-  fd.append('file', file);
-  try {
-    setFeedback('company-action-status', 'Extracting color palette from image...', 'info');
-    const res = await apiFetch('/api/v1/brands/extract-palette', { method: 'POST', body: fd });
-    const hexes = (res && res.hex_list) || [];
-    if (hexes.length) {
-      state.company.palette = hexes.slice(0, 6).map(normalizeHex).filter(Boolean);
-      renderPaletteEditor();
-      renderLiveBlueprint();
-      setFeedback('company-action-status', `Extracted ${state.company.palette.length} brand colors from ${file.name}.`, 'success');
-      showToast('Brand color palette extracted', 'success');
-    } else {
-      setFeedback('company-action-status', 'No dominant colors detected in that file.', 'warning');
-    }
-  } catch (err) {
-    setFeedback('company-action-status', err.message, 'error');
-    showToast(err.message, 'error');
-  } finally {
-    inputEl.value = '';
-  }
-}
-
-async function uploadCompanyLogo(inputEl) {
-  const file = inputEl && inputEl.files && inputEl.files[0];
-  if (!file) return;
-  const fd = new FormData();
-  fd.append('file', file);
-  try {
-    const res = await apiFetch('/api/v1/brands/upload-logo', { method: 'POST', body: fd });
-    if (res && res.logo_url) {
-      state.company.logoUrl = res.logo_url;
-      const logoStatus = document.getElementById('c-logo-status');
-      if (logoStatus) logoStatus.textContent = `Uploaded: ${res.filename || file.name}`;
-      renderLiveBlueprint();
-      showToast('Company logo uploaded', 'success');
-    }
-  } catch (err) {
-    showToast(err.message, 'error');
-  } finally {
-    inputEl.value = '';
-  }
-}
-
-function readCompanyFormValues() {
-  const val = (id) => (document.getElementById(id)?.value || '').trim();
-  return {
-    brandName: val('c-brand-name'),
-    industry: val('c-industry') || 'Technology',
-    audience: val('c-audience') || 'Modern digital customers',
-    products: val('c-products') || 'Core products and digital experiences',
-    mission: val('c-mission'),
-    personality: val('c-personality') || 'Authentic, Crisp',
-    mood: val('c-mood') || 'Focused, Modern',
-    tone: val('c-tone') || 'Clear, Direct',
-    visualStyle: val('c-visual-style') || 'Clean, High-Contrast',
-    disallowed: val('c-disallowed'),
-    description: val('c-description'),
-  };
-}
-
-function renderLiveBlueprint() {
-  const f = readCompanyFormValues();
-  const existing = state.brands.find((b) => b.brand_id === state.company.selectedBrandId);
-
-  const nameEl = document.getElementById('bp-name');
-  if (nameEl) nameEl.textContent = f.brandName || 'Your Brand Vibes';
-
-  const statusEl = document.getElementById('bp-status');
-  if (statusEl) {
-    const locked = existing && (existing.is_human_confirmed || existing.status === 'CONFIRMED');
-    statusEl.textContent = locked ? 'LOCKED' : existing ? 'DRAFT SAVED' : 'DRAFTING';
-    statusEl.classList.toggle('status-confirmed', Boolean(locked));
-  }
-
-  const logoWrap = document.getElementById('bp-logo-wrap');
-  const logoImg = document.getElementById('bp-logo-img');
-  if (logoWrap && logoImg) {
-    if (state.company.logoUrl) {
-      logoImg.src = state.company.logoUrl;
-      logoWrap.classList.remove('hidden');
-    } else {
-      logoWrap.classList.add('hidden');
-    }
-  }
-
-  const colorsEl = document.getElementById('bp-colors');
-  if (colorsEl) {
-    colorsEl.innerHTML = state.company.palette
-      .map(
-        (hex) => `
-        <div class="bp-color-tile">
-          <span class="bp-color-block" style="background:${escapeHtml(hex)}"></span>
-          <span class="mono-sm">${escapeHtml(hex)}</span>
-        </div>`
-      )
-      .join('');
-  }
-
-  const traitsEl = document.getElementById('bp-traits');
-  if (traitsEl) {
-    const allTraits = [
-      ...parseCsvList(f.personality),
-      ...parseCsvList(f.mood),
-      ...parseCsvList(f.tone),
-      ...parseCsvList(f.visualStyle),
+function syncCompanyStudioForSession() {
+  if (isDemoSession()) {
+    state.company.selectedBrandId = 'omnigpt_ai';
+    state.company.name = 'Acme Technologies';
+    state.company.website = 'https://acme.com';
+    state.company.description =
+      'Enterprise cloud infrastructure and intelligent cognitive workflows engineered for high-precision brand governance.';
+    state.company.industry = 'Technology';
+    state.company.size = '201 - 500';
+    state.company.traits = ['Modern', 'Professional', 'Trustworthy'];
+    state.company.tone = 'Confident';
+    state.company.feeling = 'Reliable';
+    state.company.keywords = ['reliable', 'growth-focused', 'human'];
+    state.company.palette = ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'];
+    state.company.typography = 'Inter';
+    state.company.logoUrl = '/static/brand/omni_ai_logo.svg';
+    state.company.logoName = 'omni_ai_logo.svg';
+    state.company.assets = [
+      { name: 'acme_brand_guidelines.pdf', size: '2.4 MB' },
     ];
-    traitsEl.innerHTML = allTraits.length
-      ? allTraits.map((t) => `<span class="mini-tag">${escapeHtml(t)}</span>`).join('')
-      : '<span class="muted mono-sm">Fill traits on the left...</span>';
+  } else {
+    // Standard non-demo user: clean empty form
+    state.company.selectedBrandId = '__new__';
+    state.company.name = '';
+    state.company.website = '';
+    state.company.description = '';
+    state.company.industry = '';
+    state.company.size = '';
+    state.company.traits = [];
+    state.company.tone = '';
+    state.company.feeling = '';
+    state.company.keywords = [];
+    state.company.palette = ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'];
+    state.company.typography = '';
+    state.company.logoUrl = '';
+    state.company.logoName = '';
+    state.company.assets = [];
   }
 
-  const missionEl = document.getElementById('bp-mission');
-  if (missionEl) {
-    missionEl.textContent = f.mission || f.description || '';
-  }
-
-  const avoidEl = document.getElementById('bp-avoid');
-  if (avoidEl) {
-    const avoid = parseCsvList(f.disallowed);
-    avoidEl.innerHTML = avoid.length
-      ? avoid.map((w) => `<span class="avoid-tag">${escapeHtml(w)}</span>`).join('')
-      : '<span class="muted mono-sm">None defined yet</span>';
-  }
+  renderCompanyFormFromState();
+  goToCompanyStep(1);
 }
 
-async function generateBrandVibesWithAI() {
-  const f = readCompanyFormValues();
-  if (!f.brandName) {
-    showToast('Enter a Company / Brand Name first.', 'warning');
-    document.getElementById('c-brand-name')?.focus();
+async function saveCompleteCompanySetup() {
+  readCompanySetupInputs();
+  const name = (state.company.name || '').trim();
+  if (!name) {
+    showToast('Please enter your Company Name in Step 1.', 'warning');
+    goToCompanyStep(1);
+    document.getElementById('c-setup-name')?.focus();
     return;
   }
 
-  const btn = document.getElementById('btn-generate-dna');
+  const btn = document.getElementById('btn-save-company-setup');
   if (btn) btn.disabled = true;
-  setFeedback('company-action-status', 'Asking Gemini AI to synthesize full Brand Vibes & rules...', 'info');
 
   try {
-    const payload = {
-      company_name: f.brandName,
-      industry: f.industry,
-      business_description: f.description || f.mission || `${f.brandName} operates in ${f.industry} serving ${f.audience}.`,
-      products_and_services: f.products,
-      target_audience: f.audience,
-      company_values: f.personality,
-      brand_positioning: f.mission || `${f.visualStyle} identity in ${f.industry}`,
-      desired_customer_perception: `${f.mood}; ${f.visualStyle}`,
-      communication_personality: `${f.personality}; tone: ${f.tone}`,
-      reference_brands: '',
-      org_id: (state.session && state.session.org_id) || undefined,
-    };
-
-    const dna = await apiFetch('/api/v1/brands/dna/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    state.company.dnaProfile = dna;
-    const ai = (dna && dna.ai_recommendations) || {};
-
-    // Hydrate form & palette with Gemini's synthesized vibes so user can inspect or tweak before approving
-    if (Array.isArray(ai.brand_personality) && ai.brand_personality.length) {
-      document.getElementById('c-personality').value = ai.brand_personality.slice(0, 5).join(', ');
-    }
-    if (Array.isArray(ai.words_to_avoid) && ai.words_to_avoid.length && !document.getElementById('c-disallowed').value.trim()) {
-      document.getElementById('c-disallowed').value = ai.words_to_avoid.slice(0, 6).join(', ');
-    }
-    if (ai.brand_positioning && !document.getElementById('c-mission').value.trim()) {
-      document.getElementById('c-mission').value = ai.brand_positioning;
-    }
-    if (Array.isArray(ai.colour_hex_codes) && ai.colour_hex_codes.length) {
-      state.company.palette = ai.colour_hex_codes.map(normalizeHex).filter(Boolean).slice(0, 6);
-      renderPaletteEditor();
-    }
-
-    renderDNAPreview(dna);
-    renderLiveBlueprint();
-    setFeedback('company-action-status', `Gemini generated Brand Vibes (${dna.dna_id}). Review the preview and click Approve & Publish AI Vibes.`, 'success');
-    showToast('Gemini AI vibes generated!', 'success');
-  } catch (err) {
-    setFeedback('company-action-status', err.message, 'error');
-    showToast(err.message, 'error');
-  } finally {
-    if (btn) btn.disabled = false;
-  }
-}
-
-function renderDNAPreview(dna) {
-  const sec = document.getElementById('bp-dna-section');
-  const box = document.getElementById('bp-dna-details');
-  if (!sec || !box || !dna) return;
-  const ai = dna.ai_recommendations || {};
-  const pillars = (ai.messaging_guidelines || []).slice(0, 3);
-  const avoid = (ai.words_to_avoid || []).slice(0, 4);
-
-  box.innerHTML = `
-    <div class="dna-item"><strong>Positioning:</strong> ${escapeHtml(ai.brand_positioning || 'Synthesized')}</div>
-    <div class="dna-item"><strong>AI Palette:</strong> ${(ai.colour_hex_codes || []).map((c) => `<code>${escapeHtml(c)}</code>`).join(' ')}</div>
-    ${pillars.length ? `<div class="dna-item"><strong>Messaging Pillars:</strong> ${pillars.map((p) => escapeHtml(p)).join(' &bull; ')}</div>` : ''}
-    ${avoid.length ? `<div class="dna-item"><strong>Words to Avoid:</strong> ${avoid.map((w) => escapeHtml(w)).join(', ')}</div>` : ''}
-    <div class="mono-sm muted">Model: ${escapeHtml(dna.ai_model_used || 'gemini')}</div>
-  `;
-  sec.classList.remove('hidden');
-}
-
-async function approveGeneratedDNA() {
-  const dna = state.company.dnaProfile;
-  if (!dna || !dna.dna_id) return;
-  const btn = document.getElementById('btn-approve-dna');
-  if (btn) btn.disabled = true;
-  try {
-    const approved = await apiFetch(`/api/v1/brands/dna/${encodeURIComponent(dna.dna_id)}/approve`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        approved_by: (state.session && state.session.email) || 'Company Brand Owner',
-        approval_notes: 'Published via Company Vibes Studio',
-        sync_to_platform_brand: true,
-      }),
-    });
-    state.company.dnaProfile = approved;
-    state.company.selectedBrandId = approved.brand_id;
-    state.dev.selectedBrandId = approved.brand_id;
-    await loadBrands();
-    onSelectCompanyBrand(approved.brand_id);
-    setFeedback('company-action-status', `AI Vibes approved and published for developers as '${approved.brand_id}'.`, 'success');
-    showToast(`Published ${approved.company_name} vibes!`, 'success');
-  } catch (err) {
-    setFeedback('company-action-status', err.message, 'error');
-    showToast(err.message, 'error');
-  } finally {
-    if (btn) btn.disabled = false;
-  }
-}
-
-async function saveAndConfirmBrand() {
-  const f = readCompanyFormValues();
-  if (!f.brandName) {
-    showToast('Company / Brand Name is required.', 'warning');
-    document.getElementById('c-brand-name')?.focus();
-    return;
-  }
-  const btn = document.getElementById('btn-save-brand');
-  if (btn) btn.disabled = true;
-  setFeedback('company-action-status', 'Saving & locking brand vibes...', 'info');
-
-  try {
-    let brandId = state.company.selectedBrandId !== '__new__' ? state.company.selectedBrandId : null;
-
     const fd = new FormData();
-    fd.append('brand_name', f.brandName);
-    fd.append('personality', f.personality);
-    fd.append('mood', f.mood);
-    fd.append('communication_tone', f.tone);
-    fd.append('target_audience', f.audience);
-    fd.append('visual_style', f.visualStyle);
-    fd.append('palette', JSON.stringify(state.company.palette));
-    fd.append('disallowed_elements', JSON.stringify(parseCsvList(f.disallowed)));
-    fd.append('tagline_or_mission', f.mission || f.description);
+    fd.append('brand_name', name);
+    fd.append('personality', (state.company.traits || []).join(', '));
+    fd.append('mood', state.company.feeling || '');
+    fd.append('communication_tone', state.company.tone || '');
+    fd.append('target_audience', state.company.industry ? `Audience in ${state.company.industry}` : '');
+    fd.append('visual_style', (state.company.traits || []).join(', '));
+    fd.append('palette', JSON.stringify(state.company.palette || ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C']));
+    fd.append('disallowed_elements', JSON.stringify(state.company.keywords || []));
+    fd.append('tagline_or_mission', state.company.description || '');
     fd.append('logo_url', state.company.logoUrl || '');
 
     const draft = await apiFetch('/api/v1/brands/draft', { method: 'POST', body: fd });
-    brandId = draft.brand_id;
+    const brandId = draft.brand_id;
 
     const confirmed = await apiFetch('/api/v1/brands/confirm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         brand_id: brandId,
-        personality: parseCsvList(f.personality),
-        mood: parseCsvList(f.mood),
-        communication_tone: parseCsvList(f.tone),
-        visual_style: parseCsvList(f.visualStyle),
-        target_audience: f.audience,
-        approved_palette: state.company.palette,
-        disallowed_elements: parseCsvList(f.disallowed),
-        mission_statement: f.mission || f.description,
+        personality: state.company.traits || [],
+        mood: state.company.feeling ? [state.company.feeling] : [],
+        communication_tone: state.company.tone ? [state.company.tone] : [],
+        visual_style: state.company.traits || [],
+        target_audience: state.company.industry || '',
+        approved_palette: state.company.palette || ['#1C2A38', '#C4A962', '#D9C59A', '#3C4D5C'],
+        disallowed_elements: state.company.keywords || [],
+        mission_statement: state.company.description || '',
         logo_url: state.company.logoUrl || '',
         confirmed_by: (state.session && state.session.email) || 'Company Admin',
       }),
@@ -1194,12 +1409,17 @@ async function saveAndConfirmBrand() {
     state.company.selectedBrandId = confirmed.brand_id;
     state.dev.selectedBrandId = confirmed.brand_id;
     await loadBrands();
-    onSelectCompanyBrand(confirmed.brand_id);
-    setFeedback('company-action-status', `Saved & locked '${confirmed.brand_name}'. Developers can now test against it.`, 'success');
-    showToast(`Saved & locked ${confirmed.brand_name}`, 'success');
+
+    // Prefill newly registered company into Page 3 (Vibes Check)
+    const checkNameInput = document.getElementById('check-company-name');
+    if (checkNameInput) checkNameInput.value = confirmed.brand_name;
+    const checkUrlInput = document.getElementById('check-website-url');
+    if (checkUrlInput && state.company.website) checkUrlInput.value = state.company.website;
+
+    showToast(`Saved and registered '${confirmed.brand_name}'!`, 'success');
+    navigateTo('check');
   } catch (err) {
-    setFeedback('company-action-status', err.message, 'error');
-    showToast(err.message, 'error');
+    showToast(err.message || 'Failed to complete setup', 'error');
   } finally {
     if (btn) btn.disabled = false;
   }
@@ -1784,11 +2004,47 @@ function renderInspectionReport(report, meta = {}) {
 /* ----------------------------------------------------------------------------
  * Live Demo Only Helpers (Strictly hidden for regular registered users)
  * ------------------------------------------------------------------------- */
+function syncCheckCompanyField() {
+  const nameEl = document.getElementById('check-company-name');
+  if (!nameEl) return;
+
+  if (isDemoSession()) {
+    fillDemoVibesCheck();
+    return;
+  }
+
+  // Regular user: check if registered with an existing company in session or brands
+  const sessionOrg = state.session?.company_name || state.session?.org_name || '';
+  const userBrand = state.brands.find((b) => {
+    if (!state.session) return false;
+    return (
+      (state.session.org_id && (b.owner_id === state.session.org_id || b.org_id === state.session.org_id)) ||
+      (state.session.user_id && b.owner_id === state.session.user_id)
+    );
+  });
+
+  if (userBrand) {
+    nameEl.value = userBrand.brand_name || sessionOrg;
+    state.dev.selectedBrandId = userBrand.brand_id;
+    renderDevTargetPreview();
+  } else if (sessionOrg && sessionOrg !== 'default-org') {
+    nameEl.value = sessionOrg;
+    state.dev.selectedBrandId = '';
+    renderDevTargetPreview();
+  } else {
+    // Unregistered / other user with no registered company: show NOTHING prefilled
+    nameEl.value = '';
+    state.dev.selectedBrandId = '';
+    renderDevTargetPreview();
+  }
+}
+
 async function fillDemoVibesCheck() {
   if (!isDemoSession()) return;
 
   const targetBrand =
-    state.brands.find((b) => (b.brand_name || '').toLowerCase().includes('nike')) ||
+    state.brands.find((b) => b.brand_id === 'omnigpt_ai') ||
+    state.brands.find((b) => (b.brand_name || '').toLowerCase().includes('omni')) ||
     state.brands[0];
 
   const nameEl = document.getElementById('check-company-name');
@@ -1796,20 +2052,22 @@ async function fillDemoVibesCheck() {
   const socialEl = document.getElementById('check-social-input');
   const copyEl = document.getElementById('dev-copy-input');
 
+  const brandName = targetBrand?.brand_name || 'OmniGPT AI';
+  if (nameEl) nameEl.value = brandName;
+  if (urlEl) urlEl.value = 'https://omnigpt.ai';
+  if (socialEl) socialEl.value = '@omnigpt_ai — Frontier cognitive reasoning and generative neural intelligence.';
+  if (copyEl) copyEl.value = 'Enterprise conversational models engineered for precision, ethical alignment, and zero drift.';
+
   if (targetBrand) {
     onSelectDevBrand(targetBrand.brand_id);
-    if (nameEl) nameEl.value = targetBrand.brand_name;
-  } else if (nameEl) {
-    nameEl.value = 'Acme Technologies';
+  } else {
+    state.dev.selectedBrandId = 'omnigpt_ai';
+    renderDevTargetPreview();
   }
 
-  if (urlEl) urlEl.value = 'https://acmetech.example.com';
-  if (socialEl) socialEl.value = '@acmetech — Modern cloud governance without compromise.';
-  if (copyEl) copyEl.value = 'Enterprise brand consistency across every campaign and touchpoint.';
-
-  await loadSampleAsset('/static/samples/nike_compliant_poster.png', 'nike_compliant_poster.png');
+  await loadSampleAsset('/static/samples/omnigpt_ai_poster.png', 'omnigpt_ai_poster.png');
   selectBrandInputSource('website');
-  showToast('Live Demo inputs populated — click Run Vibes Check with AI', 'info');
+  showToast('Live Demo populated with OmniGPT AI & creative poster', 'info');
 }
 
 function loadLiveDemoResultsPreview() {
@@ -1818,53 +2076,59 @@ function loadLiveDemoResultsPreview() {
     return;
   }
 
+  const demoBrand =
+    state.brands.find((b) => b.brand_id === 'omnigpt_ai') ||
+    state.brands[0] ||
+    { brand_id: 'omnigpt_ai', brand_name: 'OmniGPT AI' };
+
   state.dev.lastReport = {
-    inspection_id: 'demo-preview-acme',
-    brand_id: state.dev.selectedBrandId || state.brands[0]?.brand_id || 'demo-brand',
-    brand_name: 'Acme Technologies',
-    overall_score: 84,
-    deterministic_score: 88,
-    ai_score: 82,
+    inspection_id: 'demo-preview-omnigpt',
+    brand_id: demoBrand.brand_id,
+    brand_name: 'OmniGPT AI',
+    overall_score: 94,
+    deterministic_score: 96,
+    ai_score: 93,
     verdict: 'APPROVED',
     findings: [
-      { severity: 'PASS', title: 'Consistent Tone', explanation: 'Modern and credible enterprise tone across hero copy.' },
-      { severity: 'WARNING', title: 'Social Media Visual Drift', explanation: 'Social posts diverge slightly in accent warmth.', suggested_correction: 'Standardise warm sand highlights on social posts.' },
+      { severity: 'PASS', title: 'Empathetic & Precise Tone', explanation: 'Conversational tone reflects ethical reasoning and cognitive authority.' },
+      { severity: 'PASS', title: 'Neural Emerald Palette Compliance', explanation: 'Obsidian (#0B132B) and Emerald (#10A37F) achieve WCAG AAA contrast (12.4:1).' },
+      { severity: 'INFO', title: 'Enterprise Claim Verification', explanation: 'Zero-drift claims verified against official Brand Knowledge Base policies.' },
     ],
   };
 
   renderVibesDashboard({
-    score: 84,
-    overallLabel: 'Modern • Professional • Trustworthy',
-    summary: 'Live Demo preview: A complete brand governance scan across your digital presence.',
-    enginesLabel: 'Live Demo Simulation',
+    score: 94,
+    overallLabel: 'Intelligent • Visionary • Ethical',
+    summary: 'Live Demo preview: Multi-touchpoint AI governance scan for OmniGPT AI.',
+    enginesLabel: 'Gemini 2.5 + OpenCV Neural Telemetry',
     chips: [
       { label: 'Consistent', warn: false },
       { label: 'On-Brand', warn: false },
-      { label: 'Minor Gaps', warn: true },
+      { label: 'Neural Clarity', warn: false },
     ],
     previewTiles: [
-      { dark: true, label: 'A' },
-      { imgSrc: '/static/brand/card-vibes-arch.jpg', label: 'Architecture' },
-      { label: 'Acme Technologies' },
-      { bg: '#15251f', color: '#d6b684', label: '#15251F' },
+      { imgSrc: '/static/brand/omni_ai_logo.svg', label: 'OmniGPT Logo' },
+      { imgSrc: '/static/samples/omnigpt_ai_poster.png', label: 'AI Poster' },
+      { label: 'OmniGPT AI' },
+      { bg: '#10A37F', color: '#ffffff', label: '#10A37F' },
     ],
     breakdown: [
-      { label: 'Consistency', pct: 90 },
-      { label: 'Tone of Voice', pct: 85 },
-      { label: 'Visual Identity', pct: 82 },
-      { label: 'Cross-Platform Alignment', pct: 78 },
+      { label: 'Rule Consistency', pct: 96 },
+      { label: 'Tone of Voice', pct: 94 },
+      { label: 'Visual Identity', pct: 92 },
+      { label: 'Safety & Alignment', pct: 95 },
     ],
     insights: [
-      { type: 'ok', text: 'Your brand feels modern and credible across platforms.' },
-      { type: 'warn', text: 'Social media visuals are slightly less consistent in tone.' },
-      { type: 'tip', text: 'Consider aligning your colour usage and typography for a stronger, unified vibe.' },
+      { type: 'ok', text: 'Brand voice maintains clear, authoritative conversational reasoning across all channels.' },
+      { type: 'ok', text: 'Obsidian (#0B132B) and neural emerald (#10A37F) palette matches WCAG AAA standards.' },
+      { type: 'tip', text: 'Consider highlighting real-time cognitive reasoning benchmarks in promotional claims.' },
     ],
     channels: [
-      { name: 'Website', value: '88%' },
-      { name: 'Instagram', value: '82%' },
-      { name: 'LinkedIn', value: '84%' },
-      { name: 'YouTube', value: '78%' },
-      { name: 'X', value: '80%' },
+      { name: 'Website', value: '96%' },
+      { name: 'X / Twitter', value: '94%' },
+      { name: 'LinkedIn', value: '95%' },
+      { name: 'Documentation', value: '92%' },
+      { name: 'Product UI', value: '95%' },
     ],
     isDemoPreview: true,
   });
@@ -2292,11 +2556,6 @@ document.addEventListener('DOMContentLoaded', () => {
   bindHomePullSlidebar();
   bindDeveloperDropzone();
 
-  document.getElementById('c-color-picker')?.addEventListener('input', (e) => {
-    const hexEl = document.getElementById('c-color-hex');
-    if (hexEl) hexEl.value = e.target.value.toUpperCase();
-  });
-
   document.getElementById('copilot-prompt')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -2305,7 +2564,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.addEventListener('click', (e) => {
-    const hubWrap = document.querySelector('.hub-avatar-wrap:not(.check-avatar-wrap)');
+    const hubWrap = document.querySelector('.hub-avatar-wrap:not(.check-avatar-wrap):not(.company-avatar-wrap)');
     if (hubWrap && !hubWrap.contains(e.target)) {
       toggleHubAccountMenu(false);
     }
@@ -2313,10 +2572,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (checkWrap && !checkWrap.contains(e.target)) {
       toggleCheckAccountMenu(false);
     }
+    const companyWrap = document.querySelector('.company-avatar-wrap');
+    if (companyWrap && !companyWrap.contains(e.target)) {
+      toggleCompanyAccountMenu(false);
+    }
   });
-
-  renderPaletteEditor();
-  renderLiveBlueprint();
 
   const initialPage = resolveRoutePage(window.location.pathname);
   navigateTo(initialPage, false);

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css?v=2">
+  <link rel="stylesheet" href="/static/style.css?v=5">
 </head>
 <body>
   <div class="ambient-grid" aria-hidden="true"></div>
@@ -65,11 +65,7 @@
           <div class="home-hero-content">
             <div class="home-brand-lockup">
               <div class="home-monogram" aria-hidden="true">
-                <svg viewBox="0 0 36 42" fill="none">
-                  <path d="M4 4h15c7 0 11 3.8 11 9.2 0 4-2.3 6.8-6 8 4.4 1.2 7.2 4.3 7.2 8.8 0 6-4.8 9.8-12 9.8H4V4Z" stroke="#c8a97e" stroke-width="2.4"/>
-                  <path d="M10 10.5h8.2c3.5 0 5.6 1.7 5.6 4.4 0 2.8-2.1 4.4-5.6 4.4H10v-8.8Zm0 13.8h8.8c3.9 0 6.2 1.8 6.2 4.8 0 3-2.3 4.8-6.2 4.8H10v-9.6Z" fill="#c8a97e" fill-opacity="0.22"/>
-                  <path d="M4 21.5h15.5" stroke="#c8a97e" stroke-width="2"/>
-                </svg>
+                <img src="/static/brand/sanket-logo-mark.png" alt="Sanket AI" class="home-monogram-img">
               </div>
               <div class="home-brand-text">
                 <span class="home-brand-name">Sanket AI</span>
@@ -96,6 +92,35 @@
                   <span>Try Demo</span>
                   <span aria-hidden="true">&rarr;</span>
                 </button>
+              </div>
+
+              <!-- Demo Account Banner for Evaluators & Judges -->
+              <div class="home-demo-credentials-badge">
+                <div class="demo-badge-header">
+                  <span class="demo-badge-pulse" aria-hidden="true"></span>
+                  <span class="demo-badge-title">DEMO ACCOUNT CREDENTIALS</span>
+                  <span class="demo-badge-role">Admin Clearance</span>
+                </div>
+                <div class="demo-badge-creds">
+                  <button type="button" class="demo-cred-item" onclick="copyDemoText('demo@sanket.ai', 'Email')" title="Click to copy email">
+                    <span class="demo-cred-label">Email:</span>
+                    <span class="demo-cred-val">demo@sanket.ai</span>
+                    <span class="demo-cred-copy-icon" aria-hidden="true">📋</span>
+                  </button>
+                  <button type="button" class="demo-cred-item" onclick="copyDemoText('DemoJudge2026!', 'Password')" title="Click to copy password">
+                    <span class="demo-cred-label">Password:</span>
+                    <span class="demo-cred-val">DemoJudge2026!</span>
+                    <span class="demo-cred-copy-icon" aria-hidden="true">📋</span>
+                  </button>
+                </div>
+                <div class="demo-badge-actions">
+                  <button type="button" class="demo-badge-btn primary" onclick="launchDemoWorkspace()">
+                    ⚡ 1-Click Instant Login
+                  </button>
+                  <button type="button" class="demo-badge-btn ghost" onclick="openHomeSignin(); fillDemoCredentials('home');">
+                    Auto-Fill Form &rarr;
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -135,18 +160,6 @@
           <div class="drawer-top-controls">
             <button
               type="button"
-              id="btn-signin-fullview"
-              class="drawer-close-btn"
-              onclick="toggleHomeSigninFullPage()"
-              aria-pressed="false"
-              aria-label="Expand sign in to full page"
-              title="Expand sign in to full page"
-            >
-              <span id="signin-fullview-arrow">&lsaquo;</span>
-              <span class="drawer-close-text" id="signin-fullview-text">Full View</span>
-            </button>
-            <button
-              type="button"
               class="drawer-close-btn drawer-back-btn"
               onclick="closeHomeSignin()"
               aria-label="Close sign in sidebar"
@@ -159,11 +172,7 @@
           <div class="drawer-inner">
             <div class="drawer-brand-lockup">
               <div class="home-monogram home-monogram-dark" aria-hidden="true">
-                <svg viewBox="0 0 36 42" fill="none">
-                  <path d="M4 4h15c7 0 11 3.8 11 9.2 0 4-2.3 6.8-6 8 4.4 1.2 7.2 4.3 7.2 8.8 0 6-4.8 9.8-12 9.8H4V4Z" stroke="#b38d58" stroke-width="2.4"/>
-                  <path d="M10 10.5h8.2c3.5 0 5.6 1.7 5.6 4.4 0 2.8-2.1 4.4-5.6 4.4H10v-8.8Zm0 13.8h8.8c3.9 0 6.2 1.8 6.2 4.8 0 3-2.3 4.8-6.2 4.8H10v-9.6Z" fill="#b38d58" fill-opacity="0.22"/>
-                  <path d="M4 21.5h15.5" stroke="#b38d58" stroke-width="2"/>
-                </svg>
+                <img src="/static/brand/sanket-logo-mark.png" alt="Sanket AI" class="home-monogram-img">
               </div>
               <span class="drawer-brand-name">Sanket AI</span>
             </div>
@@ -172,6 +181,19 @@
             <div id="home-auth-signin-view" class="drawer-auth-view">
               <h2 class="drawer-title">Welcome Back</h2>
               <p class="drawer-subtitle">Sign in to your Sanket AI account to continue.</p>
+
+              <!-- Quick Demo Autofill Notice inside drawer -->
+              <div class="drawer-demo-quickfill">
+                <div class="drawer-demo-qf-top">
+                  <span class="drawer-demo-qf-label">Demo Credentials:</span>
+                  <button type="button" class="drawer-demo-qf-btn" onclick="fillDemoCredentials('home')">Auto-Fill Form</button>
+                </div>
+                <div class="drawer-demo-qf-vals">
+                  <button type="button" class="drawer-demo-qf-val-btn" onclick="copyDemoText('demo@sanket.ai', 'Email')" title="Click to copy email">demo@sanket.ai</button>
+                  <span class="drawer-demo-qf-sep">&bull;</span>
+                  <button type="button" class="drawer-demo-qf-val-btn" onclick="copyDemoText('DemoJudge2026!', 'Password')" title="Click to copy password">DemoJudge2026!</button>
+                </div>
+              </div>
 
               <form id="home-form-login" class="drawer-form" onsubmit="submitHomeLogin(event)">
                 <div class="cream-input-group">
@@ -292,11 +314,36 @@
 
             <!-- Dedicated DEMO Link Section (bottom of Sign-In panel) -->
             <div class="drawer-demo-box">
-              <span class="drawer-demo-eyebrow">INSTANT EXPLORATION</span>
-              <button type="button" class="drawer-demo-link" id="btn-home-demo-link" onclick="launchDemoWorkspace()">
-                <span>Launch Live Demo</span>
-                <span aria-hidden="true">&rarr;</span>
-              </button>
+              <span class="drawer-demo-eyebrow">PRE-CONFIGURED DEMO ACCOUNT</span>
+              <div class="drawer-demo-card">
+                <div class="drawer-demo-card-row">
+                  <span class="drawer-demo-tag">Email</span>
+                  <button type="button" class="drawer-demo-copy-btn" onclick="copyDemoText('demo@sanket.ai', 'Email')" title="Click to copy email">
+                    <code>demo@sanket.ai</code>
+                    <span class="copy-hint-pill">copy</span>
+                  </button>
+                </div>
+                <div class="drawer-demo-card-row">
+                  <span class="drawer-demo-tag">Password</span>
+                  <button type="button" class="drawer-demo-copy-btn" onclick="copyDemoText('DemoJudge2026!', 'Password')" title="Click to copy password">
+                    <code>DemoJudge2026!</code>
+                    <span class="copy-hint-pill">copy</span>
+                  </button>
+                </div>
+                <div class="drawer-demo-card-row">
+                  <span class="drawer-demo-tag">Clearance</span>
+                  <span class="drawer-demo-subtext">Apex Cloud &middot; Administrator</span>
+                </div>
+              </div>
+              <div class="drawer-demo-actions-row">
+                <button type="button" class="drawer-demo-link" id="btn-home-demo-link" onclick="launchDemoWorkspace()">
+                  <span>⚡ 1-Click Live Demo</span>
+                  <span aria-hidden="true">&rarr;</span>
+                </button>
+                <button type="button" class="drawer-demo-fill-btn" onclick="fillDemoCredentials('home')">
+                  Auto-Fill Form
+                </button>
+              </div>
             </div>
           </div>
         </aside>
@@ -317,11 +364,7 @@
         <header class="hub-header">
           <div class="hub-brand">
             <div class="home-monogram home-monogram-dark" aria-hidden="true">
-              <svg viewBox="0 0 36 42" fill="none">
-                <path d="M4 4h15c7 0 11 3.8 11 9.2 0 4-2.3 6.8-6 8 4.4 1.2 7.2 4.3 7.2 8.8 0 6-4.8 9.8-12 9.8H4V4Z" stroke="#b38d58" stroke-width="2.4"/>
-                <path d="M10 10.5h8.2c3.5 0 5.6 1.7 5.6 4.4 0 2.8-2.1 4.4-5.6 4.4H10v-8.8Zm0 13.8h8.8c3.9 0 6.2 1.8 6.2 4.8 0 3-2.3 4.8-6.2 4.8H10v-9.6Z" fill="#b38d58" fill-opacity="0.22"/>
-                <path d="M4 21.5h15.5" stroke="#b38d58" stroke-width="2"/>
-              </svg>
+              <img src="/static/brand/sanket-logo-mark.png" alt="Sanket AI" class="home-monogram-img">
             </div>
             <span class="hub-brand-name">Sanket AI</span>
           </div>
@@ -412,184 +455,586 @@
     </section>
 
     <!-- =================================================================== -->
-    <!-- PAGE 2: COMPANY PUTS THEIR VIBES                                    -->
+    <!-- =================================================================== -->
+    <!-- PAGE 2: SET UP COMPANY (Step 1-4 Wizard matching BrandVista mockups) -->
     <!-- =================================================================== -->
     <section id="page-company" class="page-view hidden" aria-labelledby="company-title">
-      <div class="page-head">
-        <div>
-          <span class="eyebrow-chip">PAGE 02 &middot; COMPANY VIBE STUDIO</span>
-          <h1 id="company-title" class="page-title">Put Your Company&rsquo;s Vibes</h1>
-          <p class="page-desc">Configure your brand&rsquo;s visual and verbal identity, generate complete AI vibes with Gemini, and lock them for developers.</p>
-        </div>
-        <div class="page-head-controls">
-          <select id="company-brand-select" class="select-control" onchange="onSelectCompanyBrand(this.value)" aria-label="Choose existing brand profile">
-            <option value="__new__">+ New Company Vibe Profile</option>
-          </select>
-          <button type="button" class="btn btn-ghost" onclick="resetCompanyForm()">+ New</button>
-        </div>
-      </div>
+      <div class="company-page-shell">
+        <!-- Top Cream Header -->
+        <header class="company-header">
+          <a href="/" class="hub-brand company-brand-link" data-nav="home" title="Back to Home">
+            <div class="home-monogram home-monogram-dark" aria-hidden="true">
+              <img src="/static/brand/sanket-logo-mark.png" alt="Sanket AI" class="home-monogram-img">
+            </div>
+            <span class="hub-brand-name">BrandVista</span>
+          </a>
 
-      <div class="studio-grid">
-        <!-- Left: Vibe Configuration Form -->
-        <form id="company-vibe-form" class="panel form-panel" onsubmit="return false;">
-          <div class="form-section">
-            <div class="form-section-title">1. Company &amp; Story</div>
-            <div class="field-grid-2">
-              <div class="field">
-                <label for="c-brand-name">Company / Brand Name *</label>
-                <input id="c-brand-name" type="text" placeholder="e.g. Apex Cloud Systems" required oninput="renderLiveBlueprint()">
-              </div>
-              <div class="field">
-                <label for="c-industry">Industry</label>
-                <input id="c-industry" type="text" placeholder="e.g. Fintech, SaaS, Sportswear" value="Technology" oninput="renderLiveBlueprint()">
-              </div>
-            </div>
-            <div class="field">
-              <label for="c-audience">Target Audience</label>
-              <input id="c-audience" type="text" placeholder="e.g. Enterprise CTOs, Developers, Gen-Z Creators" oninput="renderLiveBlueprint()">
-            </div>
-            <div class="field-grid-2">
-              <div class="field">
-                <label for="c-products">Products &amp; Services</label>
-                <input id="c-products" type="text" placeholder="e.g. Cloud telemetry API, Edge SDK" oninput="renderLiveBlueprint()">
-              </div>
-              <div class="field">
-                <label for="c-mission">Tagline / Core Positioning</label>
-                <input id="c-mission" type="text" placeholder="e.g. Architectural precision for modern infrastructure" oninput="renderLiveBlueprint()">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <div class="form-section-title">2. Brand Vibes &amp; Voice</div>
-            <div class="field-grid-2">
-              <div class="field">
-                <label for="c-personality">Personality Vibe *</label>
-                <input id="c-personality" type="text" placeholder="Architectural, Minimalist, Authoritative" oninput="renderLiveBlueprint()">
-                <div class="preset-chips" data-target="c-personality">
-                  <button type="button" class="chip" onclick="appendChip('c-personality', 'Architectural')">Architectural</button>
-                  <button type="button" class="chip" onclick="appendChip('c-personality', 'Playful')">Playful</button>
-                  <button type="button" class="chip" onclick="appendChip('c-personality', 'Bold')">Bold</button>
-                  <button type="button" class="chip" onclick="appendChip('c-personality', 'Trustworthy')">Trustworthy</button>
-                </div>
-              </div>
-              <div class="field">
-                <label for="c-mood">Atmosphere / Mood *</label>
-                <input id="c-mood" type="text" placeholder="Calm, Futuristic, High-Trust" oninput="renderLiveBlueprint()">
-                <div class="preset-chips">
-                  <button type="button" class="chip" onclick="appendChip('c-mood', 'Futuristic')">Futuristic</button>
-                  <button type="button" class="chip" onclick="appendChip('c-mood', 'Calm')">Calm</button>
-                  <button type="button" class="chip" onclick="appendChip('c-mood', 'Energetic')">Energetic</button>
-                  <button type="button" class="chip" onclick="appendChip('c-mood', 'Editorial')">Editorial</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="field-grid-2">
-              <div class="field">
-                <label for="c-tone">Communication Tone *</label>
-                <input id="c-tone" type="text" placeholder="Direct, Technically Rigorous, Warm" oninput="renderLiveBlueprint()">
-              </div>
-              <div class="field">
-                <label for="c-visual-style">Visual Aesthetic *</label>
-                <input id="c-visual-style" type="text" placeholder="Swiss Grid, Dark Glass, High Contrast" oninput="renderLiveBlueprint()">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <div class="form-section-title">3. Color Palette &amp; Brand Logo</div>
-            <div class="palette-builder">
-              <div class="palette-controls">
-                <input type="color" id="c-color-picker" value="#3B82F6" aria-label="Pick brand color">
-                <input type="text" id="c-color-hex" placeholder="#3B82F6" maxlength="7">
-                <button type="button" class="btn btn-secondary" onclick="addPaletteHex()">+ Add Color</button>
-              </div>
-              <div id="c-palette-chips" class="swatch-list"></div>
-            </div>
-
-            <div class="upload-tools-row">
-              <label class="file-btn">
-                <input type="file" id="c-extract-img-input" accept="image/*" hidden onchange="extractPaletteFromImage(this)">
-                <span>Extract Palette from Image</span>
-              </label>
-              <label class="file-btn">
-                <input type="file" id="c-logo-input" accept="image/*" hidden onchange="uploadCompanyLogo(this)">
-                <span>Upload Company Logo</span>
-              </label>
-              <span id="c-logo-status" class="muted mono-sm"></span>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <div class="form-section-title">4. Guardrails &amp; Words to Avoid</div>
-            <div class="field">
-              <label for="c-disallowed">Disallowed Words / Off-Brand Claims</label>
-              <input id="c-disallowed" type="text" placeholder="cheap, guaranteed 100%, magic hack, risk-free" oninput="renderLiveBlueprint()">
-            </div>
-            <div class="field">
-              <label for="c-description">Extra Company Facts / Product Truths (for Gemini &amp; Groq Fact Checking)</label>
-              <textarea id="c-description" rows="2" placeholder="Approved specs, verified certifications, or messaging truths developers must stay faithful to." oninput="renderLiveBlueprint()"></textarea>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn btn-primary btn-lg" id="btn-generate-dna" onclick="generateBrandVibesWithAI()">
-              Generate Full Vibes (Gemini AI)
+          <div class="hub-header-right">
+            <button type="button" class="hub-bell-btn" onclick="showToast('Setup progress automatically saved.', 'info')" aria-label="Notifications">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M10 2.5a4.5 4.5 0 0 0-4.5 4.5v3.2L4 12.8v1.2h12v-1.2l-1.5-2.6V7a4.5 4.5 0 0 0-4.5-4.5Z"/>
+                <path d="M8.5 15.5a1.5 1.5 0 0 0 3 0"/>
+              </svg>
             </button>
-            <button type="button" class="btn btn-emerald btn-lg" id="btn-save-brand" onclick="saveAndConfirmBrand()">
-              Save &amp; Lock Vibes
-            </button>
-          </div>
-          <div id="company-action-status" class="inline-feedback hidden"></div>
-        </form>
-
-        <!-- Right: Live Blueprint + AI DNA Output -->
-        <aside class="panel blueprint-panel">
-          <div class="blueprint-head">
-            <div>
-              <span class="mono-sm muted">LIVE VIBE BLUEPRINT</span>
-              <h2 id="bp-name">Your Brand Vibes</h2>
-            </div>
-            <span class="status-tag" id="bp-status">DRAFTING</span>
-          </div>
-
-          <div id="bp-logo-wrap" class="bp-logo-box hidden">
-            <img id="bp-logo-img" alt="Company logo preview">
-          </div>
-
-          <div class="bp-block">
-            <div class="bp-label">COLOR SYSTEM</div>
-            <div id="bp-colors" class="bp-palette-strip"></div>
-          </div>
-
-          <div class="bp-block">
-            <div class="bp-label">PERSONALITY &amp; VOICE</div>
-            <div id="bp-traits" class="bp-tags"></div>
-            <p id="bp-mission" class="bp-copy muted"></p>
-          </div>
-
-          <div id="bp-dna-section" class="bp-dna-box hidden">
-            <div class="bp-label">GEMINI AI SYNTHESIZED BRAND DNA</div>
-            <div id="bp-dna-details" class="dna-details"></div>
-            <div class="bp-dna-actions">
-              <button type="button" class="btn btn-emerald" id="btn-approve-dna" onclick="approveGeneratedDNA()">
-                Approve &amp; Publish AI Vibes
+            <div class="hub-avatar-wrap company-avatar-wrap">
+              <button
+                type="button"
+                id="company-avatar-btn"
+                class="hub-avatar-btn"
+                onclick="toggleCompanyAccountMenu()"
+                aria-expanded="false"
+                aria-controls="company-account-menu"
+                title="Workspace menu"
+              >
+                <span id="company-avatar-initials">AC</span>
               </button>
+              <div id="company-account-menu" class="hub-account-menu hidden" role="menu">
+                <div class="hub-account-meta">
+                  <strong id="company-account-email">Guest Workspace</strong>
+                  <span id="company-account-org">default-org</span>
+                </div>
+                <button type="button" class="hub-menu-item" onclick="navigateTo('home'); toggleCompanyAccountMenu(false);">Home Hub</button>
+                <button type="button" class="hub-menu-item" onclick="navigateTo('check'); toggleCompanyAccountMenu(false);">Check Brand Vibes</button>
+                <button type="button" class="hub-menu-item" onclick="logoutSession()">Sign Out</button>
+              </div>
             </div>
           </div>
+        </header>
 
-          <div class="bp-block">
-            <div class="bp-label">STRICTLY AVOID</div>
-            <div id="bp-avoid" class="bp-tags"></div>
-          </div>
+        <!-- Main Body: Split Sidebar + Content -->
+        <div class="company-body-split">
+          <!-- Left Dark Sidebar with Architecture Photo -->
+          <aside class="company-sidebar">
+            <div class="company-sidebar-content">
+              <h2 id="company-title" class="company-sidebar-title">Set Up Company</h2>
+              <p class="company-sidebar-subtitle">
+                Register your company and define your brand&rsquo;s core identity and vibes.
+              </p>
 
-          <div class="blueprint-footer">
-            <button type="button" class="btn btn-secondary full-width" onclick="jumpToCheckWithCurrentBrand()">
-              Test This Brand in Developer Check &rarr;
-            </button>
-          </div>
-        </aside>
+              <nav class="company-step-nav" aria-label="Setup steps">
+                <button type="button" class="company-step-item active" id="step-nav-1" onclick="jumpToCompanyStep(1)">
+                  <span class="step-num-circle"><span class="step-num">1</span><span class="step-check">&#10003;</span></span>
+                  <span class="step-label">Company Details</span>
+                </button>
+                <button type="button" class="company-step-item" id="step-nav-2" onclick="jumpToCompanyStep(2)">
+                  <span class="step-num-circle"><span class="step-num">2</span><span class="step-check">&#10003;</span></span>
+                  <span class="step-label">Brand Vibes</span>
+                </button>
+                <button type="button" class="company-step-item" id="step-nav-3" onclick="jumpToCompanyStep(3)">
+                  <span class="step-num-circle"><span class="step-num">3</span><span class="step-check">&#10003;</span></span>
+                  <span class="step-label">Visual Identity</span>
+                </button>
+                <button type="button" class="company-step-item" id="step-nav-4" onclick="jumpToCompanyStep(4)">
+                  <span class="step-num-circle"><span class="step-num">4</span><span class="step-check">&#10003;</span></span>
+                  <span class="step-label">Review &amp; Save</span>
+                </button>
+              </nav>
+            </div>
+
+            <div class="company-sidebar-arch">
+              <img src="/static/brand/card-vibes-arch.jpg" alt="Architecture" class="company-sidebar-arch-img">
+              <svg class="company-sidebar-arch-lines" viewBox="0 0 200 200" aria-hidden="true">
+                <path d="M 0 160 A 140 140 0 0 0 160 0" fill="none" stroke="rgba(214, 182, 132, 0.35)" stroke-width="1"/>
+                <line x1="0" y1="90" x2="160" y2="90" stroke="rgba(214, 182, 132, 0.22)" stroke-width="1"/>
+              </svg>
+            </div>
+          </aside>
+
+          <!-- Right Step Content Container -->
+          <main class="company-main-panel">
+            <!-- Top Progress Header -->
+            <div class="company-progress-header">
+              <span class="company-step-counter" id="company-step-counter">STEP 1 OF 4</span>
+              <div class="company-progress-track">
+                <div class="company-progress-fill" id="company-progress-fill" style="width: 25%;"></div>
+              </div>
+            </div>
+
+            <!-- STEP 1: Company Details -->
+            <div id="company-step-1" class="company-step-view active">
+              <div class="company-step-grid">
+                <div class="company-step-form">
+                  <h1 class="company-form-title">Company Details</h1>
+                  <p class="company-form-subtitle">Let&rsquo;s start with the basics about your company.</p>
+
+                  <div class="company-form-stack">
+                    <div class="company-field-row-2">
+                      <div class="company-field">
+                        <label for="c-setup-name" class="company-label">Company Name *</label>
+                        <div class="cream-input-group vibes-cream-input">
+                          <span class="cream-input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                              <path d="M3.5 17V4.5l6.5-2 6.5 2V17"/>
+                              <path d="M7 7.5h2M11 7.5h2M7 11h2M11 11h2M8.5 17v-3h3v3"/>
+                            </svg>
+                          </span>
+                          <input id="c-setup-name" type="text" placeholder="e.g. Acme Technologies" oninput="updateStepSummary()">
+                        </div>
+                      </div>
+
+                      <div class="company-field">
+                        <label for="c-setup-website" class="company-label">Website URL</label>
+                        <div class="cream-input-group vibes-cream-input">
+                          <span class="cream-input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                              <circle cx="10" cy="10" r="7.5"/>
+                              <path d="M2.8 10h14.4M10 2.5a11 11 0 0 1 0 15M10 2.5a11 11 0 0 0 0 15"/>
+                            </svg>
+                          </span>
+                          <input id="c-setup-website" type="url" placeholder="https://yourcompany.com" oninput="updateStepSummary()">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="company-field">
+                      <label for="c-setup-desc" class="company-label">Short Description *</label>
+                      <div class="company-textarea-wrap">
+                        <textarea id="c-setup-desc" class="vibes-cream-textarea" rows="3" maxlength="200" placeholder="Tell us what your company does in a few lines..." oninput="onDescInput(this)"></textarea>
+                        <span class="company-char-counter" id="c-desc-count">0 / 200</span>
+                      </div>
+                    </div>
+
+                    <div class="company-field-row-2">
+                      <div class="company-field">
+                        <label for="c-setup-industry" class="company-label">Industry</label>
+                        <div class="cream-input-group vibes-cream-input">
+                          <span class="cream-input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                              <path d="M2.5 6.5 10 2.5l7.5 4-7.5 4-7.5-4ZM2.5 10.5 10 14.5l7.5-4M2.5 14.5 10 18.5l7.5-4"/>
+                            </svg>
+                          </span>
+                          <select id="c-setup-industry" class="company-select-control" onchange="updateStepSummary()">
+                            <option value="">Select industry</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Fintech">Fintech</option>
+                            <option value="SaaS / Cloud">SaaS / Cloud</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="E-Commerce / Retail">E-Commerce / Retail</option>
+                            <option value="Media &amp; Entertainment">Media &amp; Entertainment</option>
+                            <option value="Education">Education</option>
+                            <option value="Consulting">Consulting</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="company-field">
+                        <label for="c-setup-size" class="company-label">Company Size</label>
+                        <div class="cream-input-group vibes-cream-input">
+                          <span class="cream-input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                              <circle cx="7" cy="6" r="3"/>
+                              <path d="M2 16.5a5 5 0 0 1 10 0M14 4a2.5 2.5 0 0 1 0 5M12 16.5a4 4 0 0 1 6 0"/>
+                            </svg>
+                          </span>
+                          <select id="c-setup-size" class="company-select-control" onchange="updateStepSummary()">
+                            <option value="">Select size</option>
+                            <option value="1 - 10">1 - 10</option>
+                            <option value="11 - 50">11 - 50</option>
+                            <option value="51 - 200">51 - 200</option>
+                            <option value="201 - 500">201 - 500</option>
+                            <option value="501 - 1000">501 - 1000</option>
+                            <option value="1000+">1000+</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="company-action-row right-only">
+                      <button type="button" class="vibes-run-btn company-btn-next" onclick="goToCompanyStep(2)">
+                        <span>Next: Define Brand Vibes</span>
+                        <span aria-hidden="true">&rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Side Card: Why this matters? -->
+                <aside class="company-side-card">
+                  <div class="company-card-sparkle">&#10022;</div>
+                  <h3 class="company-card-heading">Why this matters?</h3>
+                  <p class="company-card-desc">
+                    These details help our AI understand your brand and provide more accurate vibe analysis and governance.
+                  </p>
+                  <div class="company-card-photo" style="background-image: url('/static/brand/card-company-arch.jpg');" aria-hidden="true"></div>
+                </aside>
+              </div>
+            </div>
+
+            <!-- STEP 2: Brand Vibes -->
+            <div id="company-step-2" class="company-step-view hidden">
+              <div class="company-step-grid">
+                <div class="company-step-form">
+                  <h1 class="company-form-title">Brand Vibes</h1>
+                  <p class="company-form-subtitle">Define the core personality and feeling you want your brand to convey across all touchpoints.</p>
+
+                  <div class="company-form-stack">
+                    <div class="company-field">
+                      <label class="company-label">Brand Personality *</label>
+                      <span class="company-label-sub">Select up to 3 traits that best describe your brand.</span>
+                      <div class="company-personality-grid" id="c-personality-chips">
+                        <button type="button" class="company-vibe-chip" data-trait="Modern" onclick="toggleVibeTrait('Modern', this)">
+                          <span class="chip-text">Modern</span>
+                        </button>
+                        <button type="button" class="company-vibe-chip" data-trait="Professional" onclick="toggleVibeTrait('Professional', this)">
+                          <span class="chip-text">Professional</span>
+                        </button>
+                        <button type="button" class="company-vibe-chip" data-trait="Trustworthy" onclick="toggleVibeTrait('Trustworthy', this)">
+                          <span class="chip-text">Trustworthy</span>
+                        </button>
+                        <button type="button" class="company-vibe-chip" data-trait="Innovative" onclick="toggleVibeTrait('Innovative', this)">
+                          <span class="chip-text">Innovative</span>
+                        </button>
+                        <button type="button" class="company-vibe-chip" data-trait="Friendly" onclick="toggleVibeTrait('Friendly', this)">
+                          <span class="chip-text">Friendly</span>
+                        </button>
+                        <button type="button" class="company-vibe-chip" data-trait="Bold" onclick="toggleVibeTrait('Bold', this)">
+                          <span class="chip-text">Bold</span>
+                        </button>
+                        <button type="button" class="company-vibe-chip" data-trait="Minimal" onclick="toggleVibeTrait('Minimal', this)">
+                          <span class="chip-text">Minimal</span>
+                        </button>
+                        <button type="button" class="company-vibe-chip" data-trait="Premium" onclick="toggleVibeTrait('Premium', this)">
+                          <span class="chip-text">Premium</span>
+                        </button>
+                        <button type="button" class="company-vibe-chip" data-trait="Creative" onclick="toggleVibeTrait('Creative', this)">
+                          <span class="chip-text">Creative</span>
+                        </button>
+                        <button type="button" class="company-vibe-chip" data-trait="Sustainable" onclick="toggleVibeTrait('Sustainable', this)">
+                          <span class="chip-text">Sustainable</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="company-field-row-2">
+                      <div class="company-field">
+                        <label for="c-setup-tone" class="company-label">Brand Tone of Voice *</label>
+                        <div class="cream-input-group vibes-cream-input">
+                          <span class="cream-input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                              <path d="M15.5 8.5a5.5 5.5 0 0 1 0 3M17.5 6.5a8.5 8.5 0 0 1 0 7M3 7.5h3.2L10.5 4v12L6.2 12.5H3V7.5Z"/>
+                            </svg>
+                          </span>
+                          <select id="c-setup-tone" class="company-select-control" onchange="updateStepSummary()">
+                            <option value="">Select tone of voice</option>
+                            <option value="Confident">Confident</option>
+                            <option value="Direct &amp; Empathetic">Direct &amp; Empathetic</option>
+                            <option value="Authoritative">Authoritative</option>
+                            <option value="Casual &amp; Warm">Casual &amp; Warm</option>
+                            <option value="Technically Rigorous">Technically Rigorous</option>
+                            <option value="Playful &amp; Witty">Playful &amp; Witty</option>
+                            <option value="Inspiring">Inspiring</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="company-field">
+                        <label for="c-setup-feeling" class="company-label">Brand Feeling *</label>
+                        <div class="cream-input-group vibes-cream-input">
+                          <span class="cream-input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                              <path d="M10 16.5s-6.5-4.2-6.5-8.5a4.2 4.2 0 0 1 7.2-3 4.2 4.2 0 0 1 7.2 3c0 4.3-6.5 8.5-6.5 8.5Z"/>
+                            </svg>
+                          </span>
+                          <select id="c-setup-feeling" class="company-select-control" onchange="updateStepSummary()">
+                            <option value="">Select brand feeling</option>
+                            <option value="Reliable">Reliable</option>
+                            <option value="Inspiring">Inspiring</option>
+                            <option value="Secure">Secure</option>
+                            <option value="Innovative">Innovative</option>
+                            <option value="Empowering">Empowering</option>
+                            <option value="Sophisticated">Sophisticated</option>
+                            <option value="Approachable">Approachable</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="company-field">
+                      <label for="c-setup-keywords" class="company-label">Vibe Keywords (Optional)</label>
+                      <span class="company-label-sub">Add a few words that capture your brand&rsquo;s overall vibe.</span>
+                      <div class="company-textarea-wrap">
+                        <div class="cream-input-group vibes-cream-input">
+                          <span class="cream-input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                              <path d="M2.5 10.5 9.5 3.5H16.5V10.5L9.5 17.5L2.5 10.5Z"/>
+                              <circle cx="13" cy="7" r="1.5" fill="currentColor"/>
+                            </svg>
+                          </span>
+                          <input id="c-setup-keywords" type="text" placeholder="e.g. reliable, growth-focused, human" oninput="onKeywordsInput(this)">
+                        </div>
+                        <span class="company-char-counter" id="c-keywords-count">0 / 5</span>
+                      </div>
+                    </div>
+
+                    <div class="company-action-row">
+                      <button type="button" class="company-btn-back" onclick="goToCompanyStep(1)">
+                        <span>&larr; Back: Company Details</span>
+                      </button>
+                      <button type="button" class="vibes-run-btn company-btn-next" onclick="goToCompanyStep(3)">
+                        <span>Next: Visual Identity</span>
+                        <span aria-hidden="true">&rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Side Card: Need Inspiration? -->
+                <aside class="company-side-card">
+                  <div class="company-card-sparkle">&#10022;</div>
+                  <h3 class="company-card-heading">Need Inspiration?</h3>
+                  <p class="company-card-desc">
+                    Here are some example vibe combinations used by leading brands.
+                  </p>
+                  <div class="company-inspiration-list">
+                    <button type="button" class="company-inspiration-item" onclick="applyInspirationPreset('Modern', 'Professional', 'Global')">
+                      <span class="company-inspiration-icon">&#127970;</span>
+                      <span>Modern &bull; Professional &bull; Global</span>
+                    </button>
+                    <button type="button" class="company-inspiration-item" onclick="applyInspirationPreset('Sustainable', 'Authentic', 'Friendly')">
+                      <span class="company-inspiration-icon">&#127793;</span>
+                      <span>Sustainable &bull; Authentic &bull; Friendly</span>
+                    </button>
+                    <button type="button" class="company-inspiration-item" onclick="applyInspirationPreset('Premium', 'Minimal', 'Trustworthy')">
+                      <span class="company-inspiration-icon">&#128142;</span>
+                      <span>Premium &bull; Minimal &bull; Trustworthy</span>
+                    </button>
+                  </div>
+                  <div class="company-card-photo" style="background-image: url('/static/brand/card-company-arch.jpg');" aria-hidden="true"></div>
+                </aside>
+              </div>
+            </div>
+
+            <!-- STEP 3: Visual Identity -->
+            <div id="company-step-3" class="company-step-view hidden">
+              <div class="company-step-grid">
+                <div class="company-step-form">
+                  <h1 class="company-form-title">Visual Identity</h1>
+                  <p class="company-form-subtitle">Add your key brand assets and visual style to help our AI analyse and govern your brand consistently.</p>
+
+                  <div class="company-form-stack">
+                    <div class="company-field">
+                      <label class="company-label">Brand Logo *</label>
+                      <div class="company-logo-split">
+                        <div class="company-logo-dropzone" onclick="document.getElementById('c-setup-logo-file').click()" role="button" tabindex="0">
+                          <input type="file" id="c-setup-logo-file" accept="image/*" hidden onchange="handleSetupLogoUpload(this)">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                            <path d="M12 4v12M12 4l-4 4M12 4l4 4M4 17v3h16v-3"/>
+                          </svg>
+                          <strong>Upload your logo</strong>
+                          <span>Drag and drop or click to browse</span>
+                          <span class="mono-sm" style="color:#8a8377;margin-top:0.25rem;">PNG, SVG, JPG (Max 10MB)</span>
+                        </div>
+
+                        <div class="company-logo-preview-box" id="c-setup-logo-preview">
+                          <img id="c-setup-logo-img" alt="Logo preview" class="company-logo-img hidden">
+                          <div id="c-setup-logo-fallback" class="company-logo-fallback">A</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="company-field">
+                      <label class="company-label">Brand Colours *</label>
+                      <span class="company-label-sub">Add your primary and secondary brand colours.</span>
+                      <div class="company-colors-row" id="c-setup-colours-list"></div>
+                      <input type="color" id="c-setup-color-picker" hidden onchange="onSetupColorPicked(this.value)">
+                    </div>
+
+                    <div class="company-field-row-2">
+                      <div class="company-field">
+                        <label for="c-setup-font" class="company-label">Typography</label>
+                        <span class="company-label-sub">Add your brand fonts (optional).</span>
+                        <div class="cream-input-group vibes-cream-input">
+                          <span class="cream-input-icon" aria-hidden="true">
+                            <span style="font-weight:700;font-size:0.85rem;">Aa</span>
+                          </span>
+                          <select id="c-setup-font" class="company-select-control" onchange="updateStepSummary()">
+                            <option value="">Select or enter brand font</option>
+                            <option value="Inter">Inter</option>
+                            <option value="Playfair Display">Playfair Display</option>
+                            <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                            <option value="JetBrains Mono">JetBrains Mono</option>
+                            <option value="Instrument Serif">Instrument Serif</option>
+                            <option value="Helvetica / Neue">Helvetica / Neue</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="company-field">
+                        <label class="company-label">Brand Assets (Optional)</label>
+                        <span class="company-label-sub">Add other key assets like icons, patterns or imagery.</span>
+                        <div class="company-logo-dropzone" style="padding:0.75rem 1rem;" onclick="document.getElementById('c-setup-asset-file').click()" role="button" tabindex="0">
+                          <input type="file" id="c-setup-asset-file" accept="image/*,.pdf" multiple hidden onchange="handleSetupAssetUpload(this)">
+                          <span style="display:inline-flex;align-items:center;gap:0.4rem;font-weight:600;color:#2c333e;">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:16px;height:16px;margin:0;">
+                              <path d="M10 3v10M10 3l-3 3M10 3l3 3M3 14v3h14v-3"/>
+                            </svg>
+                            <span id="c-setup-asset-btn-label">Upload assets</span>
+                          </span>
+                          <span class="mono-sm" style="color:#8a8377;">PNG, SVG, JPG, PDF</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="company-action-row">
+                      <button type="button" class="company-btn-back" onclick="goToCompanyStep(2)">
+                        <span>&larr; Back: Brand Vibes</span>
+                      </button>
+                      <button type="button" class="vibes-run-btn company-btn-next" onclick="goToCompanyStep(4)">
+                        <span>Next: Review &amp; Save</span>
+                        <span aria-hidden="true">&rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Side Card: Live Preview -->
+                <aside class="company-side-card">
+                  <div class="company-card-sparkle">&#10022;</div>
+                  <h3 class="company-card-heading">Live Preview</h3>
+                  <p class="company-card-desc">
+                    A quick look at how your brand comes together.
+                  </p>
+                  <div class="company-live-preview-mockup" id="c-preview-mockup">
+                    <div class="company-preview-top">
+                      <div class="company-preview-mark" id="c-preview-mark">A</div>
+                      <div class="company-preview-burger" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                    <div class="company-preview-mid">
+                      <h4 id="c-preview-tagline">Modern Solutions</h4>
+                      <div class="company-preview-line"></div>
+                    </div>
+                    <div class="company-preview-corner-arch" style="background-image: url('/static/brand/card-company-arch.jpg');" aria-hidden="true"></div>
+                  </div>
+                  <div class="company-preview-swatch-strip" id="c-preview-swatches"></div>
+                </aside>
+              </div>
+            </div>
+
+            <!-- STEP 4: Review & Save (Full Width) -->
+            <div id="company-step-4" class="company-step-view hidden">
+              <h1 class="company-form-title">Review &amp; Save</h1>
+              <p class="company-form-subtitle">Here&rsquo;s a summary of all the information you&rsquo;ve added. Please review and save to set up your company.</p>
+
+              <div class="company-review-cards-stack">
+                <!-- Summary Card 1: Company Details -->
+                <article class="company-summary-card">
+                  <div class="company-summary-head">
+                    <h2 class="company-summary-title">
+                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M3.5 17V4.5l6.5-2 6.5 2V17"/>
+                        <path d="M7 7.5h2M11 7.5h2M7 11h2M11 11h2M8.5 17v-3h3v3"/>
+                      </svg>
+                      <span>Company Details</span>
+                    </h2>
+                    <button type="button" class="company-summary-edit-btn" onclick="goToCompanyStep(1)">
+                      <span>&#9998; Edit</span>
+                    </button>
+                  </div>
+                  <div class="company-summary-cols-4">
+                    <div class="company-summary-col">
+                      <span class="k">Company Name</span>
+                      <strong class="v" id="sum-c-name">Acme Technologies</strong>
+                    </div>
+                    <div class="company-summary-col">
+                      <span class="k">Website</span>
+                      <strong class="v" id="sum-c-website">https://acme.com</strong>
+                    </div>
+                    <div class="company-summary-col">
+                      <span class="k">Industry</span>
+                      <strong class="v" id="sum-c-industry">Technology</strong>
+                    </div>
+                    <div class="company-summary-col">
+                      <span class="k">Company Size</span>
+                      <strong class="v" id="sum-c-size">201 &ndash; 500</strong>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Summary Card 2: Brand Vibes -->
+                <article class="company-summary-card">
+                  <div class="company-summary-head">
+                    <h2 class="company-summary-title">
+                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M10 2.5l1.3 3.9L15.2 7.7l-3.9 1.3L10 13l-1.3-4-3.9-1.3 3.9-1.3L10 2.5Z"/>
+                      </svg>
+                      <span>Brand Vibes</span>
+                    </h2>
+                    <button type="button" class="company-summary-edit-btn" onclick="goToCompanyStep(2)">
+                      <span>&#9998; Edit</span>
+                    </button>
+                  </div>
+                  <div class="company-summary-cols-4">
+                    <div class="company-summary-col">
+                      <span class="k">Brand Personality</span>
+                      <div class="company-summary-chips" id="sum-c-traits"></div>
+                    </div>
+                    <div class="company-summary-col">
+                      <span class="k">Tone of Voice</span>
+                      <strong class="v" id="sum-c-tone">Confident</strong>
+                    </div>
+                    <div class="company-summary-col">
+                      <span class="k">Brand Feeling</span>
+                      <strong class="v" id="sum-c-feeling">Reliable</strong>
+                    </div>
+                    <div class="company-summary-col">
+                      <span class="k">Vibe Keywords</span>
+                      <div class="company-summary-chips" id="sum-c-keywords"></div>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Summary Card 3: Visual Identity -->
+                <article class="company-summary-card">
+                  <div class="company-summary-head">
+                    <h2 class="company-summary-title">
+                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="4.5" width="14" height="11" rx="1.8"/>
+                        <circle cx="7" cy="8" r="1.5"/>
+                        <path d="M4 14.5l4-4 3 3 2.5-2.5 3.5 3.5"/>
+                      </svg>
+                      <span>Visual Identity</span>
+                    </h2>
+                    <button type="button" class="company-summary-edit-btn" onclick="goToCompanyStep(3)">
+                      <span>&#9998; Edit</span>
+                    </button>
+                  </div>
+                  <div class="company-summary-cols-4">
+                    <div class="company-summary-col">
+                      <span class="k">Brand Logo</span>
+                      <div class="company-summary-logo-wrap" id="sum-c-logo"></div>
+                    </div>
+                    <div class="company-summary-col">
+                      <span class="k">Brand Colours</span>
+                      <div class="company-colors-row" id="sum-c-colours" style="margin-top:0.2rem;"></div>
+                    </div>
+                    <div class="company-summary-col">
+                      <span class="k">Typography</span>
+                      <div id="sum-c-typography" style="display:flex;flex-direction:column;gap:0.25rem;"></div>
+                    </div>
+                    <div class="company-summary-col">
+                      <span class="k">Brand Assets</span>
+                      <div class="company-summary-asset-thumbs" id="sum-c-assets"></div>
+                    </div>
+                  </div>
+                </article>
+
+                <div class="company-action-row">
+                  <button type="button" class="company-btn-back" onclick="goToCompanyStep(3)">
+                    <span>&larr; Back: Visual Identity</span>
+                  </button>
+                  <button type="button" class="vibes-run-btn company-btn-next" id="btn-save-company-setup" onclick="saveCompleteCompanySetup()">
+                    <span>Save &amp; Complete Setup</span>
+                    <span aria-hidden="true">&rarr;</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     </section>
 
@@ -612,11 +1057,7 @@
         <header class="vibes-header">
           <a href="/" class="hub-brand vibes-brand-link" data-nav="home" title="Back to Home">
             <div class="home-monogram home-monogram-dark" aria-hidden="true">
-              <svg viewBox="0 0 36 42" fill="none">
-                <path d="M4 4h15c7 0 11 3.8 11 9.2 0 4-2.3 6.8-6 8 4.4 1.2 7.2 4.3 7.2 8.8 0 6-4.8 9.8-12 9.8H4V4Z" stroke="#b38d58" stroke-width="2.4"/>
-                <path d="M10 10.5h8.2c3.5 0 5.6 1.7 5.6 4.4 0 2.8-2.1 4.4-5.6 4.4H10v-8.8Zm0 13.8h8.8c3.9 0 6.2 1.8 6.2 4.8 0 3-2.3 4.8-6.2 4.8H10v-9.6Z" fill="#b38d58" fill-opacity="0.22"/>
-                <path d="M4 21.5h15.5" stroke="#b38d58" stroke-width="2"/>
-              </svg>
+              <img src="/static/brand/sanket-logo-mark.png" alt="Sanket AI" class="home-monogram-img">
             </div>
             <span class="hub-brand-name">Sanket AI</span>
           </a>
@@ -667,7 +1108,6 @@
               <div class="vibes-field-block">
                 <div class="vibes-label-row">
                   <label class="vibes-field-label" for="check-company-name">Company Name</label>
-                  <select id="dev-brand-select" class="vibes-inline-select" onchange="onSelectDevBrand(this.value)" aria-label="Target company vibe profile"></select>
                 </div>
                 <div class="cream-input-group vibes-cream-input">
                   <span class="cream-input-icon" aria-hidden="true">
@@ -769,11 +1209,9 @@
               <!-- Live Demo Only Quick Samples (hidden for standard users) -->
               <div id="check-demo-only-bar" class="vibes-demo-only-bar hidden">
                 <span class="vibes-demo-tag">LIVE DEMO TOOLS</span>
-                <button type="button" class="cream-text-link" onclick="fillDemoVibesCheck()">Fill Live Demo Inputs</button>
+                <button type="button" class="cream-text-link" onclick="fillDemoVibesCheck()">Fill Live Demo AI Inputs</button>
                 <span class="vibes-dot-sep">&middot;</span>
-                <button type="button" class="cream-text-link" onclick="loadSampleAsset('/static/samples/nike_compliant_poster.png', 'nike_compliant_poster.png')">Load Compliant Poster</button>
-                <span class="vibes-dot-sep">&middot;</span>
-                <button type="button" class="cream-text-link" onclick="loadSampleAsset('/static/samples/off_brand_poster.png', 'off_brand_poster.png')">Load Off-Brand Poster</button>
+                <button type="button" class="cream-text-link" onclick="loadSampleAsset('/static/samples/omnigpt_ai_poster.png', 'omnigpt_ai_poster.png')">Load OmniGPT AI Poster</button>
               </div>
 
               <button type="button" class="vibes-run-btn" id="btn-run-check" onclick="runDeveloperMatchCheck()">
@@ -934,6 +1372,34 @@
         <button type="button" class="modal-tab" data-tab="register" onclick="switchAuthTab('register')">Register Company</button>
       </div>
 
+      <!-- Demo Account Quick Access Card in Modal -->
+      <div id="modal-demo-card" class="modal-demo-box">
+        <div class="modal-demo-header">
+          <span class="modal-demo-tag">DEMO ACCOUNT CREDENTIALS</span>
+          <span class="modal-demo-role">Apex Cloud &middot; Admin</span>
+        </div>
+        <div class="modal-demo-creds">
+          <button type="button" class="modal-demo-cred-row" onclick="copyDemoText('demo@sanket.ai', 'Email')" title="Click to copy email">
+            <span class="muted">Email:</span>
+            <code class="modal-demo-code">demo@sanket.ai</code>
+            <span class="copy-hint-pill">copy</span>
+          </button>
+          <button type="button" class="modal-demo-cred-row" onclick="copyDemoText('DemoJudge2026!', 'Password')" title="Click to copy password">
+            <span class="muted">Password:</span>
+            <code class="modal-demo-code">DemoJudge2026!</code>
+            <span class="copy-hint-pill">copy</span>
+          </button>
+        </div>
+        <div class="modal-demo-actions">
+          <button type="button" class="btn btn-sm btn-primary" onclick="launchDemoWorkspace()">
+            ⚡ 1-Click Demo Login
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoCredentials('modal')">
+            Auto-Fill Form
+          </button>
+        </div>
+      </div>
+
       <form id="form-login" class="modal-form" onsubmit="submitLogin(event)">
         <div class="field">
           <label for="login-email">Email</label>
@@ -974,6 +1440,6 @@
 
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <script src="/static/app.js?v=2"></script>
+  <script src="/static/app.js?v=5"></script>
 </body>
 </html>

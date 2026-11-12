@@ -48,6 +48,7 @@ class CompanyRegisterResponse(BaseModel):
     role: str
     role_label: str
     org_id: str
+    company_name: Optional[str] = None
     session_token: str
 
 
@@ -139,6 +140,7 @@ def register_company(request: CompanyRegisterRequest, background_tasks: Backgrou
         role=owner_rec.role.value,
         role_label=owner_rec.role_label or "Administrator",
         org_id=org_rec.org_id,
+        company_name=org_rec.company_name,
         session_token=token,
     )
 

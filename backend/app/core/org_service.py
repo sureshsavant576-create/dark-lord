@@ -152,7 +152,19 @@ class OrganizationService:
         with self._lock:
             tmp = ORGS_DB_PATH.with_suffix(".tmp")
             tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
-            tmp.replace(ORGS_DB_PATH)
+            for i in range(5):
+                try:
+                    tmp.replace(ORGS_DB_PATH)
+                    break
+                except OSError:
+                    if i == 4:
+                        ORGS_DB_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                        try:
+                            tmp.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+                    else:
+                        time.sleep(0.05)
 
     def _load_invites(self) -> Dict[str, dict]:
         with self._lock:
@@ -160,13 +172,25 @@ class OrganizationService:
                 content = INVITES_DB_PATH.read_text(encoding="utf-8").strip()
                 return json.loads(content) if content else {}
             except Exception:
-                return {}
+                return []
 
     def _save_invites(self, data: Dict[str, dict]) -> None:
         with self._lock:
             tmp = INVITES_DB_PATH.with_suffix(".tmp")
             tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
-            tmp.replace(INVITES_DB_PATH)
+            for i in range(5):
+                try:
+                    tmp.replace(INVITES_DB_PATH)
+                    break
+                except OSError:
+                    if i == 4:
+                        INVITES_DB_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                        try:
+                            tmp.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+                    else:
+                        time.sleep(0.05)
 
     def get_organization(self, org_id: str) -> Optional[OrganizationRecord]:
         clean = sanitize_org_id(org_id)

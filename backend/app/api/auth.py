@@ -13,11 +13,27 @@ from backend.app.core.auth import (
 
 router = APIRouter(prefix="/auth", tags=["Authentication & Identity"])
 
+def _resolve_company_name(org_id: str) -> str:
+    try:
+        from backend.app.core.org_service import org_service
+        org = org_service.get_organization(org_id)
+        if org and org.company_name:
+            return org.company_name
+    except Exception:
+        pass
+    if org_id == "apex-cloud":
+        return "Apex Cloud Systems"
+    if org_id == "default-org":
+        return "Default Organization"
+    return org_id
+
 class RegisterRequest(BaseModel):
     email: str
     password: str
     role: Optional[UserRole] = UserRole.DEVELOPER
     org_id: Optional[str] = "default-org"
+    full_name: Optional[str] = None
+    department: Optional[str] = "Marketing"
 
 class LoginRequest(BaseModel):
     email: str
@@ -31,6 +47,7 @@ class AuthResponse(BaseModel):
     full_name: Optional[str] = None
     department: Optional[str] = None
     org_id: str
+    company_name: Optional[str] = None
     session_token: str
 
 @router.post("/register", response_model=AuthResponse)
@@ -57,7 +74,9 @@ def register(
         email=request.email,
         password=request.password,
         role=assigned_role,
-        org_id=request.org_id or "default-org"
+        org_id=request.org_id or "default-org",
+        full_name=request.full_name,
+        department=request.department or "Marketing",
     )
     token = auth_service.create_session_token(record.user_id, record.role.value, record.org_id)
     from backend.app.services.supabase_service import supabase_service
@@ -77,6 +96,7 @@ def register(
         full_name=record.full_name,
         department=record.department,
         org_id=record.org_id,
+        company_name=_resolve_company_name(record.org_id),
         session_token=token
     )
 
@@ -91,6 +111,7 @@ def login(request: LoginRequest):
         full_name=record.full_name,
         department=record.department,
         org_id=record.org_id,
+        company_name=_resolve_company_name(record.org_id),
         session_token=token
     )
 
@@ -103,6 +124,7 @@ def get_current_user_profile(user: UserContext = Depends(get_current_user)):
         "full_name": user.full_name,
         "department": user.department,
         "org_id": user.org_id,
+        "company_name": _resolve_company_name(user.org_id),
         "email": user.email
     }
 

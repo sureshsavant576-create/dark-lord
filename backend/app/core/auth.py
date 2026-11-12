@@ -109,7 +109,19 @@ class UserAccountService:
         with self._lock:
             tmp = USERS_DB_PATH.with_suffix(".tmp")
             tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
-            tmp.replace(USERS_DB_PATH)
+            for i in range(5):
+                try:
+                    tmp.replace(USERS_DB_PATH)
+                    break
+                except OSError:
+                    if i == 4:
+                        USERS_DB_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                        try:
+                            tmp.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+                    else:
+                        time.sleep(0.05)
 
     def _load_revoked(self) -> list:
         with self._lock:
@@ -123,7 +135,19 @@ class UserAccountService:
         with self._lock:
             tmp = REVOKED_SESSIONS_PATH.with_suffix(".tmp")
             tmp.write_text(json.dumps(tokens), encoding="utf-8")
-            tmp.replace(REVOKED_SESSIONS_PATH)
+            for i in range(5):
+                try:
+                    tmp.replace(REVOKED_SESSIONS_PATH)
+                    break
+                except OSError:
+                    if i == 4:
+                        REVOKED_SESSIONS_PATH.write_text(json.dumps(tokens), encoding="utf-8")
+                        try:
+                            tmp.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+                    else:
+                        time.sleep(0.05)
 
     @staticmethod
     def hash_password(password: str, salt: Optional[bytes] = None) -> str:
@@ -152,8 +176,10 @@ class UserAccountService:
         role_label: Optional[str] = None,
         department: Optional[str] = "Marketing",
     ) -> UserRecord:
-        clean_email = email.strip().lower()
-        if len(password) < 8:
+        clean_email = (email or "").strip().lower()
+        if not clean_email or "@" not in clean_email or clean_email.startswith("@") or clean_email.endswith("@"):
+            raise HTTPException(status_code=400, detail="Invalid email format. A valid email address is required.")
+        if not password or len(password) < 8:
             raise HTTPException(status_code=400, detail="Password must be at least 8 characters long.")
         if len(password) > 128:
             raise HTTPException(status_code=400, detail="Password exceeds maximum allowable length of 128 characters.")
@@ -234,7 +260,9 @@ class UserAccountService:
             }
 
     def authenticate_user(self, email: str, password: str) -> Tuple[UserRecord, str]:
-        clean_email = email.strip().lower()
+        clean_email = (email or "").strip().lower()
+        if not clean_email or not password:
+            raise HTTPException(status_code=400, detail="Email and password are required.")
         users = self._load_users()
         matched = None
         for u in users.values():

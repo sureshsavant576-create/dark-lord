@@ -110,7 +110,20 @@ class KnowledgeBaseService:
         with self._lock:
             temp = self.db_path.with_suffix(".tmp")
             temp.write_text(json.dumps(data, indent=2), encoding="utf-8")
-            temp.replace(self.db_path)
+            import time
+            for i in range(5):
+                try:
+                    temp.replace(self.db_path)
+                    break
+                except OSError:
+                    if i == 4:
+                        self.db_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                        try:
+                            temp.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+                    else:
+                        time.sleep(0.05)
 
     def _load_history(self) -> Dict[str, List[dict]]:
         with self._lock:
@@ -125,7 +138,20 @@ class KnowledgeBaseService:
         with self._lock:
             temp = self.history_path.with_suffix(".tmp")
             temp.write_text(json.dumps(history, indent=2), encoding="utf-8")
-            temp.replace(self.history_path)
+            import time
+            for i in range(5):
+                try:
+                    temp.replace(self.history_path)
+                    break
+                except OSError:
+                    if i == 4:
+                        self.history_path.write_text(json.dumps(history, indent=2), encoding="utf-8")
+                        try:
+                            temp.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+                    else:
+                        time.sleep(0.05)
 
     # -------------------------------------------------------------------------
     # ITEM CREATION & PROVENANCE INTEGRITY

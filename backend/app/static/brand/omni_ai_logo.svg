@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <rect width="120" height="120" rx="24" fill="#0B132B"/>
+  <circle cx="60" cy="60" r="44" stroke="#10A37F" stroke-width="2" stroke-opacity="0.35"/>
+  <circle cx="60" cy="60" r="32" stroke="#5BC0BE" stroke-width="2" stroke-dasharray="4 4"/>
+  <!-- Central ChatGPT-like neural knot icon -->
+  <path d="M60 26 C41 26 26 41 26 60 C26 79 41 94 60 94" stroke="#10A37F" stroke-width="4" stroke-linecap="round"/>
+  <path d="M60 94 C79 94 94 79 94 60 C94 41 79 26 60 26" stroke="#5BC0BE" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="60" cy="60" r="10" fill="#10A37F"/>
+  <circle cx="60" cy="60" r="4" fill="#F8FAFC"/>
+</svg>
