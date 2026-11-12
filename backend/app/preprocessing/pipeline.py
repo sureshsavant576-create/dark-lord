@@ -38,6 +38,10 @@ class PreprocessedContent(BaseModel):
     dominant_color_hex: Optional[str] = None
     errors: List[str] = Field(default_factory=list)
 
+    @property
+    def is_visual_media(self) -> bool:
+        return self.media_category in ("image", "poster") or self.image_metadata is not None
+
 class PreprocessingPipeline:
 
     def preprocess(

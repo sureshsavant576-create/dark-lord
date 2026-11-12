@@ -308,6 +308,7 @@ class BrandCopilotService:
             brand_name=brand_name,
             accepted_corrections=accepted_suggestions,
             staged_copy=staged_copy,
+            corrected_copy=staged_copy,
             status="STAGED_FOR_CREATOR_REVIEW",
             notice="Accepted changes are staged for internal creator review before submission. Content will NOT be published automatically."
         )

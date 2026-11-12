@@ -552,16 +552,18 @@ class BrandInsightsService:
                     visual_depts.add(dept)
 
         # Build Rogue Color Objects
+        from backend.app.preprocessing.color_extractor import find_closest_brand_color
         rogue_list: List[RogueColorUsage] = []
         for rh, d in rogue_hex_map.items():
-            # Calculate mock delta-e or default
-            delta_val = 18.2 if rh in ["#0000FF", "#FF4500"] else 12.4
-            closest_brand = approved_palette[0] if approved_palette else "#0052CC"
+            if approved_palette:
+                closest_brand, real_delta = find_closest_brand_color(rh, approved_palette)
+            else:
+                closest_brand, real_delta = "#0052CC", 15.0
             rogue_list.append(RogueColorUsage(
                 detected_hex=rh,
                 occurrence_count=d["count"],
                 closest_brand_hex=closest_brand,
-                delta_e=delta_val,
+                delta_e=round(real_delta, 1),
                 sample_context=d["context"]
             ))
         rogue_list.sort(key=lambda x: x.occurrence_count, reverse=True)

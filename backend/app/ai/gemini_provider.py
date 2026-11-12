@@ -167,6 +167,8 @@ Return ONLY a valid JSON object matching the following structure:
   "target_audience_alignment": "<assessment of audience fit>",
   "detailed_analysis": "<objective explanation of why the content aligns or diverges>",
   "mismatches_identified": ["<list of specific off-brand elements or guideline divergences>"],
+  "is_logo_verified": <true if authentic brand logo/wordmark is clearly visible and correctly placed, otherwise false>,
+  "logo_detected": "<detected brand logo, wordmark, or 'None detected'>",
   "alignment_score": <number from 0.0 to 100.0 based on degree of alignment>,
   "confidence_score": <number from 0.0 to 1.0 indicating model confidence>
 }}
@@ -195,6 +197,8 @@ Return ONLY a valid JSON object matching the following structure:
                 target_audience_alignment=str(response_data.get("target_audience_alignment", "Unknown")),
                 detailed_analysis=str(response_data.get("detailed_analysis", "")),
                 mismatches_identified=list(response_data.get("mismatches_identified", [])),
+                logo_detected=response_data.get("logo_detected"),
+                is_logo_verified=bool(response_data.get("is_logo_verified")) if response_data.get("is_logo_verified") is not None else None,
                 alignment_score=clamped_align,
                 confidence_score=clamped_conf
             )

@@ -179,7 +179,41 @@ Every issue MUST contain EXACTLY these fields:
         text_lower = copy_text.lower()
 
         # 1. Prohibited messaging check
-        prohibited_terms = knowledge_context.get("prohibited_messaging", [])
+        prohibited_terms = list(knowledge_context.get("prohibited_messaging", []))
+        dna_avoid = (brand_dna.get("words_to_avoid") or []) + (brand_dna.get("disallowed_elements") or [])
+        for da in dna_avoid:
+            if da and da not in prohibited_terms:
+                prohibited_terms.append(da)
+
+        # Common unverified superlatives and off-brand marketing puffery
+        generic_unsubstantiated = [
+            ("cheapest", "Prohibited superlative pricing claim 'cheapest' without verified market audit evidence"),
+            ("cheap", "Prohibited term 'cheap' undermines authoritative enterprise positioning"),
+            ("magic", "Prohibited puffery term 'magic' strictly prohibited by brand standards"),
+            ("100% bug-free", "Prohibited absolute guarantee '100% bug-free' cannot be empirically verified"),
+            ("hacks", "Colloquial term 'hacks' departs from technically rigorous B2B brand voice"),
+            ("hack", "Colloquial term 'hack' departs from technically rigorous B2B brand voice"),
+            ("miracle", "Prohibited hyperbole 'miracle' violates engineering evidence standards"),
+            ("untested", "Prohibited assertion 'untested' indicates unverified non-production risk"),
+            ("risk-free", "Prohibited financial guarantee 'risk-free' violates compliance policy"),
+            ("loophole", "Prohibited term 'loophole' suggests regulatory non-compliance"),
+            ("#1", "Superlative ranking assertion '#1' lacks verified third-party evidence in Knowledge Base"),
+            ("number one", "Superlative ranking claim 'number one' lacks verified documentation"),
+            ("military-grade", "Prohibited buzzword 'military-grade' lacks verifiable standard specification"),
+            ("unbeatable", "Subjective superlative claim 'unbeatable' cannot be validated"),
+            ("yo bro", "Informal chat slang violates authoritative B2B communication personality"),
+            ("discord bot", "Consumer gaming reference departs from enterprise infrastructure scope"),
+            ("lol", "Informal chat acronym 'lol' strictly violates enterprise copy standards"),
+            ("clowns", "Derogatory competitor disparagement 'clowns' violates professional B2B brand conduct standards"),
+            ("totally useless", "Unprofessional competitor disparagement 'totally useless' violates brand guidelines"),
+            ("unbelievable", "Subjective hyperbole 'unbelievable' violates factual engineering claim standards"),
+            ("overnight deal", "Gimmicky urgency phrasing 'overnight deal' violates enterprise B2B brand positioning"),
+            ("crazy lit", "Informal street slang 'crazy lit' violates authoritative enterprise tone")
+        ]
+        for puff_word, puff_desc in generic_unsubstantiated:
+            if puff_word in text_lower and puff_word not in [p.lower() for p in prohibited_terms]:
+                prohibited_terms.append(puff_word)
+
         active_exceptions = knowledge_context.get("active_policy_exceptions", [])
         exception_phrases = {e.get("permitted_phrase", "").lower() for e in active_exceptions}
 

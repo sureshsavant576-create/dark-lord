@@ -99,11 +99,11 @@ class KnowledgeVersionSnapshot(BaseModel):
 
 
 class KnowledgeItemCreate(BaseModel):
-    org_id: str
-    brand_id: str
+    org_id: str = Field(..., min_length=1)
+    brand_id: str = Field(..., min_length=1)
     category: KnowledgeCategory
-    title: str
-    content: str
+    title: str = Field(..., min_length=1)
+    content: str = Field(..., min_length=1)
     structured_data: Optional[Dict[str, Any]] = None
     provenance: KnowledgeProvenance = KnowledgeProvenance.COMPANY_FACT
     is_approved: bool = True

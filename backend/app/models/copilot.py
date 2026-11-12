@@ -78,5 +78,6 @@ class CopilotStagedReview(BaseModel):
     brand_name: str
     accepted_corrections: List[RemediationSuggestion] = Field(default_factory=list)
     staged_copy: str = ""
+    corrected_copy: Optional[str] = Field(default=None, description="Alias for staged_copy")
     status: str = "STAGED_FOR_CREATOR_REVIEW"
     notice: str = "Accepted changes are staged for internal creator review before submission. Content will NOT be published automatically."

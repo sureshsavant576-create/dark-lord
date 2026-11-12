@@ -63,7 +63,10 @@ class ContentReviewService:
         brand = brand_service.get_brand_profile(request.brand_id)
         brand_name = brand.brand_name if brand else request.brand_id
         approved_palette = brand.approved_palette if brand else ["#0B132B", "#5BC0BE", "#FFFFFF"]
-        brand_dna_data = (brand.brand_dna or {}) if brand else {}
+        brand_dna_data = dict((brand.brand_dna or {})) if brand else {}
+        if brand and getattr(brand, "disallowed_elements", None):
+            existing_avoid = brand_dna_data.get("words_to_avoid") or []
+            brand_dna_data["words_to_avoid"] = list(dict.fromkeys(list(existing_avoid) + list(brand.disallowed_elements)))
 
         # 2. Retrieve Organization-isolated Knowledge Base Context
         kb_context = knowledge_service.retrieve_for_content_analysis(

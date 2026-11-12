@@ -495,7 +495,7 @@ class InspectionService:
                         suggested_correction=f"Add the official {brand.brand_name} logo in accordance with brand guidelines.",
                         confidence_score=ai_eval.confidence_score
                     ))
-            elif getattr(brand, "logo_url", None) and preprocessed.is_visual_media:
+            elif preprocessed.is_visual_media:
                 has_name = brand.brand_name.lower() in text_content.lower()
                 if has_name:
                     matching_chars.append(f"Brand wordmark '{brand.brand_name}' detected on creative.")
@@ -508,6 +508,22 @@ class InspectionService:
                         detected_value=f"Wordmark '{brand.brand_name}'",
                         expected_value=f"{brand.brand_name} logo",
                         explanation=f"Brand reference text '{brand.brand_name}' identified on submitted asset."
+                    ))
+                else:
+                    det_score -= 20.0
+                    mismatches.append(f"Logo departure: No authentic {brand.brand_name} logo or wordmark detected on visual media")
+                    violations.append(f"Missing or incorrect {brand.brand_name} brand logo")
+                    corrections.append(f"Include the authentic, un-distorted {brand.brand_name} logo on the creative asset.")
+                    findings.append(InspectionFinding(
+                        id=f"f-{uuid.uuid4().hex[:6]}",
+                        title="Brand Logo Missing or Deprecated",
+                        category=FindingCategory.VISUAL_STYLE,
+                        source=FindingSource.DETERMINISTIC_CHECK,
+                        severity=FindingSeverity.WARNING,
+                        detected_value="No brand logo detected",
+                        expected_value=f"{brand.brand_name} approved logo",
+                        explanation=f"Brand compliance requires official {brand.brand_name} insignia on promotional media.",
+                        suggested_correction=f"Add the official {brand.brand_name} logo in accordance with brand guidelines."
                     ))
 
             for m in ai_eval.mismatches_identified:
@@ -539,6 +555,25 @@ class InspectionService:
                 explanation=ai_eval.detailed_analysis,
                 suggested_correction="Add an API key to .env to unlock AI semantic and multimodal reasoning."
             ))
+            if preprocessed.is_visual_media and not any("logo" in f.title.lower() for f in findings):
+                has_name = brand.brand_name.lower() in text_content.lower()
+                if not has_name:
+                    det_score = max(0.0, det_score - 20.0)
+                    overall_score = det_score
+                    mismatches.append(f"Logo departure: No authentic {brand.brand_name} mark detected on visual media.")
+                    violations.append(f"Missing official {brand.brand_name} brand logo")
+                    corrections.append(f"Include the authentic {brand.brand_name} logo on the creative asset.")
+                    findings.append(InspectionFinding(
+                        id=f"f-{uuid.uuid4().hex[:6]}",
+                        title="Brand Logo Missing or Deprecated",
+                        category=FindingCategory.VISUAL_STYLE,
+                        source=FindingSource.DETERMINISTIC_CHECK,
+                        severity=FindingSeverity.WARNING,
+                        detected_value="No brand logo detected",
+                        expected_value=f"{brand.brand_name} approved logo",
+                        explanation=f"Brand compliance requires official {brand.brand_name} insignia on promotional media.",
+                        suggested_correction=f"Add the official {brand.brand_name} logo in accordance with brand guidelines."
+                    ))
 
         has_critical = any(f.severity == FindingSeverity.CRITICAL for f in findings)
         effective_score = overall_score if overall_score is not None else det_score
