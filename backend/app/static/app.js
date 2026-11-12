@@ -1880,11 +1880,117 @@ async function runInstantPreflightScan(file) {
   }
 }
 
+function updateCheckAttachedTray() {
+  const tray = document.getElementById('check-attached-tray');
+  const fileItem = document.getElementById('tray-file-item');
+  const fileThumb = document.getElementById('tray-file-thumb');
+  const fileName = document.getElementById('tray-file-name');
+  const fileMeta = document.getElementById('tray-file-meta');
+  const assetsBadge = document.getElementById('tab-assets-badge');
+
+  const urlItem = document.getElementById('tray-url-item');
+  const urlText = document.getElementById('tray-url-text');
+  const socialItem = document.getElementById('tray-social-item');
+  const socialText = document.getElementById('tray-social-text');
+  const copyItem = document.getElementById('tray-copy-item');
+  const copyText = document.getElementById('tray-copy-text');
+
+  let hasAny = false;
+
+  // 1. File / Creative asset
+  if (state.dev.selectedFile || state.dev.sampleName) {
+    hasAny = true;
+    const name = state.dev.selectedFile ? state.dev.selectedFile.name : (state.dev.sampleName || 'Creative Asset');
+    const imgSrc = document.getElementById('dev-preview-img')?.getAttribute('src') || state.dev.sampleUrl || '';
+    if (fileItem) fileItem.classList.remove('hidden');
+    if (fileName) fileName.textContent = name;
+    if (fileThumb) {
+      if (imgSrc) {
+        fileThumb.src = imgSrc;
+        fileThumb.classList.remove('hidden');
+      } else {
+        fileThumb.classList.add('hidden');
+      }
+    }
+    if (fileMeta) {
+      const sz = state.dev.selectedFile?.size ? ` · ${(state.dev.selectedFile.size / 1024).toFixed(0)} KB` : '';
+      fileMeta.textContent = `Creative Asset Ready${sz}`;
+    }
+    if (assetsBadge) assetsBadge.classList.remove('hidden');
+  } else {
+    if (fileItem) fileItem.classList.add('hidden');
+    if (assetsBadge) assetsBadge.classList.add('hidden');
+  }
+
+  // 2. Website URL
+  const urlVal = document.getElementById('check-website-url')?.value?.trim();
+  if (urlVal) {
+    hasAny = true;
+    if (urlItem) urlItem.classList.remove('hidden');
+    if (urlText) urlText.textContent = urlVal;
+  } else {
+    if (urlItem) urlItem.classList.add('hidden');
+  }
+
+  // 3. Social Media
+  const socialVal = document.getElementById('check-social-input')?.value?.trim();
+  if (socialVal) {
+    hasAny = true;
+    if (socialItem) socialItem.classList.remove('hidden');
+    if (socialText) socialText.textContent = socialVal;
+  } else {
+    if (socialItem) socialItem.classList.add('hidden');
+  }
+
+  // 4. Copy Text
+  const copyVal = document.getElementById('dev-copy-input')?.value?.trim();
+  if (copyVal) {
+    hasAny = true;
+    if (copyItem) copyItem.classList.remove('hidden');
+    if (copyText) copyText.textContent = copyVal;
+  } else {
+    if (copyItem) copyItem.classList.add('hidden');
+  }
+
+  if (tray) {
+    tray.classList.toggle('hidden', !hasAny);
+  }
+}
+
+function clearUrlInput(e) {
+  if (e) e.stopPropagation();
+  const el = document.getElementById('check-website-url');
+  if (el) el.value = '';
+  updateCheckAttachedTray();
+}
+
+function clearSocialInput(e) {
+  if (e) e.stopPropagation();
+  const el = document.getElementById('check-social-input');
+  if (el) el.value = '';
+  updateCheckAttachedTray();
+}
+
+function clearCopyInput(e) {
+  if (e) e.stopPropagation();
+  const el = document.getElementById('dev-copy-input');
+  if (el) el.value = '';
+  updateCheckAttachedTray();
+}
+
+function clearAllCheckInputs() {
+  clearDevFile();
+  clearUrlInput();
+  clearSocialInput();
+  clearCopyInput();
+}
+
 function setDevFile(file) {
   state.dev.selectedFile = file;
   state.dev.sampleUrl = '';
   state.dev.sampleName = file.name;
   updateDevFilePreview(file.name, file.type.startsWith('image/') ? URL.createObjectURL(file) : '');
+  updateCheckAttachedTray();
 }
 
 async function loadSampleAsset(url, filename) {
@@ -1897,7 +2003,9 @@ async function loadSampleAsset(url, filename) {
     state.dev.sampleUrl = url;
     state.dev.sampleName = filename;
     updateDevFilePreview(filename, url);
-    showToast(`Loaded sample: ${filename}`, 'info');
+    selectBrandInputSource('assets');
+    updateCheckAttachedTray();
+    showToast(`Loaded creative asset: ${filename}`, 'info');
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -1916,6 +2024,7 @@ function updateDevFilePreview(name, imgSrc) {
       img.src = '';
       img.classList.add('hidden');
     }
+    updateCheckAttachedTray();
     return;
   }
 
@@ -1931,6 +2040,7 @@ function updateDevFilePreview(name, imgSrc) {
       img.classList.add('hidden');
     }
   }
+  updateCheckAttachedTray();
 }
 
 function clearDevFile(e) {
@@ -1941,6 +2051,7 @@ function clearDevFile(e) {
   const input = document.getElementById('dev-file-input');
   if (input) input.value = '';
   updateDevFilePreview('', '');
+  updateCheckAttachedTray();
 }
 
 function switchCheckSubView(sub) {
@@ -2039,9 +2150,65 @@ function renderVibesDashboard({
   insights = [],
   channels = [],
   isDemoPreview = false,
+  uploadedAsset = null,
+  submittedMeta = {},
 }) {
   document.getElementById('check-results-empty')?.classList.add('hidden');
   document.getElementById('check-results-body')?.classList.remove('hidden');
+
+  // Render Showcase of Evaluated Uploaded Assets & Content
+  const showcaseEl = document.getElementById('res-uploaded-showcase');
+  if (showcaseEl) {
+    const assetBox = document.getElementById('res-showcase-asset-box');
+    const assetImg = document.getElementById('res-showcase-img');
+    const assetName = document.getElementById('res-showcase-filename');
+    const assetTags = document.getElementById('res-showcase-tags');
+    const urlRow = document.getElementById('res-showcase-url-row');
+    const urlVal = document.getElementById('res-showcase-url');
+    const copyRow = document.getElementById('res-showcase-copy-row');
+    const copyVal = document.getElementById('res-showcase-copy');
+    const countBadge = document.getElementById('res-showcase-count');
+
+    const assetSrc = uploadedAsset?.imgSrc || document.getElementById('dev-preview-img')?.getAttribute('src') || state.dev.sampleUrl || '';
+    const assetFileName = uploadedAsset?.name || state.dev.selectedFile?.name || state.dev.sampleName || '';
+    const hasAsset = Boolean(assetSrc || assetFileName);
+
+    if (hasAsset && assetBox) {
+      assetBox.classList.remove('hidden');
+      if (assetImg && assetSrc) assetImg.src = assetSrc;
+      if (assetName) assetName.textContent = assetFileName || 'Creative Design File';
+      if (assetTags) {
+        const tags = uploadedAsset?.tags || ['Creative Asset Inspected', 'Aesthetics Aligned'];
+        assetTags.innerHTML = tags.map((t) => `<span class="vibes-status-chip">${escapeHtml(t)}</span>`).join('');
+      }
+    } else if (assetBox) {
+      assetBox.classList.add('hidden');
+    }
+
+    const websiteUrl = submittedMeta?.websiteUrl || document.getElementById('check-website-url')?.value?.trim();
+    if (urlRow && urlVal) {
+      if (websiteUrl) {
+        urlRow.classList.remove('hidden');
+        urlVal.textContent = websiteUrl;
+      } else {
+        urlRow.classList.add('hidden');
+      }
+    }
+
+    const copyText = submittedMeta?.socialText || submittedMeta?.otherCopy || document.getElementById('dev-copy-input')?.value?.trim() || document.getElementById('check-social-input')?.value?.trim();
+    if (copyRow && copyVal) {
+      if (copyText) {
+        copyRow.classList.remove('hidden');
+        copyVal.textContent = copyText;
+      } else {
+        copyRow.classList.add('hidden');
+      }
+    }
+
+    const totalCount = (hasAsset ? 1 : 0) + (websiteUrl ? 1 : 0) + (copyText ? 1 : 0);
+    if (countBadge) countBadge.textContent = `${totalCount || 1} Touchpoint${totalCount === 1 ? '' : 's'} Evaluated`;
+    showcaseEl.classList.remove('hidden');
+  }
 
   setScoreRingProgress(score);
 
@@ -2270,6 +2437,9 @@ function renderPreflightOnlyResult(scan, meta = {}) {
     !warnings.length ? { type: 'tip', text: 'Visual contrast and color balance passed preliminary OpenCV checks.' } : null,
   ].filter(Boolean);
 
+  const assetImgSrc = imgPreviewSrc || state.dev.sampleUrl || '';
+  const assetFileName = state.dev.selectedFile?.name || state.dev.sampleName || '';
+
   renderVibesDashboard({
     score,
     overallLabel: (scan.predicted_style && scan.predicted_style.style) || 'Visual Color Telemetry',
@@ -2296,6 +2466,12 @@ function renderPreflightOnlyResult(scan, meta = {}) {
       scan.dimensions?.label ? { name: 'Dimensions', value: scan.dimensions.label } : null,
     ].filter(Boolean),
     isDemoPreview: false,
+    uploadedAsset: (assetImgSrc || assetFileName) ? {
+      imgSrc: assetImgSrc,
+      name: assetFileName,
+      tags: [scan.predicted_style?.style || 'Vibes Analyzed', `${detectedSwatches.length || 4} Colors Scanned`],
+    } : null,
+    submittedMeta: meta,
   });
 }
 
@@ -2387,6 +2563,14 @@ function renderInspectionReport(report, meta = {}) {
     channels.push({ name: 'Submitted Asset', value: `${score}%` });
   }
 
+  const assetImgSrc = document.getElementById('dev-preview-img')?.getAttribute('src') || state.dev.sampleUrl || '';
+  const assetFileName = state.dev.selectedFile?.name || state.dev.sampleName || '';
+  const assetTags = [];
+  if (tech.ocr_words_detected) assetTags.push(`${tech.ocr_words_detected} Words OCR`);
+  if (tech.dominant_colors?.length) assetTags.push(`${tech.dominant_colors.length} Palette Colors`);
+  if (tech.contrast_ratio) assetTags.push(`Contrast ${tech.contrast_ratio}:1`);
+  if (!assetTags.length) assetTags.push('Creative Asset Verified');
+
   renderVibesDashboard({
     score,
     overallLabel,
@@ -2401,6 +2585,12 @@ function renderInspectionReport(report, meta = {}) {
     insights,
     channels,
     isDemoPreview: false,
+    uploadedAsset: (assetImgSrc || assetFileName) ? {
+      imgSrc: assetImgSrc,
+      name: assetFileName,
+      tags: assetTags,
+    } : null,
+    submittedMeta: meta,
   });
 }
 
@@ -2475,7 +2665,8 @@ async function fillDemoVibesCheck() {
   }
 
   await loadSampleAsset('/static/samples/omnigpt_ai_poster.png', 'omnigpt_ai_poster.png');
-  selectBrandInputSource('website');
+  selectBrandInputSource('assets');
+  updateCheckAttachedTray();
   showToast('Live Demo populated with OmniGPT AI & creative poster', 'info');
 }
 
@@ -2540,6 +2731,15 @@ async function loadLiveDemoResultsPreview() {
       { name: 'Product UI', value: '95%' },
     ],
     isDemoPreview: true,
+    uploadedAsset: {
+      imgSrc: '/static/samples/omnigpt_ai_poster.png',
+      name: 'omnigpt_ai_poster.png',
+      tags: ['Live Demo Sample Creative', '94% Consistency', 'WCAG AA Passed'],
+    },
+    submittedMeta: {
+      websiteUrl: 'https://omnigpt.ai',
+      socialText: '@omnigpt_ai — Frontier cognitive reasoning and generative neural intelligence.',
+    },
   });
 
   switchCheckSubView('results');
@@ -3009,6 +3209,12 @@ document.addEventListener('DOMContentLoaded', () => {
   bindNavLinks();
   bindHomePullSlidebar();
   bindDeveloperDropzone();
+
+  ['check-website-url', 'check-social-input', 'dev-copy-input'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => {
+      updateCheckAttachedTray();
+    });
+  });
 
   document.getElementById('copilot-prompt')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {

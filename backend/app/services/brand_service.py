@@ -78,8 +78,6 @@ class BrandService:
                 if k_clean in (clean, clean_sub, clean_hyphen) or v_id in (clean, clean_sub, clean_hyphen) or v_name == clean:
                     raw = v
                     break
-        if not raw and any(k in brand_id.lower() for k in ("omni", "demo", "chatgpt")):
-            raw = data.get("omnigpt_ai") or data.get("omnigpt-ai")
         return BrandProfile(**raw) if raw else None
 
     def list_brand_profiles(self) -> List[BrandProfile]:

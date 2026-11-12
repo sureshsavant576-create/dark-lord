@@ -156,9 +156,7 @@ class InspectionService:
         org_id: str = "default-org"
     ) -> InspectionReport:
         brand = self.brand_service.get_brand_profile(brand_id)
-        if not brand and any(k in str(brand_id).lower() for k in ("omni", "demo", "chatgpt", "apex")):
-            brand = self.brand_service.get_brand_profile("omnigpt_ai") or self.brand_service.get_brand_profile("apex_cloud")
-        if not brand:
+        if not brand and (not brand_id or brand_id in ("default", "default-dev", "default-org")):
             all_b = self.brand_service.list_brand_profiles()
             brand = all_b[0] if all_b else None
         if not brand:
