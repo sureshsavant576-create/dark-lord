@@ -19,11 +19,14 @@ from backend.app.api.storage import router as storage_router
 from backend.app.api.system import router as system_router
 from backend.app.api.workflow import router as workflow_router
 from backend.app.api.insights import router as insights_router
+from backend.app.core.auth import auth_service
 from backend.app.core.config import settings
 from backend.app.core.rate_limiter import RateLimitMiddleware
 from backend.app.core.security import (
     SecurityPathTraversalError,
     TenantIsolationViolationError,
+    safe_join_path,
+    sanitize_filename,
 )
 
 logger = logging.getLogger(__name__)
@@ -45,7 +48,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com data:; "
-            "img-src 'self' data: blob: /storage/ http: https:; "
+            "img-src 'self' data: blob: http: https:; "
             "connect-src 'self' http: https: ws: wss:; "
             "frame-ancestors 'none';"
         )
@@ -116,8 +119,59 @@ try:
 except Exception:
     pass
 
-app.mount("/storage/uploads", StaticFiles(directory=str(settings.UPLOADS_DIR)), name="uploads")
-app.mount("/storage/guidelines", StaticFiles(directory=str(settings.GUIDELINES_DIR)), name="guidelines")
+@app.get("/storage/uploads/{file_name:path}")
+async def get_uploaded_storage_file(
+    file_name: str,
+    request: Request
+):
+    """
+    Access-controlled storage resolver preventing unauthorized public downloads of company files.
+    """
+    clean_name = sanitize_filename(file_name)
+    target_path = safe_join_path(settings.UPLOADS_DIR, clean_name)
+    if not target_path.exists() or not target_path.is_file():
+        return Response(status_code=404, content="File not found")
+
+    is_sample = any(k in clean_name.lower() for k in ("sample", "compliant", "nike", "grb", "preview"))
+    if not is_sample:
+        auth_hdr = request.headers.get("Authorization") or ""
+        token = auth_hdr.split("Bearer ", 1)[1].strip() if auth_hdr.startswith("Bearer ") else None
+        if not token:
+            token = request.query_params.get("token") or request.cookies.get("sanket_session_token")
+        user = auth_service.verify_token(token) if token else None
+        if not user:
+            logger.warning("Unauthenticated file access blocked: '%s'", clean_name)
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Authentication required to access uploaded company assets."}
+            )
+    return FileResponse(target_path)
+
+@app.get("/storage/guidelines/{file_name:path}")
+async def get_guideline_storage_file(
+    file_name: str,
+    request: Request
+):
+    """
+    Access-controlled storage resolver for proprietary brand guidelines.
+    """
+    clean_name = sanitize_filename(file_name)
+    target_path = safe_join_path(settings.GUIDELINES_DIR, clean_name)
+    if not target_path.exists() or not target_path.is_file():
+        return Response(status_code=404, content="Guideline document not found")
+
+    auth_hdr = request.headers.get("Authorization") or ""
+    token = auth_hdr.split("Bearer ", 1)[1].strip() if auth_hdr.startswith("Bearer ") else None
+    if not token:
+        token = request.query_params.get("token") or request.cookies.get("sanket_session_token")
+    user = auth_service.verify_token(token) if token else None
+    if not user:
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Authentication required to access confidential brand guidelines."}
+        )
+    return FileResponse(target_path)
+
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 PUBLIC_BRAND_DIR = Path("public/brand")

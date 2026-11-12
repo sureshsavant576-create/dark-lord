@@ -1,8 +1,14 @@
 from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
+from backend.app.core.auth import (
+    UserContext,
+    UserRole as AuthUserRole,
+    get_current_user,
+    verify_tenant_access,
+)
 from backend.app.models.knowledge_base import (
     KnowledgeCategory,
     KnowledgeItem,
@@ -24,12 +30,15 @@ def list_knowledge_items(
     org_id: str = Query(default="default-org", description="Tenant organization ID"),
     brand_id: Optional[str] = Query(default=None, description="Optional brand filter"),
     category: Optional[KnowledgeCategory] = Query(default=None, description="Optional category filter"),
-    active_only: bool = Query(default=True, description="Filter only active items")
+    active_only: bool = Query(default=True, description="Filter only active items"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Lists knowledge base items strictly partitioned by organization ID.
     Preserves company confidentiality and tenant isolation.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     return knowledge_service.list_items(
         org_id=org_id,
         brand_id=brand_id,
@@ -39,11 +48,16 @@ def list_knowledge_items(
 
 
 @router.post("/items", response_model=KnowledgeItem)
-def create_knowledge_item(item_in: KnowledgeItemCreate):
+def create_knowledge_item(
+    item_in: KnowledgeItemCreate,
+    user: UserContext = Depends(get_current_user)
+):
     """
     Creates a new Knowledge Base item.
     Enforces Rule 6: Never treats AI-generated recommendations as official company facts without approval.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, item_in.org_id)
     try:
         return knowledge_service.create_item(item_in)
     except ValueError as val_err:
@@ -56,8 +70,11 @@ def create_knowledge_item(item_in: KnowledgeItemCreate):
 @router.get("/items/{item_id}", response_model=KnowledgeItem)
 def get_knowledge_item(
     item_id: str,
-    org_id: str = Query(default="default-org", description="Tenant organization ID")
+    org_id: str = Query(default="default-org", description="Tenant organization ID"),
+    user: UserContext = Depends(get_current_user)
 ):
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     item = knowledge_service.get_item(item_id=item_id, org_id=org_id)
     if not item:
         raise HTTPException(status_code=404, detail="Knowledge item not found or access denied.")
@@ -68,13 +85,16 @@ def get_knowledge_item(
 def update_knowledge_item(
     item_id: str,
     update_in: KnowledgeItemUpdate,
-    org_id: str = Query(default="default-org", description="Tenant organization ID")
+    org_id: str = Query(default="default-org", description="Tenant organization ID"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Updates an existing knowledge item.
     Creates an immutable version snapshot in the audit log, bumps the version number,
     and updates semantic vector embeddings.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     try:
         return knowledge_service.update_item(item_id=item_id, org_id=org_id, update_in=update_in)
     except KeyError:
@@ -89,20 +109,28 @@ def update_knowledge_item(
 @router.get("/items/{item_id}/history", response_model=List[KnowledgeVersionSnapshot])
 def get_knowledge_item_history(
     item_id: str,
-    org_id: str = Query(default="default-org", description="Tenant organization ID")
+    org_id: str = Query(default="default-org", description="Tenant organization ID"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Retrieves full version history and changelog snapshots for a knowledge guideline.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     return knowledge_service.get_version_history(item_id=item_id, org_id=org_id)
 
 
 @router.post("/search", response_model=List[KnowledgeSearchResult])
-def search_knowledge_base(query: KnowledgeSearchQuery):
+def search_knowledge_base(
+    query: KnowledgeSearchQuery,
+    user: UserContext = Depends(get_current_user)
+):
     """
     Semantic vector retrieval using pgvector cosine distance algorithm.
     Strictly filters within the tenant's organisation and retrieves only approved items.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, query.org_id)
     return knowledge_service.search_knowledge_base(query)
 
 

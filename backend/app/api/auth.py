@@ -31,11 +31,28 @@ class AuthResponse(BaseModel):
     session_token: str
 
 @router.post("/register", response_model=AuthResponse)
-def register(request: RegisterRequest):
+def register(
+    request: RegisterRequest,
+    authorization: Optional[str] = Header(default=None)
+):
+    assigned_role = request.role or UserRole.DEVELOPER
+    if assigned_role in (UserRole.ADMIN, "admin"):
+        is_admin_creator = False
+        if authorization and authorization.startswith("Bearer "):
+            token = authorization.split("Bearer ", 1)[1].strip()
+            ctx = auth_service.verify_token(token)
+            if ctx and ctx.role == UserRole.ADMIN:
+                is_admin_creator = True
+        if not is_admin_creator:
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden: Administrative accounts cannot be self-registered. Only an active Administrator can assign the admin role."
+            )
+
     record = auth_service.register_user(
         email=request.email,
         password=request.password,
-        role=request.role or UserRole.DEVELOPER,
+        role=assigned_role,
         org_id=request.org_id or "default-org"
     )
     token = auth_service.create_session_token(record.user_id, record.role.value, record.org_id)

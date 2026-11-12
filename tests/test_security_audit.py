@@ -3,6 +3,7 @@ from PIL import Image
 from fastapi.testclient import TestClient
 from backend.app.main import app
 from backend.app.preprocessing.validator import inspect_file_content_safety, sanitize_filename
+from backend.app.core.auth import auth_service
 
 client = TestClient(app)
 
@@ -88,9 +89,10 @@ def test_role_based_access_control_on_brand_deletion():
     assert del_res.status_code == 403
     assert "Forbidden" in del_res.json().get("detail", "")
 
+    admin_token = auth_service.create_session_token("admin-lead", "admin", "org-alpha")
     admin_del = client.delete(
         f"/api/v1/brands/{brand_id}",
-        headers={"X-User-Role": "admin"}
+        headers={"Authorization": f"Bearer {admin_token}"}
     )
     assert admin_del.status_code == 200
 

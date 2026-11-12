@@ -110,10 +110,20 @@ async def approve_and_activate_brand_dna(
         raise HTTPException(status_code=500, detail=f"Approval failed: {str(exc)}")
 
 
+@router.get("/profile/{brand_id}", response_model=BrandProfile)
 @router.get("/{brand_id}", response_model=BrandProfile)
 def get_brand(brand_id: str) -> BrandProfile:
     profile = brand_service.get_brand_profile(brand_id)
+    if not profile and "-" in brand_id:
+        profile = brand_service.get_brand_profile(brand_id.replace("-", "_"))
+    if not profile and "_" in brand_id:
+        profile = brand_service.get_brand_profile(brand_id.replace("_", "-"))
     if not profile:
+        # Fallback search across loaded profiles
+        all_p = brand_service.list_brand_profiles()
+        for p in all_p:
+            if p.brand_id.lower() in [brand_id.lower(), brand_id.lower().replace("-", "_")]:
+                return p
         raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found.")
     return profile
 

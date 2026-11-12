@@ -30,6 +30,7 @@ class SupabaseService:
             "recommended_sql_schema": (
                 f"CREATE TABLE IF NOT EXISTS {settings.SUPABASE_TABLE} (\n"
                 "  dna_id TEXT PRIMARY KEY,\n"
+                "  org_id TEXT NOT NULL,\n"
                 "  brand_id TEXT NOT NULL,\n"
                 "  company_name TEXT NOT NULL,\n"
                 "  status TEXT NOT NULL,\n"
@@ -40,7 +41,16 @@ class SupabaseService:
                 "  ai_recommendations JSONB NOT NULL,\n"
                 "  created_at TIMESTAMPTZ DEFAULT NOW(),\n"
                 "  updated_at TIMESTAMPTZ DEFAULT NOW()\n"
-                ");"
+                ");\n\n"
+                f"-- Enable Row Level Security (RLS) for Multi-Tenant Data Isolation\n"
+                f"ALTER TABLE {settings.SUPABASE_TABLE} ENABLE ROW LEVEL SECURITY;\n\n"
+                f"CREATE POLICY \"tenant_isolation_select\" ON {settings.SUPABASE_TABLE}\n"
+                "  FOR SELECT\n"
+                "  USING (org_id = current_setting('app.current_org_id', true) OR org_id = auth.jwt() ->> 'org_id');\n\n"
+                f"CREATE POLICY \"tenant_isolation_write\" ON {settings.SUPABASE_TABLE}\n"
+                "  FOR ALL\n"
+                "  USING (org_id = current_setting('app.current_org_id', true) OR org_id = auth.jwt() ->> 'org_id')\n"
+                "  WITH CHECK (org_id = current_setting('app.current_org_id', true) OR org_id = auth.jwt() ->> 'org_id');"
             )
         }
 
@@ -71,6 +81,7 @@ class SupabaseService:
 
         payload = {
             "dna_id": profile.dna_id,
+            "org_id": getattr(profile, "org_id", None) or profile.brand_id,
             "brand_id": profile.brand_id,
             "company_name": profile.company_name,
             "status": profile.status.value if hasattr(profile.status, "value") else str(profile.status),

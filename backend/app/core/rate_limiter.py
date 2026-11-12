@@ -47,6 +47,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         "/api/v1/brands/draft",
         "/api/v1/brands/scan-reference",
     ]
+    AUTH_ENDPOINTS = [
+        "/api/v1/auth/login",
+        "/api/v1/auth/register",
+    ]
 
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
@@ -55,9 +59,15 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         client_ip = request.client.host if request.client else "127.0.0.1"
 
-        is_heavy = any(path.startswith(ep) for ep in self.HEAVY_ENDPOINTS)
-        max_limit = 45 if is_heavy else 200
-        category = "heavy" if is_heavy else "standard"
+        if any(path.startswith(ep) for ep in self.AUTH_ENDPOINTS):
+            max_limit = 15
+            category = "auth"
+        elif any(path.startswith(ep) for ep in self.HEAVY_ENDPOINTS):
+            max_limit = 45
+            category = "heavy"
+        else:
+            max_limit = 200
+            category = "standard"
 
         allowed, retry_after = rate_limiter.is_allowed(client_ip, category, max_limit, 60)
         if not allowed:

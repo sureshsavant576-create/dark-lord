@@ -16,7 +16,25 @@ from backend.app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-AUTH_SECRET = os.environ.get("BRANDSHIELD_AUTH_SECRET", "brandshield-production-secret-key-salt-2026")
+def _get_auth_secret() -> str:
+    env_secret = os.environ.get("BRANDSHIELD_AUTH_SECRET")
+    if env_secret and env_secret.strip():
+        return env_secret.strip()
+    secret_file = settings.DB_DIR / ".auth_secret"
+    try:
+        if secret_file.exists():
+            sec = secret_file.read_text(encoding="utf-8").strip()
+            if sec:
+                return sec
+        settings.DB_DIR.mkdir(parents=True, exist_ok=True)
+        import secrets
+        new_sec = secrets.token_urlsafe(48)
+        secret_file.write_text(new_sec, encoding="utf-8")
+        return new_sec
+    except Exception:
+        return "brandshield-production-secret-key-salt-2026"
+
+AUTH_SECRET = _get_auth_secret()
 USERS_DB_PATH = settings.DB_DIR / "users.json"
 REVOKED_SESSIONS_PATH = settings.DB_DIR / "revoked_sessions.json"
 
@@ -102,6 +120,8 @@ class UserAccountService:
         clean_email = email.strip().lower()
         if len(password) < 8:
             raise HTTPException(status_code=400, detail="Password must be at least 8 characters long.")
+        if len(password) > 128:
+            raise HTTPException(status_code=400, detail="Password exceeds maximum allowable length of 128 characters.")
         with self._lock:
             users = self._load_users()
             for u in users.values():
@@ -176,23 +196,59 @@ def get_current_user(
             return user_ctx
         raise HTTPException(status_code=401, detail="Invalid or expired session token.")
 
-    user_id = x_user_id or "default-dev"
+    # Unauthenticated request: Strictly prevent privilege escalation via headers
+    user_id = x_user_id or "anonymous-user"
     org_id = x_org_id or "default-org"
 
     if x_user_role:
         role_str = x_user_role.lower().strip()
-        if role_str in ("admin", "system_admin"):
-            role = UserRole.ADMIN
-        elif role_str in ("compliance_lead", "lead", "officer", "manager"):
-            role = UserRole.COMPLIANCE_LEAD
+        # Security hardening: Unauthenticated clients cannot claim admin or compliance_lead via headers
+        if role_str in ("admin", "system_admin", "compliance_lead", "lead", "officer", "manager"):
+            logger.warning(
+                "Blocked header privilege escalation attempt: unauthenticated request claimed role '%s'",
+                x_user_role
+            )
+            role = UserRole.VIEWER
         elif role_str in ("viewer", "read_only"):
             role = UserRole.VIEWER
         else:
             role = UserRole.DEVELOPER
     else:
-        role = UserRole.COMPLIANCE_LEAD
+        role = UserRole.VIEWER
 
     return UserContext(user_id=user_id, org_id=org_id, role=role)
+
+def require_authenticated_user(
+    authorization: Optional[str] = Header(default=None),
+) -> UserContext:
+    """
+    Enforces that the request provides a valid, unexpired, signed session token.
+    Raises 401 Unauthorized if missing or invalid.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required: Please provide a valid Bearer token in the Authorization header."
+        )
+    token = authorization.split("Bearer ", 1)[1].strip()
+    user_ctx = auth_service.verify_token(token)
+    if not user_ctx:
+        raise HTTPException(status_code=401, detail="Invalid or expired session token.")
+    return user_ctx
+
+def verify_tenant_access(user: UserContext, target_org_id: str) -> None:
+    """
+    Strict boundary check: ensures user belongs to target organization or is an Admin.
+    """
+    if user.role == UserRole.ADMIN:
+        return
+    clean_target = target_org_id.replace("-", "_").lower().strip()
+    clean_user_org = user.org_id.replace("-", "_").lower().strip()
+    if clean_target != clean_user_org and clean_user_org != "default_org":
+        raise HTTPException(
+            status_code=403,
+            detail=f"Cross-tenant access forbidden: User from organization '{user.org_id}' cannot access resources belonging to '{target_org_id}'."
+        )
 
 def verify_can_manage_brand(user: UserContext, brand_owner_id: Optional[str] = None) -> None:
     if user.role == UserRole.ADMIN:

@@ -2,9 +2,15 @@ from pathlib import Path
 from typing import Optional
 import uuid
 
-from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
 
+from backend.app.core.auth import (
+    UserContext,
+    UserRole as AuthUserRole,
+    get_current_user,
+    verify_tenant_access,
+)
 from backend.app.core.config import settings
 from backend.app.core.security import (
     ConfidentialityLevel,
@@ -32,7 +38,8 @@ async def secure_file_upload(
     user_role: str = Form("Creator"),
     user_id: str = Form("user-1"),
     confidentiality: str = Form("INTERNAL"),
-    subfolder: str = Form("uploads")
+    subfolder: str = Form("uploads"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Secure file upload endpoint with:
@@ -42,6 +49,8 @@ async def secure_file_upload(
     - Audit logging
     """
     clean_org = sanitize_org_id(org_id)
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, clean_org)
     content = await file.read()
 
     # 1. Inspect magic bytes
@@ -109,10 +118,11 @@ async def secure_file_upload(
 def get_secure_file(
     file_id: str = Query(..., description="Unique file identifier or filename"),
     org_id: str = Query("default-org", description="Tenant organization ID"),
-    user_role: str = Query("Creator", description="Requester user role"),
+    user_role: Optional[str] = Query(None, description="Requester user role"),
     user_id: str = Query("user-1", description="Requester ID"),
     subfolder: str = Query("uploads", description="Target subfolder"),
-    confidentiality: str = Query("INTERNAL", description="Document confidentiality level")
+    confidentiality: str = Query("INTERNAL", description="Document confidentiality level"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Serves confidential company files with:
@@ -123,23 +133,28 @@ def get_secure_file(
     """
     clean_org = sanitize_org_id(org_id)
 
+    # Multi-tenant data isolation: Block accessing files from another organization
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, clean_org)
+
+    effective_role = user_role or user.role.value
     # 1. Clearance check for confidential company files
-    if not check_role_clearance(user_role, confidentiality):
+    if not check_role_clearance(effective_role, confidentiality):
         audit_service.log_event(
             event_type=AuditEventType.ACCESS_DENIED,
             org_id=clean_org,
             user_id=user_id,
-            user_role=user_role,
+            user_role=effective_role,
             severity=AuditEventSeverity.WARNING,
             resource_type="confidential_file",
             resource_id=file_id,
             action="FILE_ACCESS_DENIED_CLEARANCE",
-            details={"requested_confidentiality": confidentiality, "role": user_role},
+            details={"requested_confidentiality": confidentiality, "role": effective_role},
             success=False
         )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Access Denied: Role '{user_role}' lacks clearance for '{confidentiality}' documents."
+            detail=f"Access Denied: Role '{effective_role}' lacks clearance for '{confidentiality}' documents."
         )
 
     # 2. Safe path resolution

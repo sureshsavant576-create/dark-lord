@@ -174,7 +174,8 @@ DANGEROUS_WINDOWS_FILENAMES = {
 DISALLOWED_FILE_EXTENSIONS = {
     ".exe", ".bat", ".cmd", ".com", ".sh", ".bash", ".ps1", ".vbs",
     ".php", ".py", ".rb", ".pl", ".cgi", ".asp", ".aspx", ".jsp",
-    ".dll", ".so", ".dylib", ".bin", ".scr", ".pif", ".hta"
+    ".dll", ".so", ".dylib", ".bin", ".scr", ".pif", ".hta",
+    ".html", ".htm", ".xhtml", ".shtml", ".svgz"
 }
 
 
@@ -337,11 +338,16 @@ def inspect_file_magic_bytes(data: bytes, filename: str) -> Tuple[bool, str, str
     # Check for SVG (XML text containing <svg)
     if ext == ".svg" or b"<svg" in data[:1024]:
         try:
-            head_text = data[:2048].decode("utf-8", errors="ignore").lower()
+            sample_len = min(len(data), 65536)
+            head_text = data[:sample_len].decode("utf-8", errors="ignore").lower()
             if "<svg" in head_text:
-                # Security check for script injections in SVG
-                if "<script" in head_text or "javascript:" in head_text or "onload=" in head_text or "onerror=" in head_text:
-                    return False, "image/svg+xml", "SVG contains forbidden active script/event handler injection."
+                # Security check for script injections & XML entities in SVG
+                svg_forbidden = [
+                    "<script", "javascript:", "onload=", "onerror=", "onclick=",
+                    "<!entity", "<!doctype", "<foreignobject", "<iframe", "<embed"
+                ]
+                if any(bad in head_text for bad in svg_forbidden):
+                    return False, "image/svg+xml", "SVG contains forbidden active script, entity, or event handler injection."
                 return True, "image/svg+xml", "Valid SVG vector graphic detected."
         except Exception:
             pass
@@ -352,6 +358,10 @@ def inspect_file_magic_bytes(data: bytes, filename: str) -> Tuple[bool, str, str
             decoded = data[:4096].decode("utf-8")
             if "\0" in decoded:
                 return False, "application/octet-stream", "Binary null bytes detected in text upload."
+            # Check for embedded HTML/script tags in text uploads
+            lowered = decoded.lower()
+            if "<script" in lowered or "<html" in lowered or "javascript:" in lowered:
+                return False, "text/plain", "Embedded HTML or script tags detected in text upload."
             return True, "text/plain" if ext != ".json" else "application/json", "Valid text content detected."
         except UnicodeDecodeError:
             return False, "application/octet-stream", "Text file contains invalid UTF-8 bytes."

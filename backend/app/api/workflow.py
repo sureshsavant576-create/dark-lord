@@ -1,8 +1,14 @@
 from __future__ import annotations
 import logging
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from backend.app.core.auth import (
+    UserContext,
+    UserRole as AuthUserRole,
+    get_current_user,
+    verify_tenant_access,
+)
 from backend.app.models.workflow import (
     ApprovalDecisionRequest,
     CommentRequest,
@@ -23,12 +29,17 @@ router = APIRouter(prefix="/workflow", tags=["Organisational Content Review & Ap
 
 
 @router.post("/items", response_model=WorkflowItem)
-async def submit_content_for_review(payload: SubmitContentRequest):
+async def submit_content_for_review(
+    payload: SubmitContentRequest,
+    user: UserContext = Depends(get_current_user)
+):
     """
     Submits content for review.
     If high-risk factual or promotional claims are present, automatically escalates
     the content to an Authorised Reviewer.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, payload.org_id)
     try:
         return workflow_service.submit_content(payload)
     except Exception as exc:
@@ -40,22 +51,28 @@ async def submit_content_for_review(payload: SubmitContentRequest):
 async def list_workflow_items(
     org_id: str = Query(..., description="Organization ID for company-level data isolation"),
     brand_id: Optional[str] = Query(default=None),
-    status: Optional[ContentStatus] = Query(default=None)
+    status: Optional[ContentStatus] = Query(default=None),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Lists workflow items strictly scoped to the requester's organization.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     return workflow_service.list_items(org_id=org_id, brand_id=brand_id, status=status)
 
 
 @router.get("/items/{item_id}", response_model=WorkflowItem)
 async def get_workflow_item(
     item_id: str,
-    org_id: str = Query(..., description="Organization ID for company-level data isolation")
+    org_id: str = Query(..., description="Organization ID for company-level data isolation"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Retrieves workflow item details and current version analysis results.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     item = workflow_service.get_item(item_id=item_id, org_id=org_id)
     if not item:
         raise HTTPException(status_code=404, detail="Workflow item not found in this organization.")
@@ -66,12 +83,15 @@ async def get_workflow_item(
 async def add_review_comment(
     item_id: str,
     payload: CommentRequest,
-    org_id: str = Query(..., description="Organization ID for company-level data isolation")
+    org_id: str = Query(..., description="Organization ID for company-level data isolation"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Comments on specific issues or overall submission.
     Available to all authenticated roles.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     try:
         return workflow_service.add_comment(item_id=item_id, org_id=org_id, req=payload)
     except ValueError as ve:
@@ -85,12 +105,15 @@ async def add_review_comment(
 async def request_content_revision(
     item_id: str,
     payload: RevisionRequest,
-    org_id: str = Query(..., description="Organization ID for company-level data isolation")
+    org_id: str = Query(..., description="Organization ID for company-level data isolation"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Requests revisions from the creator.
     Permitted roles: Manager, Authorised Reviewer, Administrator.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     try:
         return workflow_service.request_revision(item_id=item_id, org_id=org_id, req=payload)
     except PermissionError as pe:
@@ -106,12 +129,15 @@ async def request_content_revision(
 async def submit_revised_version(
     item_id: str,
     payload: ReviseContentRequest,
-    org_id: str = Query(..., description="Organization ID for company-level data isolation")
+    org_id: str = Query(..., description="Organization ID for company-level data isolation"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Submits an updated version addressing review feedback.
     Permitted roles: Creator, Administrator.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     try:
         return workflow_service.submit_revision(item_id=item_id, org_id=org_id, req=payload)
     except ValueError as ve:
@@ -125,13 +151,16 @@ async def submit_revised_version(
 async def record_approval_decision(
     item_id: str,
     payload: ApprovalDecisionRequest,
-    org_id: str = Query(..., description="Organization ID for company-level data isolation")
+    org_id: str = Query(..., description="Organization ID for company-level data isolation"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Approves or rejects content.
     High-risk claims governance: If content is ESCALATED due to high-risk claims,
     approval strictly requires an Authorised Reviewer or Administrator.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     try:
         return workflow_service.record_decision(item_id=item_id, org_id=org_id, req=payload)
     except PermissionError as pe:
@@ -146,11 +175,14 @@ async def record_approval_decision(
 @router.get("/items/{item_id}/versions", response_model=List[ContentVersion])
 async def get_version_history(
     item_id: str,
-    org_id: str = Query(..., description="Organization ID for company-level data isolation")
+    org_id: str = Query(..., description="Organization ID for company-level data isolation"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Retrieves all historical iterations and versions of an item.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     try:
         return workflow_service.get_version_history(item_id=item_id, org_id=org_id)
     except ValueError as ve:
@@ -160,11 +192,14 @@ async def get_version_history(
 @router.get("/items/{item_id}/audit-trail", response_model=List[WorkflowAuditLogEntry])
 async def get_approval_audit_trail(
     item_id: str,
-    org_id: str = Query(..., description="Organization ID for company-level data isolation")
+    org_id: str = Query(..., description="Organization ID for company-level data isolation"),
+    user: UserContext = Depends(get_current_user)
 ):
     """
     Retrieves complete, immutable audit trail of all review and approval actions.
     """
+    if user.role != AuthUserRole.ADMIN:
+        verify_tenant_access(user, org_id)
     try:
         return workflow_service.get_audit_trail(item_id=item_id, org_id=org_id)
     except ValueError as ve:

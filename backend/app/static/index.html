@@ -1961,6 +1961,348 @@
     </div>
   </div>
 
+  
+  <!-- ===================================================================== -->
+  <!-- INTEGRATED OPERATIONAL MODALS (Workflow, Auto-Fix, History) -->
+  <!-- ===================================================================== -->
+
+  <!-- 1. Generative Auto-Fix Modal -->
+  <div id="modal-auto-remediation" class="app-modal-backdrop hidden" onclick="if(event.target===this)closeRemediationModal()">
+    <div class="modal-dialog modal-remediation-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-badge-remed">✨ AI-Assisted Visual Correction (Auto-Fix)</span>
+          <h3 id="remed-modal-title">Creative Color Shift &amp; Saliency-Preserved Remapping</h3>
+        </div>
+        <button type="button" class="btn-close-modal" onclick="closeRemediationModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Visual Problems Identified Banner -->
+        <div id="remed-problems-box" class="remed-problems-box hidden">
+          <div class="box-title">
+            <span>🔍 Visual Problems Identified:</span>
+          </div>
+          <div id="remed-problems-list" class="remed-problems-list"></div>
+        </div>
+
+        <!-- Preserved Elements & Generative Limitation Notice -->
+        <div class="remed-preservation-banner">
+          <div class="preservation-items">
+            <span class="pres-pill">🛡️ Text &amp; Typography Preserved</span>
+            <span class="pres-pill">🛡️ Logo &amp; Brand Marks Preserved</span>
+            <span class="pres-pill">🛡️ Product Contours Protected</span>
+          </div>
+          <div id="remed-limitation-notice" class="remed-limitation-notice hidden">
+            <small id="remed-limitation-text"></small>
+          </div>
+        </div>
+
+        <!-- Side-by-side comparison grid -->
+        <div class="remediation-comparison-grid">
+          <div class="comparison-column">
+            <span class="comp-col-label label-before">Original Submission (Off-Brand)</span>
+            <div class="comp-image-wrap">
+              <img id="remed-orig-img" class="comp-img" alt="Original submission">
+            </div>
+            <div class="comp-telemetry telemetry-before">
+              <span>Color Accuracy:</span>
+              <strong id="remed-orig-delta">&Delta;E 24.5 &bull; Non-Compliant</strong>
+            </div>
+          </div>
+          <div class="comparison-column">
+            <span class="comp-col-label label-after">&check; Remediated Graphic (Brand-Certified)</span>
+            <div class="comp-image-wrap">
+              <img id="remed-fixed-img" class="comp-img" alt="Remediated compliant asset">
+            </div>
+            <div class="comp-telemetry telemetry-after">
+              <span>Color Accuracy:</span>
+              <strong id="remed-fixed-delta">&Delta;E 3.2 &bull; 98.4% Compliant</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="remediation-palette-shifts">
+          <strong>Color Centroids Remapped:</strong>
+          <div id="remed-swatches-grid" class="remed-swatches-grid"></div>
+        </div>
+
+        <!-- Applied AI Changes & Human Approval Disclosure -->
+        <div class="remed-disclosure-footer">
+          <span class="disclosure-badge">AI-GENERATED VARIATION</span>
+          <p id="remed-disclosure-text" class="disclosure-text">
+            Original image remains untouched. Corrected version is saved separately and requires creator approval before submission.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" id="btn-accept-remediation" onclick="handleRemediationDecision('accept')">
+          ✓ Accept Correction (Stage for Review)
+        </button>
+        <button type="button" class="btn btn-outline" id="btn-reject-remediation" onclick="handleRemediationDecision('reject')">
+          ✕ Reject / Revert
+        </button>
+        <a id="btn-download-remediated" href="#" download="brand_certified_creative.png" class="btn btn-primary">
+          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Download</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Workflow Decision & Review Detail Modal -->
+  <div id="modal-workflow-detail" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeWorkflowDetailModal()">
+    <div class="app-modal modal-lg-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="wf-detail-title-row">
+            <h3 id="wf-detail-title">Creative Submission</h3>
+            <span id="wf-detail-status-badge" class="tag-badge tag-Under_Review">Under Review</span>
+          </div>
+          <p id="wf-detail-meta">Version 1 &bull; Brand: Apex Cloud &bull; Org: org-apex-cloud</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeWorkflowDetailModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- High-Risk Escalation Banner if Applicable -->
+        <div id="wf-detail-escalation-alert" class="wf-escalation-alert hidden">
+          <span class="alert-icon">⚖️</span>
+          <div>
+            <strong>MANDATORY AUTHORISED REVIEW REQUIRED</strong>
+            <p id="wf-detail-escalation-reason">This asset is escalated due to high-risk promotional/factual claims. Only Authorised Reviewers or Administrators may approve.</p>
+          </div>
+        </div>
+
+        <!-- Versions Tabs -->
+        <div class="wf-version-tabs-bar" id="wf-version-tabs-bar"></div>
+
+        <!-- Version Content Display -->
+        <div class="wf-version-display-box">
+          <div class="wf-content-view">
+            <label><small>Creative Copy Content:</small></label>
+            <blockquote id="wf-detail-copy-text" class="wf-copy-blockquote">--</blockquote>
+            <div id="wf-detail-image-wrap" class="wf-image-wrap hidden">
+              <img id="wf-detail-image" alt="Creative asset">
+            </div>
+          </div>
+          <div class="wf-analysis-summary-view">
+            <label><small>Audit Telemetry &amp; Findings:</small></label>
+            <div class="wf-score-pill">
+              <span>Compliance Score:</span>
+              <strong id="wf-detail-score">--%</strong>
+            </div>
+            <div id="wf-detail-findings-list" class="wf-findings-list"></div>
+          </div>
+        </div>
+
+        <!-- Collaborative Comments & Discussion -->
+        <div class="wf-comments-section">
+          <div class="section-title">
+            <span>💬 Review Discussion &amp; Issue Comments:</span>
+          </div>
+          <div id="wf-detail-comments-list" class="wf-comments-list">
+            <div class="empty-comments">No comments recorded yet.</div>
+          </div>
+          <form id="wf-comment-form" class="wf-comment-input-row" onsubmit="handlePostComment(event)">
+            <input type="text" id="wf-comment-input" placeholder="Comment on an issue or request clarification..." required autocomplete="off">
+            <button type="submit" class="btn btn-secondary btn-sm">Post Comment</button>
+          </form>
+        </div>
+
+        <!-- Action Area (Role-based) -->
+        <div class="wf-review-action-area" id="wf-action-area">
+          <!-- Request Revisions Drawer (Manager / Reviewer / Admin) -->
+          <div id="wf-request-revision-box" class="wf-revision-drawer">
+            <label for="wf-revision-feedback"><strong>Request Revisions from Creator:</strong></label>
+            <textarea id="wf-revision-feedback" rows="2" placeholder="Specify required changes, terminology fixes, or tone adjustments..."></textarea>
+            <div class="btn-row-right">
+              <button type="button" class="btn btn-warning btn-sm" onclick="handleRequestRevision()">
+                Request Revisions (Mark Needs Revision)
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit Revised Version Drawer (Creator / Admin) -->
+          <div id="wf-submit-revision-box" class="wf-revision-drawer hidden">
+            <label for="wf-revised-copy"><strong>Submit Revised Version (v2):</strong></label>
+            <textarea id="wf-revised-copy" rows="2" placeholder="Paste revised copy addressing reviewer feedback..."></textarea>
+            <input type="text" id="wf-revised-summary" placeholder="Summary of changes (e.g. Replaced unapproved term with verified phrasing)..." style="margin-top: 0.4rem;">
+            <div class="btn-row-right" style="margin-top: 0.5rem;">
+              <button type="button" class="btn btn-primary btn-sm" onclick="handleSubmitRevision()">
+                Submit Revised Version
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Immutable Audit Trail History -->
+        <div class="wf-audit-trail-section">
+          <div class="section-title">
+            <span>📜 Immutable Audit Log &amp; Governance History:</span>
+          </div>
+          <div id="wf-detail-audit-list" class="wf-audit-list"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="footer-left">
+          <span class="active-acting-role" id="wf-acting-role-label">Acting as: Authorised Reviewer</span>
+        </div>
+        <div class="footer-right">
+          <button type="button" class="btn btn-danger btn-sm" id="btn-wf-reject" onclick="handleDecision('reject')">
+            ✕ Reject Content
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-wf-approve-warn" onclick="handleDecision('approve_with_warnings')">
+            ⚠️ Approve with Warnings
+          </button>
+          <button type="button" class="btn btn-success" id="btn-wf-approve" onclick="handleDecision('approve')">
+            ✓ Approve Content
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. New Workflow Item Submission Modal -->
+  <div id="modal-workflow-new" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeNewWorkflowModal()">
+    <div class="app-modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Submit Content for Organisational Review</h3>
+          <p>Submit promotional copy or visual creative into the brand compliance workflow.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeNewWorkflowModal()">&times;</button>
+      </div>
+      <form id="form-new-workflow" onsubmit="handleNewWorkflowSubmit(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="wf-new-title">Creative Campaign / Asset Title: <span class="required">*</span></label>
+            <input type="text" id="wf-new-title" placeholder="e.g. Q4 Global Brand Hero Launch" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="wf-new-brand">Target Brand Standard: <span class="required">*</span></label>
+              <select id="wf-new-brand" required>
+                <option value="apex_cloud">Apex Cloud Systems</option>
+                <option value="nike">Nike Athletic Standards</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="wf-new-score">Preliminary Compliance Score (%):</label>
+              <input type="number" id="wf-new-score" value="88" min="0" max="100">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="wf-new-copy">Creative Copy Text: <span class="required">*</span></label>
+            <textarea id="wf-new-copy" rows="3" placeholder="Enter headline, body copy, or advertising slogan..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="wf-new-image">Image Creative URL (Optional):</label>
+            <input type="text" id="wf-new-image" placeholder="/static/samples/nike_compliant_poster.png">
+          </div>
+
+          <div class="wf-checkbox-card">
+            <label class="checkbox-label">
+              <input type="checkbox" id="wf-new-high-risk">
+              <strong>Contains High-Risk Factual or Promotional Claims</strong>
+            </label>
+            <small class="field-hint">Flag if copy asserts "#1 in industry", guaranteed uptime, clinical certification, or performance metrics. Automatically escalates to Authorised Reviewers.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeNewWorkflowModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit for Workflow Review</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Knowledge Item Version History Modal -->
+  <div id="modal-knowledge-history" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeKnowledgeHistoryModal()">
+    <div class="app-modal" style="max-width: 640px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 id="kb-history-title">Guideline Version History</h3>
+          <p id="kb-history-subtitle">Immutable audit trail of previous revisions and changes.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeKnowledgeHistoryModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="kb-history-list" class="kb-history-list">
+          <div class="insights-loading">Loading version history...</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeKnowledgeHistoryModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Brand Saving Feedback Modal -->
+  <div id="modal-saving-brand" class="app-modal-backdrop hidden">
+    <div class="app-modal saving-modal-card" style="max-width: 480px; text-align: center; padding: 2.25rem 2rem;">
+      <div class="saving-spinner-ring" style="margin: 0 auto 1.5rem auto; width: 64px; height: 64px; position: relative; display: flex; align-items: center; justify-content: center;">
+        <div class="saving-spinner-glow" style="position: absolute; inset: -4px; border-radius: 50%; background: conic-gradient(from 0deg, rgba(99, 102, 241, 0.1), #6366F1, #A855F7, #10B981, rgba(99, 102, 241, 0.1)); animation: spin 1.4s linear infinite; filter: blur(2px);"></div>
+        <div style="position: absolute; inset: 4px; background: var(--bg-surface, #0E1526); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+          <svg class="svg-icon" id="saving-modal-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6366F1;">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+      </div>
+      
+      <h3 id="saving-modal-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: #FFFFFF;">Saving &amp; Locking Brand Profile</h3>
+      <p id="saving-modal-step-text" style="color: var(--text-muted, #94A3B8); font-size: 0.88rem; margin-bottom: 1.5rem;">Validating approved color palette and brand guidelines...</p>
+      
+      <div class="upload-progress-container" style="margin-bottom: 1.25rem;">
+        <div class="upload-progress-bar" style="height: 7px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden;">
+          <div id="saving-modal-progress-fill" class="upload-progress-fill uploading" style="width: 15%; transition: width 0.3s ease;"></div>
+        </div>
+        <div class="upload-progress-meta" style="margin-top: 0.6rem; display: flex; justify-content: space-between; font-size: 0.78rem;">
+          <span id="saving-modal-status-text" class="progress-status-text" style="color: var(--text-secondary, #CBD5E1);">Initializing brand synthesis...</span>
+          <span id="saving-modal-percent" class="progress-percent-text" style="font-weight: 700; color: #6366F1;">15%</span>
+        </div>
+      </div>
+      
+      <div id="saving-modal-substatus" style="font-size: 0.78rem; color: var(--text-muted, #94A3B8); font-family: var(--font-mono, monospace);">
+        Connecting to BrandShield Governance Engine...
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Permanent Delete Confirmation Modal -->
+  <div id="modal-confirm-delete" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeConfirmDeleteModal()">
+    <div class="app-modal modal-danger-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 id="delete-modal-title">Confirm Permanent Deletion</h3>
+          <p id="delete-modal-subtitle">This operation cannot be reversed.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeConfirmDeleteModal()" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="delete-warning-box">
+          <div class="warning-icon-badge">
+            <svg class="svg-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="warning-text-content">
+            <strong id="delete-modal-target-name">Item Name</strong>
+            <p id="delete-modal-message">Are you sure you want to permanently delete this item? All associated compliance data and uploaded files will be permanently erased.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeConfirmDeleteModal()">Cancel</button>
+        <button type="button" id="delete-modal-confirm-btn" class="btn btn-danger">
+          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span id="delete-modal-confirm-btn-text">Permanently Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="/static/app.js?v=28.0"></script>
 </body>
 </html>
