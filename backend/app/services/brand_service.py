@@ -44,7 +44,14 @@ class BrandService:
         with self._lock:
             try:
                 content = self.db_path.read_text(encoding="utf-8").strip()
-                return json.loads(content) if content else {}
+                parsed = json.loads(content) if content else {}
+                if isinstance(parsed, list):
+                    res = {}
+                    for item in parsed:
+                        if isinstance(item, dict) and "brand_id" in item:
+                            res[item["brand_id"]] = item
+                    return res
+                return parsed if isinstance(parsed, dict) else {}
             except Exception as exc:
                 logger.error("Error reading brand profiles database: %s", exc)
                 return {}
@@ -140,6 +147,7 @@ class BrandService:
                 brand_id=brand_id,
                 brand_name=questionnaire.brand_name,
                 owner_id=getattr(questionnaire, "owner_id", None) or "default-org",
+                org_id=getattr(questionnaire, "org_id", None) or getattr(questionnaire, "owner_id", None) or "default-org",
                 status=ProfileStatus.DRAFT_PENDING_CONFIRMATION,
                 personality=ai_result.brand_personality or [questionnaire.personality],
                 mood=ai_result.brand_mood or [questionnaire.mood],
@@ -164,6 +172,7 @@ class BrandService:
                 brand_id=brand_id,
                 brand_name=questionnaire.brand_name,
                 owner_id=getattr(questionnaire, "owner_id", None) or "default-org",
+                org_id=getattr(questionnaire, "org_id", None) or getattr(questionnaire, "owner_id", None) or "default-org",
                 status=ProfileStatus.DRAFT_PENDING_CONFIRMATION,
                 personality=[p.strip() for p in questionnaire.personality.split(",") if p.strip()],
                 mood=[m.strip() for m in questionnaire.mood.split(",") if m.strip()],
@@ -200,6 +209,10 @@ class BrandService:
         existing.target_audience = request.target_audience.strip()
         if hasattr(request, "owner_id") and request.owner_id:
             existing.owner_id = request.owner_id
+        if hasattr(request, "org_id") and request.org_id:
+            existing.org_id = request.org_id
+        elif existing.owner_id:
+            existing.org_id = existing.owner_id
         existing.approved_palette = [clean_hex_code(c) for c in request.approved_palette if clean_hex_code(c)]
         existing.disallowed_elements = [d.strip() for d in request.disallowed_elements if d.strip()]
         if request.key_values:

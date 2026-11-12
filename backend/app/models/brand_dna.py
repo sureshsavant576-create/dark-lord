@@ -26,6 +26,7 @@ class BrandDNAInput(BaseModel):
     desired_customer_perception: str = Field(..., description="How customers and users should perceive the brand (e.g., authoritative, trusted, high-velocity)")
     communication_personality: str = Field(..., description="Tone of voice and character (e.g., empowering, direct, empathetic, scientific)")
     reference_brands: Optional[str] = Field(default="", description="Optional benchmark or reference brands (e.g., Stripe, Apple, Linear, Patagonia)")
+    org_id: Optional[str] = Field(default=None, description="Optional tenant organization ID")
 
 
 class BrandDNAFacts(BaseModel):
@@ -153,6 +154,7 @@ class BrandDNAProfile(BaseModel):
     """
     dna_id: str = Field(..., description="Unique DNA identifier (e.g. dna-nike-9a2f)")
     brand_id: str = Field(..., description="Associated brand slug (e.g. nike)")
+    org_id: str = Field(default="default-org", description="Tenant organization ID")
     company_name: str
     status: BrandDNAStatus = Field(default=BrandDNAStatus.DRAFT_PENDING_APPROVAL)
     is_approved: bool = Field(default=False)

@@ -81,9 +81,10 @@ async def test_groq_connectivity(req: Optional[TestGroqRequest] = None) -> Dict[
         }
 
     models_to_test = [
-        getattr(settings, "GROQ_TEXT_MODEL", "llama-3.3-70b-versatile"),
-        "llama-3.1-8b-instant",
-        "llama-3.2-11b-vision-preview"
+        getattr(settings, "GROQ_TEXT_MODEL", "qwen/qwen3.8-27b"),
+        "qwen/qwen3.8-27b",
+        "openai/gpt-oss-20b",
+        "openai/gpt-oss-120b"
     ]
 
     prompt_text = (req.prompt if req and req.prompt else "Respond with a 1-sentence confirmation that Groq is operational for Sanket AI.")
@@ -93,7 +94,7 @@ async def test_groq_connectivity(req: Optional[TestGroqRequest] = None) -> Dict[
 
     try:
         async with httpx.AsyncClient(timeout=timeout) as http_client:
-            client = AsyncGroq(api_key=key_to_use, http_client=http_client)
+            client = AsyncGroq(api_key=key_to_use, http_client=http_client, max_retries=0)
             last_err = None
 
             for model_name in dict.fromkeys(models_to_test):
@@ -160,3 +161,66 @@ async def test_groq_connectivity(req: Optional[TestGroqRequest] = None) -> Dict[
             "provider": "groq",
             "error": str(general_err)
         }
+
+
+@router.post("/test-gemini")
+async def test_gemini_connection():
+    """
+    Tests live Google Gemini API connectivity for Brand DNA, guideline interpretation,
+    and visual analysis without exposing API secrets.
+    """
+    import time
+    if not settings.has_gemini:
+        return {
+            "configured": False,
+            "status": "unconfigured",
+            "provider": "gemini",
+            "message": "GEMINI_API_KEY is not configured in environment."
+        }
+    t0 = time.perf_counter()
+    try:
+        from google import genai
+        client = genai.Client(api_key=settings.GEMINI_API_KEY.strip())
+        models = list(dict.fromkeys(["gemini-3.1-flash-lite", "gemini-3.5-flash-lite", settings.DEFAULT_VISION_MODEL, "gemini-3.5-flash"]))
+        last_err = None
+        for m_name in models:
+            try:
+                resp = client.models.generate_content(
+                    model=m_name,
+                    contents="Confirm Google Gemini operational readiness for Sanket AI in one short sentence."
+                )
+                if resp and resp.text:
+                    return {
+                        "configured": True,
+                        "status": "operational",
+                        "provider": "gemini",
+                        "model_used": m_name,
+                        "response_text": resp.text.strip(),
+                        "latency_ms": round((time.perf_counter() - t0) * 1000.0, 2)
+                    }
+            except Exception as exc:
+                last_err = exc
+                continue
+        return {
+            "configured": True,
+            "status": "error",
+            "provider": "gemini",
+            "error": str(last_err)
+        }
+    except Exception as exc:
+        return {
+            "configured": True,
+            "status": "error",
+            "provider": "gemini",
+            "error": str(exc)
+        }
+
+
+@router.get("/test-supabase")
+async def test_supabase_connection():
+    """
+    Tests live Supabase Auth, REST schema/tables, and Storage bucket readiness
+    without exposing API secrets or service keys.
+    """
+    from backend.app.services.supabase_service import supabase_service
+    return await supabase_service.probe_live_health()

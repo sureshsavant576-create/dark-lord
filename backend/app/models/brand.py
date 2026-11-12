@@ -21,6 +21,7 @@ class BrandQuestionnaire(BaseModel):
     disallowed_elements: List[str] = Field(default_factory=list, description="Explicit avoidances, forbidden words, or aesthetics")
     tagline_or_mission: Optional[str] = Field(default="", description="Core motto or brand promise")
     owner_id: Optional[str] = Field(default="default-org", description="Organization or user identity owning this brand")
+    org_id: str = Field(default="default-org", description="Tenant organization ID")
     logo_url: Optional[str] = Field(default="", description="Official brand logo image URL or path")
 
 class ReferenceAssetInfo(BaseModel):
@@ -38,6 +39,7 @@ class BrandProfile(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     owner_id: str = Field(default="default-org", description="Organization or user identity that owns this brand standard")
+    org_id: str = Field(default="default-org", description="Tenant organization ID")
 
     personality: List[str] = Field(default_factory=list)
     mood: List[str] = Field(default_factory=list)
@@ -78,4 +80,5 @@ class BrandProfileConfirmationRequest(BaseModel):
     confirmed_by: str = Field(default="Brand Manager", description="Name or email of the approver")
     confirmation_notes: Optional[str] = Field(default="Approved after onboarding review")
     owner_id: Optional[str] = Field(default="default-org", description="Owner user or organization ID")
+    org_id: Optional[str] = Field(default=None, description="Tenant organization ID")
     logo_url: Optional[str] = Field(default="", description="Official brand logo image URL or path")

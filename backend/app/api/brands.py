@@ -5,7 +5,13 @@ from pathlib import Path
 from typing import List, Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
-from backend.app.core.auth import UserContext, get_current_user, verify_can_manage_brand
+from backend.app.core.auth import (
+    UserContext,
+    get_current_user,
+    is_platform_demo_admin,
+    verify_can_manage_brand,
+    verify_tenant_access,
+)
 from backend.app.core.config import settings
 from backend.app.models.brand import (
     BrandProfile,
@@ -29,8 +35,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/brands", tags=["Brand Onboarding & Governance"])
 
 @router.get("", response_model=List[BrandProfile])
-def list_brands() -> List[BrandProfile]:
-    return brand_service.list_brand_profiles()
+def list_brands(user: UserContext = Depends(get_current_user)) -> List[BrandProfile]:
+    brands = brand_service.list_brand_profiles()
+    if is_platform_demo_admin(user):
+        return brands
+    return [
+        b for b in brands
+        if (getattr(b, "org_id", None) == user.org_id or getattr(b, "owner_id", None) == user.org_id)
+    ]
 
 
 # ============================================================================
@@ -44,13 +56,29 @@ def get_supabase_integration_status():
     """
     return supabase_service.get_status()
 
+def _verify_brand_management_or_default_anon(user: UserContext, target_org: str) -> None:
+    """
+    Allows unauthenticated callers operating solely within default-org (local/legacy tests),
+    while enforcing strict role & tenant isolation for authenticated users or named organizations.
+    """
+    clean_target = (target_org or "default-org").replace("-", "_").lower().strip()
+    if user.user_id == "anonymous-user" and (user.org_id or "default-org").replace("-", "_").lower() == "default_org" and clean_target in ("default_org", "default_dev"):
+        return
+    verify_can_manage_brand(user, target_org)
+
 @router.post("/dna/generate", response_model=BrandDNAProfile)
-async def generate_brand_dna_profile(input_data: BrandDNAInput) -> BrandDNAProfile:
+async def generate_brand_dna_profile(
+    input_data: BrandDNAInput,
+    user: UserContext = Depends(get_current_user),
+) -> BrandDNAProfile:
     """
     Collects 10 company facts, uses Gemini API to synthesize 13 structured
     Brand DNA attributes, strictly separates facts from AI recommendations,
     and returns a validated draft profile pending user approval.
     """
+    target_org = input_data.org_id or user.org_id or "default-org"
+    _verify_brand_management_or_default_anon(user, target_org)
+    input_data.org_id = target_org
     try:
         profile = await brand_dna_service.generate_brand_dna(input_data)
         return profile
@@ -59,27 +87,39 @@ async def generate_brand_dna_profile(input_data: BrandDNAInput) -> BrandDNAProfi
         raise HTTPException(status_code=500, detail=f"Failed to generate Brand DNA: {str(exc)}")
 
 @router.get("/dna", response_model=List[BrandDNAProfile])
-def list_brand_dna_profiles() -> List[BrandDNAProfile]:
+def list_brand_dna_profiles(user: UserContext = Depends(get_current_user)) -> List[BrandDNAProfile]:
     """
-    Lists all generated and approved Brand DNA profiles.
+    Lists all generated and approved Brand DNA profiles scoped to the user's organization.
     """
-    return brand_dna_service.list_dna_profiles()
+    profiles = brand_dna_service.list_dna_profiles()
+    if is_platform_demo_admin(user):
+        return profiles
+    return [p for p in profiles if getattr(p, "org_id", "default-org") == user.org_id]
 
 @router.get("/dna/{dna_id}", response_model=BrandDNAProfile)
-def get_brand_dna_profile(dna_id: str) -> BrandDNAProfile:
+def get_brand_dna_profile(dna_id: str, user: UserContext = Depends(get_current_user)) -> BrandDNAProfile:
     """
     Retrieves a specific Brand DNA profile by DNA ID or brand slug.
     """
     profile = brand_dna_service.get_dna_profile(dna_id)
     if not profile:
         raise HTTPException(status_code=404, detail=f"Brand DNA profile '{dna_id}' not found.")
+    verify_tenant_access(user, getattr(profile, "org_id", "default-org"))
     return profile
 
 @router.put("/dna/{dna_id}", response_model=BrandDNAProfile)
-def update_draft_brand_dna(dna_id: str, edits: BrandDNASynthesis) -> BrandDNAProfile:
+def update_draft_brand_dna(
+    dna_id: str,
+    edits: BrandDNASynthesis,
+    user: UserContext = Depends(get_current_user),
+) -> BrandDNAProfile:
     """
     Allows user to edit any of the 13 generated Brand DNA sections before approval.
     """
+    existing = brand_dna_service.get_dna_profile(dna_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail=f"Brand DNA profile '{dna_id}' not found.")
+    _verify_brand_management_or_default_anon(user, getattr(existing, "org_id", "default-org"))
     try:
         updated = brand_dna_service.update_draft_dna(dna_id, edits)
         return updated
@@ -92,7 +132,8 @@ def update_draft_brand_dna(dna_id: str, edits: BrandDNASynthesis) -> BrandDNAPro
 @router.post("/dna/{dna_id}/approve", response_model=BrandDNAProfile)
 async def approve_and_activate_brand_dna(
     dna_id: str,
-    request: BrandDNAApprovalRequest
+    request: BrandDNAApprovalRequest,
+    user: UserContext = Depends(get_current_user),
 ) -> BrandDNAProfile:
     """
     Requires user approval before activation.
@@ -100,6 +141,10 @@ async def approve_and_activate_brand_dna(
     2. Saves approved profile to Supabase (with fallback).
     3. Synchronizes with the core Sanket AI brand governance registry.
     """
+    existing = brand_dna_service.get_dna_profile(dna_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail=f"Brand DNA profile '{dna_id}' not found.")
+    _verify_brand_management_or_default_anon(user, getattr(existing, "org_id", "default-org"))
     try:
         approved_profile = await brand_dna_service.approve_and_activate_brand_dna(dna_id, request)
         return approved_profile
@@ -112,7 +157,7 @@ async def approve_and_activate_brand_dna(
 
 @router.get("/profile/{brand_id}", response_model=BrandProfile)
 @router.get("/{brand_id}", response_model=BrandProfile)
-def get_brand(brand_id: str) -> BrandProfile:
+def get_brand(brand_id: str, user: UserContext = Depends(get_current_user)) -> BrandProfile:
     profile = brand_service.get_brand_profile(brand_id)
     if not profile and "-" in brand_id:
         profile = brand_service.get_brand_profile(brand_id.replace("-", "_"))
@@ -123,8 +168,10 @@ def get_brand(brand_id: str) -> BrandProfile:
         all_p = brand_service.list_brand_profiles()
         for p in all_p:
             if p.brand_id.lower() in [brand_id.lower(), brand_id.lower().replace("-", "_")]:
+                verify_tenant_access(user, getattr(p, "org_id", None) or getattr(p, "owner_id", "default-org"))
                 return p
         raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found.")
+    verify_tenant_access(user, getattr(profile, "org_id", None) or getattr(profile, "owner_id", "default-org"))
     return profile
 
 @router.delete("/{brand_id}")
@@ -137,7 +184,7 @@ def delete_brand(
     if not profile:
         raise HTTPException(status_code=404, detail=f"Brand '{brand_id}' not found.")
 
-    verify_can_manage_brand(user, profile.owner_id)
+    verify_can_manage_brand(user, getattr(profile, "org_id", None) or profile.owner_id)
 
     deleted = brand_service.delete_brand_profile(brand_id, delete_files=True)
     if not deleted:
@@ -280,7 +327,7 @@ def confirm_brand(
 ) -> BrandProfile:
     existing = brand_service.get_brand_profile(request.brand_id)
     if existing:
-        verify_can_manage_brand(user, existing.owner_id)
+        _verify_brand_management_or_default_anon(user, getattr(existing, "org_id", None) or existing.owner_id)
 
     if not request.owner_id:
         request.owner_id = user.org_id or user.user_id

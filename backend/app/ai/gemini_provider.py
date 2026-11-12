@@ -58,9 +58,9 @@ class GeminiProvider(AIProviderBase):
 
     FALLBACK_MODELS = [
         "gemini-3.1-flash-lite",
-        "gemini-3.8-flash",
+        "gemini-3.5-flash-lite",
         "gemini-3.5-flash",
-        "gemini-3.7-flash",
+        "gemini-3.8-flash",
     ]
 
     def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None):
@@ -83,26 +83,35 @@ class GeminiProvider(AIProviderBase):
         return self._client
 
     def _generate_with_fallback(self, contents: Any) -> Tuple[str, str]:
+        import time
         client = self._get_client()
-        models_to_try = [self.model_name] + [m for m in self.FALLBACK_MODELS if m != self.model_name]
+        models_to_try = list(dict.fromkeys(["gemini-3.1-flash-lite", self.model_name] + self.FALLBACK_MODELS))
         last_error = None
 
-        for model in models_to_try:
-            try:
-                response = client.models.generate_content(
-                    model=model,
-                    contents=contents,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        temperature=0.2,
+        for attempt in range(2):
+            saw_transient = False
+            for model in models_to_try:
+                try:
+                    response = client.models.generate_content(
+                        model=model,
+                        contents=contents,
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                            temperature=0.2,
+                        )
                     )
-                )
-                if response and response.text:
-                    return response.text, model
-            except Exception as exc:
-                last_error = exc
-                logger.warning("Gemini model '%s' call failed: %s. Trying fallback...", model, exc)
-                continue
+                    if response and response.text:
+                        return response.text, model
+                except Exception as exc:
+                    last_error = exc
+                    msg = str(exc)
+                    if "503" in msg or "UNAVAILABLE" in msg:
+                        saw_transient = True
+                    logger.warning("Gemini model '%s' call failed: %s. Trying fallback...", model, exc)
+                    continue
+            if not saw_transient or attempt == 1:
+                break
+            time.sleep(0.8)
 
         raise last_error or RuntimeError("All Gemini model attempts failed.")
 

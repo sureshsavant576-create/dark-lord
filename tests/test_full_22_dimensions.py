@@ -713,8 +713,8 @@ def test_21_api_error_handling(client):
 # 22. RESPONSIVE LAYOUTS & STATIC ASSETS
 # ===========================================================================
 def test_22_responsive_layouts_and_assets(client):
-    """Verifies that all frontend pages exist, have responsive viewports, and serve HTTP 200."""
-    routes = ["/", "/check-vibe", "/company-portal", "/account"]
+    """Verifies that all 3 frontend pages exist, have responsive viewports, and serve HTTP 200."""
+    routes = ["/", "/company", "/check"]
     for route in routes:
         res = client.get(route)
         assert res.status_code == 200

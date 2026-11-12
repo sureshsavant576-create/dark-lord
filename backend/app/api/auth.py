@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Optional
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
 from pydantic import BaseModel, EmailStr
 
 from backend.app.core.auth import (
@@ -27,12 +27,16 @@ class AuthResponse(BaseModel):
     user_id: str
     email: str
     role: str
+    role_label: Optional[str] = None
+    full_name: Optional[str] = None
+    department: Optional[str] = None
     org_id: str
     session_token: str
 
 @router.post("/register", response_model=AuthResponse)
 def register(
     request: RegisterRequest,
+    background_tasks: BackgroundTasks,
     authorization: Optional[str] = Header(default=None)
 ):
     assigned_role = request.role or UserRole.DEVELOPER
@@ -56,10 +60,22 @@ def register(
         org_id=request.org_id or "default-org"
     )
     token = auth_service.create_session_token(record.user_id, record.role.value, record.org_id)
+    from backend.app.services.supabase_service import supabase_service
+    background_tasks.add_task(
+        supabase_service.register_supabase_user,
+        record.email,
+        request.password,
+        record.role_label or record.role.value,
+        record.org_id,
+        record.full_name,
+    )
     return AuthResponse(
         user_id=record.user_id,
         email=record.email,
         role=record.role.value,
+        role_label=record.role_label or record.role.value,
+        full_name=record.full_name,
+        department=record.department,
         org_id=record.org_id,
         session_token=token
     )
@@ -71,6 +87,9 @@ def login(request: LoginRequest):
         user_id=record.user_id,
         email=record.email,
         role=record.role.value,
+        role_label=record.role_label or record.role.value,
+        full_name=record.full_name,
+        department=record.department,
         org_id=record.org_id,
         session_token=token
     )
@@ -80,6 +99,9 @@ def get_current_user_profile(user: UserContext = Depends(get_current_user)):
     return {
         "user_id": user.user_id,
         "role": user.role.value,
+        "role_label": user.role_label or user.role.value,
+        "full_name": user.full_name,
+        "department": user.department,
         "org_id": user.org_id,
         "email": user.email
     }

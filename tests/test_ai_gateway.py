@@ -6,20 +6,24 @@ from backend.app.ai.base import (
 )
 from backend.app.ai.gateway import AIGateway
 from backend.app.ai.gemini_provider import GeminiProvider
-from backend.app.ai.openai_provider import OpenAIProvider
+from backend.app.ai.groq_provider import GroqProvider
 
 def test_gateway_initialization():
     gateway = AIGateway()
     assert "gemini" in gateway.providers
+    assert "groq" in gateway.providers
 
 def test_unconfigured_provider_detection():
     dummy_gemini = GeminiProvider(api_key="")
+    dummy_groq = GroqProvider(api_key="")
     assert dummy_gemini.is_configured() is False
+    assert dummy_groq.is_configured() is False
 
 @pytest.mark.asyncio
 async def test_unconfigured_gateway_inspection_rules_compliance():
     gateway = AIGateway()
     gateway.providers["gemini"] = GeminiProvider(api_key="")
+    gateway.providers["groq"] = GroqProvider(api_key="")
 
     req = ContentAnalysisRequest(
         mime_type="image/png",
@@ -45,6 +49,7 @@ async def test_unconfigured_gateway_inspection_rules_compliance():
 async def test_unconfigured_brand_synthesis():
     gateway = AIGateway()
     gateway.providers["gemini"] = GeminiProvider(api_key="")
+    gateway.providers["groq"] = GroqProvider(api_key="")
 
     synthesis = await gateway.synthesize_brand_identity(
         questionnaire_data={"personality": "Vibrant"},

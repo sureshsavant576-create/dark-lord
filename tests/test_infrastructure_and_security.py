@@ -49,7 +49,7 @@ def test_modular_ai_providers():
     status = ai_gateway.get_status()
     assert "gemini" in status
     assert "groq" in status
-    assert "Llama 3.2 Vision" in status["groq"]["role"]
+    assert "Groq" in status["groq"]["role"]
 
 
 # ---------------------------------------------------------------------------

@@ -331,6 +331,7 @@ Analyze the following authentic company facts and synthesize a structured, profe
         profile = BrandDNAProfile(
             dna_id=dna_id,
             brand_id=brand_id,
+            org_id=getattr(input_data, "org_id", None) or "default-org",
             company_name=facts.company_name,
             status=BrandDNAStatus.DRAFT_PENDING_APPROVAL,
             is_approved=False,
@@ -416,6 +417,8 @@ Analyze the following authentic company facts and synthesize a structured, profe
                 existing = BrandProfile(
                     brand_id=brand_id,
                     brand_name=facts.company_name,
+                    org_id=dna_profile.org_id,
+                    owner_id=dna_profile.org_id,
                     status=ProfileStatus.CONFIRMED,
                     personality=rec.brand_personality,
                     mood=[m.strip() for m in facts.desired_customer_perception.split(",") if m.strip()] or ["Confident"],
@@ -435,6 +438,8 @@ Analyze the following authentic company facts and synthesize a structured, profe
                     ai_confidence_score=rec.confidence_score
                 )
             else:
+                existing.org_id = dna_profile.org_id
+                existing.owner_id = dna_profile.org_id
                 existing.status = ProfileStatus.CONFIRMED
                 existing.personality = rec.brand_personality
                 existing.approved_palette = rec.colour_hex_codes

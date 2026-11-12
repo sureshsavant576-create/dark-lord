@@ -28,6 +28,7 @@ from backend.app.core.security import (
 )
 from backend.app.models.audit import AuditEventSeverity, AuditEventType
 from backend.app.services.audit_service import audit_service
+from backend.app.services.supabase_service import supabase_service
 
 router = APIRouter(prefix="/storage", tags=["Secure Storage & Asset Governance"])
 
@@ -50,8 +51,7 @@ async def secure_file_upload(
     - Audit logging
     """
     clean_org = sanitize_org_id(org_id)
-    if user.role != AuthUserRole.ADMIN:
-        verify_tenant_access(user, clean_org)
+    verify_tenant_access(user, clean_org)
     content = await file.read()
 
     # 1. Inspect magic bytes
@@ -83,6 +83,15 @@ async def secure_file_upload(
     # 3. Save bytes safely
     safe_dest.write_bytes(content)
 
+    # 3b. Replicate to tenant-isolated Supabase Storage bucket if configured
+    supa_storage_res = await supabase_service.upload_storage_object(
+        org_id=clean_org,
+        subfolder=subfolder,
+        filename=file_id,
+        content_bytes=content,
+        content_type=detected_mime,
+    )
+
     # 4. Audit log event
     audit_service.log_event(
         event_type=AuditEventType.FILE_UPLOAD,
@@ -111,7 +120,8 @@ async def secure_file_upload(
         "mime_type": detected_mime,
         "size_bytes": len(content),
         "confidentiality": confidentiality,
-        "path": f"/api/v1/storage/file?org_id={clean_org}&file_id={file_id}&subfolder={subfolder}"
+        "path": f"/api/v1/storage/file?org_id={clean_org}&file_id={file_id}&subfolder={subfolder}",
+        "supabase_storage": supa_storage_res
     }
 
 
@@ -135,12 +145,11 @@ def get_secure_file(
     clean_org = sanitize_org_id(org_id)
 
     # Multi-tenant data isolation: Block accessing files from another organization
-    if user.role != AuthUserRole.ADMIN:
-        verify_tenant_access(user, clean_org)
+    verify_tenant_access(user, clean_org)
 
     effective_role = user_role or user.role.value
     # 1. Clearance check for confidential company files
-    if not check_role_clearance(effective_role, confidentiality):
+    if (user.role == AuthUserRole.DEVELOPER and confidentiality.upper() in ("CONFIDENTIAL", "RESTRICTED")) or not check_role_clearance(effective_role, confidentiality):
         audit_service.log_event(
             event_type=AuditEventType.ACCESS_DENIED,
             org_id=clean_org,

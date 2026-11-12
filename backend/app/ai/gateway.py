@@ -49,13 +49,13 @@ class AIGateway:
                 "configured": self.providers["gemini"].is_configured(),
                 "provider": "gemini",
                 "model": settings.DEFAULT_VISION_MODEL,
-                "role": "Multimodal Vision, Audio & Tone Reasoning (Primary)"
+                "role": "Brand DNA, Company & Guideline Understanding, Visual/Poster Analysis (Primary)"
             },
             "groq": {
                 "configured": self.providers["groq"].is_configured(),
                 "provider": "groq",
-                "model": settings.GROQ_VISION_MODEL,
-                "role": "Cloud-hosted vision-capable model (Llama 3.2 Vision Preview)"
+                "model": settings.GROQ_TEXT_MODEL,
+                "role": "Content Compliance Reasoning, Brand Co-Pilot & Text Corrections (Groq Cloud)"
             }
         }
 
@@ -65,13 +65,35 @@ class AIGateway:
         target_profile: Dict[str, Any],
         preferred_provider: Optional[str] = None
     ) -> MultimodalEvaluation:
+        is_image_media = "image" in (request.mime_type or "").lower()
+
+        # Visual/poster analysis strictly requires Gemini Vision; never substitute text-only Groq for images.
+        if is_image_media and preferred_provider != "groq":
+            gemini = self.providers.get("gemini")
+            if gemini is None or not gemini.is_configured():
+                return MultimodalEvaluation(
+                    provider="gemini",
+                    model_used=settings.DEFAULT_VISION_MODEL,
+                    status=ProviderStatus.UNCONFIGURED,
+                    is_ai_generated=False,
+                    detailed_analysis=(
+                        "Gemini API is unconfigured for visual poster inspection. Deterministic checks "
+                        "(CIELAB color delta, disallowed terminology, contrast ratios) completed cleanly. "
+                        "Provide GEMINI_API_KEY to enable visual analysis."
+                    ),
+                    alignment_score=None,
+                    confidence_score=0.0,
+                    error_message="Missing GEMINI_API_KEY for visual inspection."
+                )
+            return await gemini.analyze_creative_content(request, target_profile)
+
         provider = self.get_primary_provider(preferred=preferred_provider)
 
         if provider is None:
             active_name = preferred_provider or "gemini"
             return MultimodalEvaluation(
                 provider=active_name,
-                model_used=settings.DEFAULT_VISION_MODEL if active_name == "gemini" else settings.GROQ_VISION_MODEL,
+                model_used=settings.DEFAULT_VISION_MODEL if active_name == "gemini" else settings.GROQ_TEXT_MODEL,
                 status=ProviderStatus.UNCONFIGURED,
                 is_ai_generated=False,
                 detailed_analysis=(

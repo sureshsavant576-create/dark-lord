@@ -71,6 +71,7 @@ class KnowledgeItem(BaseModel):
     superseded_by: Optional[str] = Field(default=None, description="ID of newer item if superseded")
     version_notes: Optional[str] = Field(default="Initial baseline version", description="Changelog for this version")
     tags: List[str] = Field(default_factory=list, description="Keywords for fast categorical retrieval")
+    confidentiality_level: str = Field(default="INTERNAL", description="Confidentiality tier: PUBLIC, INTERNAL, CONFIDENTIAL, RESTRICTED")
     embedding: Optional[List[float]] = Field(default=None, description="384-dimensional pgvector semantic embedding")
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -110,6 +111,7 @@ class KnowledgeItemCreate(BaseModel):
     approved_by: Optional[str] = None
     version_notes: Optional[str] = "Initial registration"
     tags: List[str] = Field(default_factory=list)
+    confidentiality_level: str = Field(default="INTERNAL", description="Confidentiality tier: PUBLIC, INTERNAL, CONFIDENTIAL, RESTRICTED")
 
 
 class KnowledgeItemUpdate(BaseModel):

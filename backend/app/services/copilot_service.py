@@ -52,23 +52,30 @@ class BrandCopilotService:
             copy_text=req.copy_text
         )
 
-        # Compile rich brand context
+        # Compile rich brand context safely from ai_recommendations (or fallback attributes)
+        dna_syn = getattr(dna_profile, "ai_recommendations", None) or getattr(dna_profile, "synthesis", None)
+        raw_voice = getattr(dna_syn, "brand_voice_and_tone", None) if dna_syn else None
+        if isinstance(raw_voice, dict):
+            brand_tone_from_dna = ", ".join(f"{k}: {v}" for k, v in raw_voice.items() if v)
+        else:
+            brand_tone_from_dna = str(raw_voice) if raw_voice else None
+
         brand_tone = (
-            (dna_profile.synthesis.brand_voice_tone if dna_profile else None)
+            brand_tone_from_dna
             or (", ".join(brand.communication_tone) if brand.communication_tone else "Direct, Authoritative")
         )
         personality = (
-            (dna_profile.synthesis.brand_personality if dna_profile else None)
+            (getattr(dna_syn, "brand_personality", None) if dna_syn else None)
             or brand.personality
             or ["Direct", "Cutting-Edge"]
         )
         approved_palette = (
-            (dna_profile.synthesis.colour_hex_codes if dna_profile else None)
+            (getattr(dna_syn, "colour_hex_codes", None) if dna_syn else None)
             or brand.approved_palette
             or ["#0B132B", "#5BC0BE", "#FFFFFF"]
         )
         banned_words = (
-            (dna_profile.synthesis.words_to_avoid if dna_profile else None)
+            (getattr(dna_syn, "words_to_avoid", None) if dna_syn else None)
             or brand.disallowed_elements
             or []
         )
@@ -92,7 +99,8 @@ class BrandCopilotService:
         context_sources: List[str] = [f"Brand Standards: {brand_name}"]
 
         if dna_profile:
-            context_sources.append(f"Approved Brand DNA (v{dna_profile.version})")
+            dna_tag = getattr(dna_profile, "version", None) or getattr(dna_profile, "dna_id", "active")
+            context_sources.append(f"Approved Brand DNA ({dna_tag})")
         if approved_claims:
             context_sources.append(f"Knowledge Base ({len(approved_claims)} Verified Claims)")
         if terminology_map:
@@ -552,15 +560,25 @@ class BrandCopilotService:
 
         timeout = httpx.Timeout(15.0, connect=5.0)
         async with httpx.AsyncClient(timeout=timeout) as http_client:
-            client = AsyncGroq(api_key=settings.GROQ_API_KEY, http_client=http_client)
+            client = AsyncGroq(api_key=settings.GROQ_API_KEY, http_client=http_client, max_retries=0)
 
-            system_prompt = (
-                f"You are the official AI Brand Co-Pilot and Guardian for '{brand_name}'. "
-                f"Tone of voice: {brand_tone}. Personality: {personality}. "
-                "Provide authoritative, actionable remediation advice grounded exclusively in the company's approved brand guidelines. "
-                "Never invent official facts, certifications, or unverified claims. "
-                "Keep responses concise (under 160 words), encouraging, and clear."
-            )
+            if intent in ("ai_improvement_plan", "step_by_step") or "plan" in req.message.lower():
+                system_prompt = (
+                    f"You are the official AI Brand Co-Pilot and Guardian for '{brand_name}'. "
+                    f"Tone of voice: {brand_tone}. Personality: {personality}. "
+                    "Provide a high-impact, prioritized AI Brand Improvement Plan addressing every detected gap. "
+                    "Format with: 1) Executive Gap Summary, 2) Prioritized Action Steps (Color, Copy/Tone, Contrast, Messaging), "
+                    "3) Compliant Copy Rewrite in authentic voice, and 4) Palette & Accessibility guidance. "
+                    "Keep formatting clean with clear markdown headings and bullet points."
+                )
+            else:
+                system_prompt = (
+                    f"You are the official AI Brand Co-Pilot and Guardian for '{brand_name}'. "
+                    f"Tone of voice: {brand_tone}. Personality: {personality}. "
+                    "Provide authoritative, actionable remediation advice grounded exclusively in the company's approved brand guidelines. "
+                    "Never invent official facts, certifications, or unverified claims. "
+                    "Keep responses concise (under 160 words), encouraging, and clear."
+                )
 
             user_prompt = f"""### ORGANIZATION GROUND TRUTH (BRAND DNA & KNOWLEDGE BASE):
 - Approved Palette: {json.dumps(approved_palette)}
@@ -581,10 +599,10 @@ class BrandCopilotService:
 4. Keep the tone encouraging, authoritative, and professional.
 """
             models_to_try = [
-                getattr(settings, "GROQ_TEXT_MODEL", "llama-3.3-70b-versatile"),
-                "llama-3.1-8b-instant",
-                "llama-3.3-70b-versatile",
-                "mixtral-8x7b-32768"
+                getattr(settings, "GROQ_TEXT_MODEL", "qwen/qwen3.8-27b"),
+                "qwen/qwen3.8-27b",
+                "openai/gpt-oss-120b",
+                "openai/gpt-oss-20b"
             ]
 
             last_err = None
@@ -597,7 +615,7 @@ class BrandCopilotService:
                             {"role": "user", "content": user_prompt}
                         ],
                         temperature=0.2,
-                        max_tokens=350
+                        max_tokens=600 if intent in ("ai_improvement_plan", "step_by_step") else 350
                     )
                     if response and response.choices and response.choices[0].message.content:
                         return response.choices[0].message.content.strip()
@@ -649,9 +667,10 @@ Strict Directives:
 5. Keep your conversational response structured, encouraging, concise (under 180 words), and actionable.
 """
         models_to_try = list(dict.fromkeys([
+            "gemini-3.1-flash-lite",
+            "gemini-3.5-flash-lite",
             getattr(settings, "GEMINI_MODEL", "gemini-3.1-flash-lite"),
             getattr(settings, "DEFAULT_TEXT_MODEL", "gemini-3.1-flash-lite"),
-            "gemini-3.1-flash-lite",
             "gemini-3.8-flash",
             "gemini-3.5-flash"
         ]))

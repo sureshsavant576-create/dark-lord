@@ -33,21 +33,32 @@ class GroqProvider(AIProviderBase):
     """
 
     VISION_FALLBACK_MODELS = [
-        "llama-3.2-11b-vision-preview",
-        "llama-3.2-90b-vision-preview",
-        "llama-3.3-70b-versatile",
-        "llama-3.1-8b-instant",
+        "qwen/qwen3.8-27b",
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
     ]
 
     def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None, timeout_seconds: float = 30.0):
         raw_key = api_key if api_key is not None else settings.GROQ_API_KEY
         self.api_key = raw_key.strip() if raw_key else ""
-        self.model_name = model_name or settings.GROQ_VISION_MODEL
+        self.model_name = model_name or settings.GROQ_TEXT_MODEL
         self.timeout_seconds = timeout_seconds
         self._client: Optional[AsyncGroq] = None
 
     def provider_name(self) -> str:
         return "groq"
+
+    def _inject_provider_metadata(self, raw_text: str, used_model: str) -> str:
+        """Ensures parsed LLM JSON carries provider and model_used prior to Pydantic validation."""
+        try:
+            data = json.loads(raw_text)
+            if isinstance(data, dict):
+                data.setdefault("provider", self.provider_name())
+                data.setdefault("model_used", used_model)
+                return json.dumps(data)
+        except Exception:
+            pass
+        return raw_text
 
     def is_configured(self) -> bool:
         return bool(self.api_key and self.api_key.strip())
@@ -57,7 +68,7 @@ class GroqProvider(AIProviderBase):
             raise ValueError("GROQ_API_KEY is not configured.")
         if self._client is None:
             http_client = httpx.AsyncClient(timeout=httpx.Timeout(self.timeout_seconds, connect=10.0))
-            self._client = AsyncGroq(api_key=self.api_key, http_client=http_client)
+            self._client = AsyncGroq(api_key=self.api_key, http_client=http_client, max_retries=0)
         return self._client
 
     @retry_with_backoff(max_retries=3, initial_delay=1.0, max_delay=10.0)
@@ -75,10 +86,6 @@ class GroqProvider(AIProviderBase):
         last_error = None
 
         for model in models_to_try:
-            # If request contains images and model is text-only, skip unless vision preview
-            if is_vision and "vision" not in model.lower():
-                continue
-
             try:
                 kwargs: Dict[str, Any] = {
                     "model": model,
@@ -115,28 +122,12 @@ class GroqProvider(AIProviderBase):
 
         try:
             sanitized_user_copy = sanitize_for_prompt(request.extracted_text)
-            has_image = bool(request.file_path and request.file_path.exists() and "image" in request.mime_type.lower())
 
             system_prompt = (
                 "You are the BrandShield AI inspection engine powered by Groq. "
-                "Analyze submitted creative content against approved brand DNA with strict objectivity. "
+                "Analyze submitted creative copy and metadata against approved brand DNA with strict objectivity. "
                 "Return ONLY a valid JSON object matching the requested schema."
             )
-
-            user_content_blocks: List[Dict[str, Any]] = []
-
-            # Add image content block if file is an image
-            if has_image and request.file_path:
-                try:
-                    img_bytes = request.file_path.read_bytes()
-                    b64_str = base64.b64encode(img_bytes).decode("utf-8")
-                    data_uri = f"data:{request.mime_type};base64,{b64_str}"
-                    user_content_blocks.append({
-                        "type": "image_url",
-                        "image_url": {"url": data_uri}
-                    })
-                except Exception as img_err:
-                    logger.warning("Could not base64 encode image for Groq vision: %s", img_err)
 
             prompt_text = f"""
 ### APPROVED COMPANY BRAND PROFILE:
@@ -169,24 +160,22 @@ class GroqProvider(AIProviderBase):
   "confidence_score": <number 0.0 to 1.0>
 }}
 """
-            user_content_blocks.append({
-                "type": "text",
-                "text": prompt_text
-            })
 
             messages = [
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_content_blocks if has_image else prompt_text}
+                {"role": "user", "content": prompt_text}
             ]
 
             raw_text, used_model = await self._chat_completion_with_fallback(
                 messages=messages,
                 response_format={"type": "json_object"},
-                is_vision=has_image
+                is_vision=False
             )
 
+            enriched_raw = self._inject_provider_metadata(raw_text, used_model)
+
             validated = validate_ai_json_output(
-                raw_text,
+                enriched_raw,
                 MultimodalEvaluation,
                 default_factory=lambda: MultimodalEvaluation(
                     provider=self.provider_name(),
@@ -281,8 +270,10 @@ Synthesize a comprehensive, authoritative brand guideline profile from the provi
                 is_vision=False
             )
 
+            enriched_raw = self._inject_provider_metadata(raw_text, used_model)
+
             validated = validate_ai_json_output(
-                raw_text,
+                enriched_raw,
                 BrandSynthesisEvaluation,
                 default_factory=lambda: BrandSynthesisEvaluation(
                     provider=self.provider_name(),

@@ -20,16 +20,18 @@ services:
       - key: GROQ_API_KEY
         sync: false
       - key: DEFAULT_TEXT_MODEL
-        value: "gemini-3.1-flash-lite"
+        value: "gemini-3.5-flash"
       - key: DEFAULT_VISION_MODEL
-        value: "gemini-3.1-flash-lite"
+        value: "gemini-3.5-flash"
       - key: GROQ_VISION_MODEL
-        value: "llama-3.2-11b-vision-preview"
+        value: "qwen/qwen3.8-27b"
       - key: GROQ_TEXT_MODEL
-        value: "llama-3.3-70b-versatile"
+        value: "qwen/qwen3.8-27b"
       - key: SUPABASE_URL
         sync: false
-      - key: SUPABASE_KEY
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       - key: SUPABASE_RLS_ENABLED
         value: "true"

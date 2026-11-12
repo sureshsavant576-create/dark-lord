@@ -5,6 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.app.main import app
+from backend.app.core.auth import auth_service
 
 client = TestClient(app)
 
@@ -104,25 +105,31 @@ def test_clear_all_reports_history():
     reports_before = client.get(f"/api/v1/reports?brand_id={brand_id}", headers={"X-User-Role": "admin"}).json()
     assert len(reports_before) >= 2
 
+    admin_token = auth_service.create_session_token("admin-purge", "admin", "default-org")
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+
     # Purge history for this brand
     purge_res = client.delete(
         f"/api/v1/reports?brand_id={brand_id}",
-        headers={"X-User-Role": "admin"}
+        headers=admin_headers
     )
     assert purge_res.status_code == 200
     assert purge_res.json()["deleted_count"] >= 2
 
-    reports_after = client.get(f"/api/v1/reports?brand_id={brand_id}", headers={"X-User-Role": "admin"}).json()
+    reports_after = client.get(f"/api/v1/reports?brand_id={brand_id}", headers=admin_headers).json()
     assert len(reports_after) == 0
 
     # Clean up brand
-    client.delete(f"/api/v1/brands/{brand_id}", headers={"X-User-Role": "admin"})
+    client.delete(f"/api/v1/brands/{brand_id}", headers=admin_headers)
 
 def test_brand_permanent_deletion_with_cascade():
     # 1. Create brand with a valid image (100x100)
     img_buf = io.BytesIO()
     Image.new("RGB", (100, 100), color=(255, 215, 0)).save(img_buf, format="PNG")
     img_buf.seek(0)
+
+    lead_token = auth_service.create_session_token("lead-1", "compliance_lead", "org-cascade")
+    lead_headers = {"Authorization": f"Bearer {lead_token}"}
 
     draft_res = client.post(
         "/api/v1/brands/draft",
@@ -137,7 +144,7 @@ def test_brand_permanent_deletion_with_cascade():
             "disallowed_elements": "budget, cheap"
         },
         files=[("reference_files", ("logo.png", img_buf, "image/png"))],
-        headers={"X-User-Role": "compliance_lead", "X-User-Id": "lead-1", "X-Org-Id": "org-cascade"}
+        headers=lead_headers
     )
     assert draft_res.status_code == 200
     brand_id = draft_res.json()["brand_id"]
@@ -146,7 +153,7 @@ def test_brand_permanent_deletion_with_cascade():
     inspect_res = client.post(
         f"/api/v1/inspect/{brand_id}",
         data={"copy_text": "Cascade test copy."},
-        headers={"X-User-Role": "compliance_lead", "X-User-Id": "lead-1", "X-Org-Id": "org-cascade"}
+        headers=lead_headers
     )
     assert inspect_res.status_code == 200
     insp_id = inspect_res.json()["inspection_id"]
@@ -154,7 +161,7 @@ def test_brand_permanent_deletion_with_cascade():
     # 3. Permanently delete the brand standard
     del_brand_res = client.delete(
         f"/api/v1/brands/{brand_id}?cascade_reports=true",
-        headers={"X-User-Role": "compliance_lead", "X-User-Id": "lead-1", "X-Org-Id": "org-cascade"}
+        headers=lead_headers
     )
     assert del_brand_res.status_code == 200
     data = del_brand_res.json()
@@ -166,5 +173,5 @@ def test_brand_permanent_deletion_with_cascade():
     assert get_brand_res.status_code == 404
 
     # Verify report is also gone
-    get_report_res = client.get(f"/api/v1/reports/{insp_id}", headers={"X-User-Role": "admin"})
+    get_report_res = client.get(f"/api/v1/reports/{insp_id}", headers=lead_headers)
     assert get_report_res.status_code == 404

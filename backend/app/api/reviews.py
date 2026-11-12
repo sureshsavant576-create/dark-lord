@@ -48,8 +48,7 @@ async def audit_content(
     9. Incorrect or outdated information
     10. Accessibility problems
     """
-    if user.role != AuthUserRole.ADMIN:
-        verify_tenant_access(user, request.org_id)
+    verify_tenant_access(user, request.org_id)
     try:
         return await content_review_service.review_content(request)
     except Exception as exc:
@@ -74,8 +73,7 @@ async def upload_and_review_creative(
     Enforces magic-bytes verification, organization tenant isolation, and audit logging.
     """
     clean_org = sanitize_org_id(org_id)
-    if user.role != AuthUserRole.ADMIN:
-        verify_tenant_access(user, clean_org)
+    verify_tenant_access(user, clean_org)
 
     try:
         content_bytes = await file.read()
@@ -135,6 +133,17 @@ async def upload_and_review_creative(
 
         report = await content_review_service.review_content(req)
 
+        # Replicate uploaded asset & review report to Supabase (non-fatal if schema pending)
+        from backend.app.services.supabase_service import supabase_service
+        await supabase_service.upload_storage_object(
+            org_id=clean_org,
+            subfolder="reviews",
+            filename=safe_name,
+            content_bytes=content_bytes,
+            content_type=detected_mime,
+        )
+        await supabase_service.save_content_review(report)
+
         # Audit content review completion
         audit_service.log_event(
             event_type=AuditEventType.REVIEW_SUBMITTED,
@@ -168,9 +177,10 @@ async def list_content_reviews(
     """
     Lists historical content review reports strictly partitioned by organization.
     """
-    if org_id and user.role != AuthUserRole.ADMIN:
+    if org_id:
         verify_tenant_access(user, org_id)
-    effective_org = org_id or (None if user.role == AuthUserRole.ADMIN else user.org_id)
+    from backend.app.core.auth import is_platform_demo_admin
+    effective_org = org_id or (None if is_platform_demo_admin(user) else user.org_id)
     return content_review_service.list_reports(org_id=effective_org, brand_id=brand_id)
 
 
@@ -185,8 +195,7 @@ async def get_content_review(
     report = content_review_service.get_report(review_id)
     if not report:
         raise HTTPException(status_code=404, detail=f"Content review '{review_id}' not found.")
-    if user.role != AuthUserRole.ADMIN:
-        verify_tenant_access(user, report.org_id)
+    verify_tenant_access(user, report.org_id)
     return report
 
 
@@ -201,8 +210,7 @@ async def delete_content_review(
     report = content_review_service.get_report(review_id)
     if not report:
         raise HTTPException(status_code=404, detail=f"Content review '{review_id}' not found.")
-    if user.role != AuthUserRole.ADMIN:
-        verify_tenant_access(user, report.org_id)
+    verify_tenant_access(user, report.org_id)
     deleted = content_review_service.delete_report(review_id)
     if not deleted:
         raise HTTPException(status_code=500, detail="Failed to delete content review report.")

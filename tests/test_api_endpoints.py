@@ -81,7 +81,13 @@ def test_end_to_end_onboarding_and_inspection_flow():
         "reviewer_notes": "Please remove 'instant guarantee' to comply with brand standards."
     }
 
-    res_review = client.post(f"/api/v1/reports/{inspection_id}/review", json=review_payload)
+    from backend.app.core.auth import auth_service
+    lead_token = auth_service.create_session_token("e2e-lead", "compliance_lead", "default-org")
+    res_review = client.post(
+        f"/api/v1/reports/{inspection_id}/review",
+        json=review_payload,
+        headers={"Authorization": f"Bearer {lead_token}"}
+    )
     assert res_review.status_code == 200
     updated_report = res_review.json()
     assert updated_report["human_decision"] == "CHANGES_REQUESTED"

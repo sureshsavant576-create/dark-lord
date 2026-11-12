@@ -478,7 +478,7 @@ class InspectionService:
                         explanation=f"The creative correctly incorporates the authentic {brand.brand_name} logo.",
                         confidence_score=ai_eval.confidence_score
                     ))
-                else:
+                elif bool(getattr(brand, "logo_url", None)):
                     det_score -= 20.0
                     mismatches.append(f"Logo departure: {ai_eval.logo_detected or 'No brand logo detected'}")
                     violations.append(f"Missing or incorrect {brand.brand_name} brand logo")
@@ -495,7 +495,7 @@ class InspectionService:
                         suggested_correction=f"Add the official {brand.brand_name} logo in accordance with brand guidelines.",
                         confidence_score=ai_eval.confidence_score
                     ))
-            elif preprocessed.is_visual_media:
+            elif preprocessed.is_visual_media and bool(getattr(brand, "logo_url", None)):
                 has_name = brand.brand_name.lower() in text_content.lower()
                 if has_name:
                     matching_chars.append(f"Brand wordmark '{brand.brand_name}' detected on creative.")
@@ -551,15 +551,14 @@ class InspectionService:
                 source=FindingSource.DETERMINISTIC_CHECK,
                 severity=FindingSeverity.INFO,
                 detected_value="Deterministic Checks Active Only",
-                expected_value="Configure GEMINI_API_KEY or OPENAI_API_KEY in .env",
+                expected_value="Configure GEMINI_API_KEY or GROQ_API_KEY in .env",
                 explanation=ai_eval.detailed_analysis,
                 suggested_correction="Add an API key to .env to unlock AI semantic and multimodal reasoning."
             ))
-            if preprocessed.is_visual_media and not any("logo" in f.title.lower() for f in findings):
+            if preprocessed.is_visual_media and bool(getattr(brand, "logo_url", None)) and not any("logo" in f.title.lower() for f in findings):
                 has_name = brand.brand_name.lower() in text_content.lower()
                 if not has_name:
-                    det_score = max(0.0, det_score - 20.0)
-                    overall_score = det_score
+                    overall_score = max(0.0, det_score - 20.0)
                     mismatches.append(f"Logo departure: No authentic {brand.brand_name} mark detected on visual media.")
                     violations.append(f"Missing official {brand.brand_name} brand logo")
                     corrections.append(f"Include the authentic {brand.brand_name} logo on the creative asset.")

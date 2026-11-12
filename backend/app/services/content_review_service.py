@@ -178,7 +178,8 @@ class ContentReviewService:
                     source_engine="opencv_metrics"
                 ))
 
-        # 5. Deep Text Analysis via Gemini (Tone, Terminology, Messaging, Claims, Outdated Info)
+        # 5. Deep Text Compliance & Copy Analysis via Groq Cloud (plus deterministic KB checks)
+        text_provider_label = "deterministic_rules"
         if extracted_text_content.strip():
             text_findings = await gemini_text_analyzer.analyze_text_copy(
                 copy_text=extracted_text_content,
@@ -186,8 +187,12 @@ class ContentReviewService:
                 knowledge_context=kb_context
             )
             all_findings.extend(text_findings)
+            if settings.has_groq:
+                text_provider_label = f"groq/{settings.GROQ_TEXT_MODEL}"
+            elif settings.has_gemini:
+                text_provider_label = settings.DEFAULT_TEXT_MODEL
 
-        # 6. Multimodal Visual Analysis via Groq Cloud Vision (or Gemini Vision fallback)
+        # 6. Multimodal Visual & Poster Analysis via Google Gemini Vision
         vision_provider_label = "none"
         if file_path_obj and file_path_obj.exists() and file_path_obj.suffix.lower() in [".png", ".jpg", ".jpeg", ".webp"]:
             vision_analysis = await groq_vision_service.analyze_visual_creative(
@@ -269,7 +274,7 @@ class ContentReviewService:
             measurable_properties=measurable_props,
             extracted_text=extracted_text_content,
             knowledge_base_citations=citations,
-            text_model_used=settings.DEFAULT_TEXT_MODEL,
+            text_model_used=text_provider_label,
             vision_model_used=vision_provider_label,
             created_at=now
         )

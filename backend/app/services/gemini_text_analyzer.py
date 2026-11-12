@@ -34,13 +34,19 @@ class GeminiTextAnalyzer:
         # 1. Deterministic layer: guaranteed zero-latency detection of banned terms, terminology, claims evidence
         deterministic_issues = self._deterministic_knowledge_audit(copy_text, brand_dna, knowledge_context)
 
-        # 2. Multimodal / LLM reasoning layer: subtle tone, narrative messaging, and semantic claims
+        # 2. Cloud LLM compliance reasoning layer:
+        # Per 3-service architecture, Groq handles text compliance reasoning, analysis, and correction suggestions.
         ai_issues: List[ReviewDetectedIssue] = []
-        if settings.has_gemini:
+        if settings.has_groq:
+            try:
+                ai_issues = await self._analyze_with_groq(copy_text, brand_dna, knowledge_context)
+            except Exception as exc:
+                logger.warning("Groq text compliance analysis skipped due to API condition: %s", exc)
+        if not ai_issues and settings.has_gemini:
             try:
                 ai_issues = await self._analyze_with_gemini(copy_text, brand_dna, knowledge_context)
             except Exception as exc:
-                logger.warning("Gemini text analysis skipped due to API condition: %s", exc)
+                logger.warning("Gemini fallback text analysis skipped due to API condition: %s", exc)
 
         # 3. Merge and deduplicate findings by category and detected phrase
         combined = list(deterministic_issues)
@@ -54,18 +60,62 @@ class GeminiTextAnalyzer:
 
         return combined
 
-    async def _analyze_with_gemini(
+    async def _analyze_with_groq(
         self,
         copy_text: str,
         brand_dna: Dict[str, Any],
         knowledge_context: Dict[str, Any]
     ) -> List[ReviewDetectedIssue]:
-        from google import genai
-        from google.genai import types
+        import httpx
+        from groq import AsyncGroq
 
-        client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        timeout = httpx.Timeout(20.0, connect=5.0)
+        prompt = self._build_compliance_prompt(copy_text, brand_dna, knowledge_context)
+        models_to_try = list(dict.fromkeys([
+            settings.GROQ_TEXT_MODEL,
+            "qwen/qwen3.8-27b",
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+        ]))
 
-        prompt = f"""
+        raw_text = ""
+        used_model = settings.GROQ_TEXT_MODEL
+        last_error = None
+        async with httpx.AsyncClient(timeout=timeout) as http_client:
+            client = AsyncGroq(api_key=settings.GROQ_API_KEY, http_client=http_client, max_retries=0)
+            for m_name in models_to_try:
+                try:
+                    resp = await client.chat.completions.create(
+                        model=m_name,
+                        messages=[
+                            {"role": "system", "content": "You are Sanket AI's Groq compliance auditor. Return strictly valid JSON."},
+                            {"role": "user", "content": prompt},
+                        ],
+                        temperature=0.1,
+                        max_tokens=1500,
+                        response_format={"type": "json_object"},
+                    )
+                    if resp and resp.choices and resp.choices[0].message.content:
+                        raw_text = resp.choices[0].message.content
+                        used_model = m_name
+                        break
+                except Exception as exc:
+                    last_error = exc
+                    logger.warning("Groq text analysis model '%s' failed: %s", m_name, exc)
+                    continue
+
+        if not raw_text:
+            raise last_error or RuntimeError("All Groq text compliance models failed.")
+
+        return self._parse_findings_json(raw_text, source_engine=f"groq:{used_model}")
+
+    def _build_compliance_prompt(
+        self,
+        copy_text: str,
+        brand_dna: Dict[str, Any],
+        knowledge_context: Dict[str, Any]
+    ) -> str:
+        return f"""
 You are an expert AI Brand Governance & Content Compliance Auditor.
 Analyze the following creative advertising copy against the organization's approved Brand DNA and official Knowledge Base.
 
@@ -98,17 +148,62 @@ Every issue MUST contain EXACTLY these fields:
 - description: concise summary of the issue
 - relevant_guideline: citation of the exact brand rule or knowledge base entry
 - explanation: detailed explanation of the discrepancy and risk
-- recommended_correction: actionable instructions to fix it
+- recommended_correction: actionable instructions & rewrite suggestion to fix it
 - confidence_level: float between 0.0 and 1.0
 - detected_snippet: exact phrase from the copy
 - evidence_citation: evidence reference from the Knowledge Base (or "None verified" if missing)
 """
 
+    def _parse_findings_json(self, raw_text: str, source_engine: str) -> List[ReviewDetectedIssue]:
+        raw_json = json.loads(raw_text)
+        items = raw_json.get("findings", [])
+        if isinstance(raw_json, list):
+            items = raw_json
+
+        validated_issues: List[ReviewDetectedIssue] = []
+        for it in items:
+            try:
+                cat_str = it.get("issue_category", "").lower().replace(" ", "_")
+                cat_enum = ReviewIssueCategory(cat_str)
+                sev_enum = ReviewSeverity(it.get("severity", "WARNING").upper())
+                conf = float(it.get("confidence_level", 0.90))
+                conf = max(0.0, min(1.0, conf))
+
+                validated_issues.append(ReviewDetectedIssue(
+                    issue_category=cat_enum,
+                    severity=sev_enum,
+                    description=it.get("description", "Discrepancy detected in text copy"),
+                    relevant_guideline=it.get("relevant_guideline", "Official Brand Guidelines"),
+                    explanation=it.get("explanation", ""),
+                    recommended_correction=it.get("recommended_correction", "Revise copy to align with brand standards"),
+                    confidence_level=conf,
+                    source_engine=source_engine,
+                    detected_snippet=it.get("detected_snippet"),
+                    evidence_citation=it.get("evidence_citation")
+                ))
+            except Exception as e:
+                logger.debug("Skipping malformed finding from %s: %s", source_engine, e)
+
+        return validated_issues
+
+    async def _analyze_with_gemini(
+        self,
+        copy_text: str,
+        brand_dna: Dict[str, Any],
+        knowledge_context: Dict[str, Any]
+    ) -> List[ReviewDetectedIssue]:
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        prompt = self._build_compliance_prompt(copy_text, brand_dna, knowledge_context)
+
         models_to_try = list(dict.fromkeys([
+            "gemini-3.1-flash-lite",
+            "gemini-3.5-flash-lite",
             settings.DEFAULT_TEXT_MODEL,
-            "gemini-2.5-flash",
-            "gemini-2.0-flash",
-            "gemini-1.5-flash"
+            "gemini-3.5-flash",
+            "gemini-3.8-flash",
         ]))
 
         response = None

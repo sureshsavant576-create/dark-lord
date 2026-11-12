@@ -3,2315 +3,977 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sanket AI (संकेत AI) — Enterprise Multi-Company Brand Governance Platform</title>
-  <link rel="icon" type="image/svg+xml" href="/static/brand/favicon.svg">
-  <link rel="alternate icon" type="image/png" href="/static/emblem.png">
-  <link rel="stylesheet" href="/static/style.css?v=28.0">
+  <title>Sanket AI — Brand Vibes &amp; Match Checker</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css?v=2">
 </head>
-<body class="enterprise-app-body">
+<body>
+  <div class="ambient-grid" aria-hidden="true"></div>
 
-  <!-- ========================================================================= -->
-  <!-- TOP NAVIGATION BAR (Section 1) -->
-  <!-- ========================================================================= -->
-  <header class="app-topbar">
-    <div class="topbar-container">
-      <div class="topbar-left-group">
-        <button type="button" class="btn-topbar-sidebar-toggle" id="btn-topbar-sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar" aria-label="Toggle Sidebar">
-          <svg class="svg-icon pull-arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-        <a href="/dashboard" class="brand-brandmark" title="Sanket AI Home" onclick="navigateToPage('dashboard', event)">
-          <img src="/static/brand/sanket-logo-horizontal.svg" alt="Sanket AI (संकेत AI)" class="brand-logo-img">
+  <!-- Minimal 3-Page Top Navigation -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="/" class="brand-mark" data-nav="home">
+        <span class="brand-dot"></span>
+        <span class="brand-wordmark">Sanket <em>AI</em></span>
+      </a>
+
+      <nav class="nav-pills" aria-label="Primary 3-page navigation">
+        <a href="/" class="nav-pill active" id="nav-home" data-nav="home">
+          <span class="nav-num">01</span>
+          <span>Home</span>
         </a>
+        <a href="/company" class="nav-pill" id="nav-company" data-nav="company">
+          <span class="nav-num">02</span>
+          <span>Company Vibes</span>
+        </a>
+        <a href="/check" class="nav-pill" id="nav-check" data-nav="check">
+          <span class="nav-num">03</span>
+          <span>Developer Check</span>
+        </a>
+      </nav>
 
-        <!-- Multi-Company Organisation Selector -->
-        <div class="org-selector-wrap" title="Switch Active Organisation Tenant">
-          <svg class="svg-icon org-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-          </svg>
-          <select id="topbar-org-select" class="topbar-org-select" onchange="handleOrgChange(this.value)">
-            <option value="apex-cloud">Apex Cloud Systems (Fintech / Infra)</option>
-            <option value="nike">Nike Global (Athletics / Footwear)</option>
-            <option value="test_master_brand">MasterBrand Systems (Enterprise Cloud)</option>
-            <option value="hypercloud">HyperCloud Security (Cybersecurity)</option>
-            <option value="default-org">Global Corporation (Default Tenant)</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Center: Global Quick Search -->
-      <div class="topbar-search-wrap" onclick="openGlobalSearchModal()" title="Search guidelines, claims, assets...">
-        <svg class="svg-icon search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <input type="text" id="global-search-input" class="global-search-input" placeholder="Search brand DNA, guidelines, claims, assets..." readonly>
-        <kbd class="search-kbd">⌘K</kbd>
-      </div>
-
-      <!-- Right: Actions & User Persona Profile -->
       <div class="topbar-actions">
-        <!-- Notification Center -->
-        <button type="button" class="btn-topbar-action" id="btn-notifications" onclick="toggleNotificationsModal()" title="Review & Claim Notifications" aria-label="Notifications">
-          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-          <span class="notification-badge" id="topbar-unread-badge">3</span>
-        </button>
-
-        <!-- Compliance & Regulatory Help -->
-        <button type="button" class="btn-topbar-action" id="btn-topbar-help" onclick="toggleHelpModal()" title="Compliance Documentation & Shortcuts" aria-label="Help">
-          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-        </button>
-
-        <!-- Onboarding Tour Action -->
-        <button type="button" class="btn-topbar-action" id="btn-topbar-onboard" onclick="openOnboardingModal()" title="Start Interactive Onboarding Tour" aria-label="Onboarding Tour">
-          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-        </button>
-
-        <!-- Authentication & Security Modal -->
-        <button type="button" class="btn-topbar-action" id="btn-topbar-auth" onclick="openAuthModal()" title="Security & Authentication Portal" aria-label="Authentication">
-          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
-        </button>
-
-        <!-- Sign Out Action -->
-        <button type="button" class="btn-topbar-action" id="btn-topbar-logout" onclick="logoutUser()" title="Sign Out / Terminate Session" aria-label="Sign Out">
-          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
-        </button>
-
-        <!-- User Profile Pill & Role Switcher -->
-        <button type="button" class="user-profile-btn" onclick="toggleRoleModal()" title="Switch Persona / User Role">
-          <div class="user-avatar-top" id="topbar-user-avatar">AV</div>
-          <div class="user-info-top">
-            <span class="user-name" id="topbar-user-name">Alex Vance</span>
-            <span class="user-role" id="topbar-user-role">Administrator</span>
-          </div>
-          <svg class="svg-icon chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
+        <button type="button" class="org-pill-btn" id="btn-open-auth" onclick="handleTopbarAuthClick()">
+          <span class="org-status-dot" id="auth-dot"></span>
+          <span id="auth-pill-label">Sign In</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- ========================================================================= -->
-  <!-- MAIN APP CONTAINER: SIDEBAR + CONTENT AREA -->
-  <!-- ========================================================================= -->
-  <div class="app-layout-container" id="app-layout-container">
+  <main class="page-shell">
+    <!-- =================================================================== -->
+    <!-- PAGE 1: HOME (Full-bleed Architectural Hero + Pull-out Sign-In)     -->
+    <!-- =================================================================== -->
+    <section id="page-home" class="page-view active" aria-labelledby="home-title">
+      <div id="home-split-shell" class="home-split-shell">
+        <!-- Left / Full-Bleed Architectural Picture Canvas -->
+        <div class="home-hero-canvas">
+          <div class="home-hero-bg" aria-hidden="true"></div>
+          <div class="home-hero-scrim" aria-hidden="true"></div>
 
-    <!-- LEFT SIDEBAR NAVIGATION (Section 1) -->
-    <aside class="app-sidebar" id="app-sidebar">
-      <div class="sidebar-header-row">
-        <span class="sidebar-header-label">PLATFORM NAVIGATION</span>
-        <button type="button" class="btn-sidebar-collapse" id="btn-sidebar-collapse" onclick="toggleSidebar()" title="Collapse navigation">
-          <svg class="svg-icon pull-arrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
+          <!-- Subtle architectural gold hairline framing (no icon diagrams) -->
+          <svg class="home-arch-lines" viewBox="0 0 800 800" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M 620 0 A 260 260 0 0 0 360 260 L 800 260" fill="none" stroke="rgba(209, 179, 134, 0.34)" stroke-width="1"/>
+            <line x1="560" y1="0" x2="560" y2="800" stroke="rgba(209, 179, 134, 0.2)" stroke-width="1"/>
           </svg>
-        </button>
-      </div>
 
-      <nav class="sidebar-nav" aria-label="Main Application Navigation">
-        <!-- 1. Dashboard -->
-        <a href="/dashboard" class="sidebar-nav-item active" id="nav-item-dashboard" onclick="navigateToPage('dashboard', event)">
-          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          <div class="home-hero-content">
+            <div class="home-brand-lockup">
+              <div class="home-monogram" aria-hidden="true">
+                <svg viewBox="0 0 36 42" fill="none">
+                  <path d="M4 4h15c7 0 11 3.8 11 9.2 0 4-2.3 6.8-6 8 4.4 1.2 7.2 4.3 7.2 8.8 0 6-4.8 9.8-12 9.8H4V4Z" stroke="#c8a97e" stroke-width="2.4"/>
+                  <path d="M10 10.5h8.2c3.5 0 5.6 1.7 5.6 4.4 0 2.8-2.1 4.4-5.6 4.4H10v-8.8Zm0 13.8h8.8c3.9 0 6.2 1.8 6.2 4.8 0 3-2.3 4.8-6.2 4.8H10v-9.6Z" fill="#c8a97e" fill-opacity="0.22"/>
+                  <path d="M4 21.5h15.5" stroke="#c8a97e" stroke-width="2"/>
+                </svg>
+              </div>
+              <div class="home-brand-text">
+                <span class="home-brand-name">Sanket AI</span>
+                <span class="home-brand-sub">GOVERN &middot; ALIGN &middot; GROW</span>
+              </div>
+            </div>
+
+            <div class="home-hero-main">
+              <h1 id="home-title" class="home-hero-title">
+                Enterprise<br>
+                Brand Governance,<br>
+                <span class="home-hero-accent">Simplified.</span>
+              </h1>
+              <p class="home-hero-subtitle">
+                Centralise your brand strategy, manage usage at scale and ensure consistency across every touchpoint.
+              </p>
+
+              <div class="home-hero-actions">
+                <button type="button" class="home-cta-primary" id="btn-hero-signin" onclick="openHomeSignin()">
+                  <span>Sign In</span>
+                  <span aria-hidden="true">&rarr;</span>
+                </button>
+                <button type="button" class="home-demo-pill" onclick="launchDemoWorkspace()">
+                  <span>Try Demo</span>
+                  <span aria-hidden="true">&rarr;</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pull Slidebar Handle (docked on right edge; click or pull left to reveal Sign In) -->
+          <button
+            type="button"
+            id="home-pull-handle"
+            class="home-pull-handle"
+            aria-expanded="false"
+            aria-controls="home-signin-drawer"
+            title="Click or pull left to open Sign In"
+          >
+            <span class="pull-grip" aria-hidden="true"></span>
+            <span class="pull-chevron" id="home-pull-chevron" aria-hidden="true">&lsaquo;</span>
+            <span class="pull-label" id="home-pull-label">SIGN IN</span>
+          </button>
+        </div>
+
+        <!-- Right Pull-Out Cream Sign-In Slidebar -->
+        <aside
+          id="home-signin-drawer"
+          class="home-signin-drawer"
+          aria-hidden="true"
+          aria-label="Sign in sidebar"
+        >
+          <!-- Subtle geometric architectural accent lines inside cream panel -->
+          <svg class="drawer-arch-top" viewBox="0 0 220 220" aria-hidden="true">
+            <path d="M 40 0 A 180 180 0 0 0 220 180" fill="none" stroke="rgba(160, 146, 126, 0.22)" stroke-width="1"/>
+            <line x1="110" y1="0" x2="110" y2="220" stroke="rgba(160, 146, 126, 0.16)" stroke-width="1"/>
+            <line x1="0" y1="120" x2="220" y2="120" stroke="rgba(160, 146, 126, 0.16)" stroke-width="1"/>
           </svg>
-          <span>Dashboard</span>
-        </a>
-
-        <!-- 2. Brand Identity -->
-        <a href="/brand-identity" class="sidebar-nav-item" id="nav-item-brand-identity" onclick="navigateToPage('brand-identity', event)">
-          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          <svg class="drawer-arch-bottom" viewBox="0 0 220 220" aria-hidden="true">
+            <path d="M 0 40 A 180 180 0 0 1 180 220" fill="none" stroke="rgba(160, 146, 126, 0.18)" stroke-width="1"/>
           </svg>
-          <span>Brand Identity</span>
-        </a>
 
-        <!-- 3. Brand Knowledge -->
-        <a href="/brand-knowledge" class="sidebar-nav-item" id="nav-item-brand-knowledge" onclick="navigateToPage('brand-knowledge', event)">
-          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          </svg>
-          <span>Brand Knowledge</span>
-        </a>
-
-        <!-- 4. Content Review -->
-        <a href="/content-review" class="sidebar-nav-item" id="nav-item-content-review" onclick="navigateToPage('content-review', event)">
-          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <span>Content Review</span>
-        </a>
-
-        <!-- 5. Pre-Flight Scanner -->
-        <a href="/preflight-scanner" class="sidebar-nav-item" id="nav-item-preflight-scanner" onclick="navigateToPage('preflight-scanner', event)">
-          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-          </svg>
-          <span>Pre-Flight Scanner</span>
-        </a>
-
-        <!-- 6. Brand Co-Pilot -->
-        <a href="/brand-copilot" class="sidebar-nav-item" id="nav-item-brand-copilot" onclick="navigateToPage('brand-copilot', event)">
-          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-          <span>Brand Co-Pilot</span>
-        </a>
-
-        <!-- 7. Review & Approvals -->
-        <a href="/approvals" class="sidebar-nav-item" id="nav-item-approvals" onclick="navigateToPage('approvals', event)">
-          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-          </svg>
-          <span>Review & Approvals</span>
-          <span class="sidebar-nav-badge" id="sidebar-pending-badge">2</span>
-        </a>
-
-        <!-- 8. Brand Insights -->
-        <a href="/brand-insights" class="sidebar-nav-item" id="nav-item-brand-insights" onclick="navigateToPage('brand-insights', event)">
-          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-          </svg>
-          <span>Brand Insights</span>
-        </a>
-
-        <!-- 9. Settings -->
-        <a href="/settings" class="sidebar-nav-item" id="nav-item-settings" onclick="navigateToPage('settings', event)">
-          <svg class="svg-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0 2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
-          <span>Settings</span>
-        </a>
-      </nav>
-
-      <!-- Sidebar Bottom Active User Profile -->
-      <div class="sidebar-user-footer" onclick="toggleRoleModal()" title="Current Active Persona">
-        <div class="user-avatar-mini" id="sidebar-user-avatar">AV</div>
-        <div class="user-meta-mini">
-          <span class="user-name-text" id="sidebar-user-name">Alex Vance</span>
-          <span class="user-role-badge" id="sidebar-role-badge">Administrator</span>
-        </div>
-      </div>
-    </aside>
-
-    <!-- MAIN APPLICATION CONTENT AREA -->
-    <main class="app-main-content" id="app-main-content">
-
-      <!-- ===================================================================== -->
-      <!-- 2. DASHBOARD VIEW (/dashboard) -->
-      <!-- ===================================================================== -->
-      <section id="view-dashboard" class="app-view-pane active">
-        <div class="view-header-row">
-          <div>
-            <div class="breadcrumb-trail">Governance Platform &bull; Executive Command</div>
-            <h1 class="view-page-title">Executive Governance Dashboard</h1>
-            <p class="view-page-subtitle">Real-time enterprise brand compliance metrics, active review queues, and multi-tenant audit streams.</p>
-          </div>
-          <div class="view-header-actions">
-            <button type="button" class="btn btn-sm btn-secondary" onclick="loadDashboardData()">
-              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              <span>Refresh Metrics</span>
+          <div class="drawer-top-controls">
+            <button
+              type="button"
+              id="btn-signin-fullview"
+              class="drawer-close-btn"
+              onclick="toggleHomeSigninFullPage()"
+              aria-pressed="false"
+              aria-label="Expand sign in to full page"
+              title="Expand sign in to full page"
+            >
+              <span id="signin-fullview-arrow">&lsaquo;</span>
+              <span class="drawer-close-text" id="signin-fullview-text">Full View</span>
             </button>
-            <button type="button" class="btn btn-sm btn-primary" onclick="navigateToPage('content-review', event)">
-              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span>New Content Audit</span>
+            <button
+              type="button"
+              class="drawer-close-btn drawer-back-btn"
+              onclick="closeHomeSignin()"
+              aria-label="Close sign in sidebar"
+              title="Back to homepage image"
+            >
+              <span>&times;</span>
             </button>
           </div>
-        </div>
 
-        <!-- Section 2.1: Overview KPI Cards -->
-        <div class="kpi-metrics-grid">
-          <div class="kpi-card">
-            <div class="kpi-card-header">
-              <span class="kpi-label">TOTAL ASSETS AUDITED</span>
-              <span class="kpi-icon-box">📊</span>
-            </div>
-            <div class="kpi-value" id="kpi-total-audited">28</div>
-            <div class="kpi-trend positive">&uarr; +14% this month across departments</div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-card-header">
-              <span class="kpi-label">OVERALL COMPLIANCE SCORE</span>
-              <span class="kpi-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #10B981;">🛡️</span>
-            </div>
-            <div class="kpi-value" id="kpi-compliance-score" style="color: #10B981;">94.2%</div>
-            <div class="kpi-trend positive">Pass Threshold &ge; 70.0% satisfied</div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-card-header">
-              <span class="kpi-label">PENDING REVIEWS</span>
-              <span class="kpi-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;">⏳</span>
-            </div>
-            <div class="kpi-value" id="kpi-pending-reviews">2</div>
-            <div class="kpi-trend warning">Avg turnaround: 3.4 hours</div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-card-header">
-              <span class="kpi-label">HIGH-RISK ESCALATIONS</span>
-              <span class="kpi-icon-box" style="background: rgba(239, 68, 68, 0.15); color: #EF4444;">🚨</span>
-            </div>
-            <div class="kpi-value" id="kpi-escalated-claims" style="color: #EF4444;">1</div>
-            <div class="kpi-trend danger">Requires Authorised Reviewer sign-off</div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-card-header">
-              <span class="kpi-label">APPROVAL RATE</span>
-              <span class="kpi-icon-box" style="background: rgba(99, 102, 241, 0.15); color: #818CF8;">✅</span>
-            </div>
-            <div class="kpi-value" id="kpi-approval-rate">88.5%</div>
-            <div class="kpi-trend positive">Zero critical breaches published</div>
-          </div>
-        </div>
-
-        <!-- Section 2.7: Quick Actions -->
-        <div class="dashboard-quick-actions-bar">
-          <span class="quick-actions-label">QUICK ACTIONS:</span>
-          <div class="quick-actions-buttons">
-            <button type="button" class="btn btn-quick-action" onclick="navigateToPage('brand-identity', event, 'generate')">
-              <span class="qa-icon">🧬</span>
-              <span>Generate Brand DNA</span>
-            </button>
-            <button type="button" class="btn btn-quick-action" onclick="navigateToPage('content-review', event, 'upload')">
-              <span class="qa-icon">📤</span>
-              <span>Upload Content</span>
-            </button>
-            <button type="button" class="btn btn-quick-action" onclick="navigateToPage('preflight-scanner', event)">
-              <span class="qa-icon">⚡</span>
-              <span>Open Pre-Flight Scanner</span>
-            </button>
-            <button type="button" class="btn btn-quick-action" onclick="navigateToPage('approvals', event)">
-              <span class="qa-icon">📋</span>
-              <span>View Pending Approvals</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Dashboard 2-Column Main Workspace -->
-        <div class="dashboard-bento-grid">
-          <!-- Left Column -->
-          <div class="dashboard-col-main">
-            <!-- Section 2.2: Pending Reviews -->
-            <div class="card dashboard-card">
-              <div class="card-header">
-                <div>
-                  <h3 class="card-title">Pending Content Reviews</h3>
-                  <p class="card-subtitle">Creatives submitted by team members requiring sign-off.</p>
-                </div>
-                <a href="/approvals" class="btn-text-sm" onclick="navigateToPage('approvals', event)">View all in Approvals &rarr;</a>
+          <div class="drawer-inner">
+            <div class="drawer-brand-lockup">
+              <div class="home-monogram home-monogram-dark" aria-hidden="true">
+                <svg viewBox="0 0 36 42" fill="none">
+                  <path d="M4 4h15c7 0 11 3.8 11 9.2 0 4-2.3 6.8-6 8 4.4 1.2 7.2 4.3 7.2 8.8 0 6-4.8 9.8-12 9.8H4V4Z" stroke="#b38d58" stroke-width="2.4"/>
+                  <path d="M10 10.5h8.2c3.5 0 5.6 1.7 5.6 4.4 0 2.8-2.1 4.4-5.6 4.4H10v-8.8Zm0 13.8h8.8c3.9 0 6.2 1.8 6.2 4.8 0 3-2.3 4.8-6.2 4.8H10v-9.6Z" fill="#b38d58" fill-opacity="0.22"/>
+                  <path d="M4 21.5h15.5" stroke="#b38d58" stroke-width="2"/>
+                </svg>
               </div>
-              <div class="table-responsive">
-                <table class="app-table">
-                  <thead>
-                    <tr>
-                      <th>Title & Asset</th>
-                      <th>Submitter</th>
-                      <th>Department</th>
-                      <th>Status</th>
-                      <th>Submitted</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dashboard-pending-tbody">
-                    <!-- Loaded dynamically from real backend workflow_service -->
-                  </tbody>
-                </table>
-              </div>
+              <span class="drawer-brand-name">Sanket AI</span>
             </div>
 
-            <!-- Section 2.3: Recently Reviewed Content -->
-            <div class="card dashboard-card">
-              <div class="card-header">
-                <div>
-                  <h3 class="card-title">Recently Reviewed Content</h3>
-                  <p class="card-subtitle">Latest creative audits across promotional copy, posters, and PDFs.</p>
-                </div>
-                <a href="/content-review" class="btn-text-sm" onclick="navigateToPage('content-review', event)">All Submissions &rarr;</a>
-              </div>
-              <div class="recent-reviews-grid" id="dashboard-recent-reviews-grid">
-                <!-- Loaded dynamically from backend -->
-              </div>
-            </div>
-          </div>
+            <!-- Sign In Form View -->
+            <div id="home-auth-signin-view" class="drawer-auth-view">
+              <h2 class="drawer-title">Welcome Back</h2>
+              <p class="drawer-subtitle">Sign in to your Sanket AI account to continue.</p>
 
-          <!-- Right Column -->
-          <div class="dashboard-col-side">
-            <!-- Section 2.4: Brand Compliance Summary -->
-            <div class="card dashboard-card">
-              <div class="card-header">
-                <h3 class="card-title">Compliance Summary</h3>
-              </div>
-              <div class="compliance-bars-list">
-                <div class="compliance-bar-item">
-                  <div class="compliance-bar-label">
-                    <span>Tone & Brand Voice</span>
-                    <strong id="bar-tone-pct">96%</strong>
-                  </div>
-                  <div class="progress-track"><div class="progress-fill" style="width: 96%; background: #10B981;"></div></div>
-                </div>
-                <div class="compliance-bar-item">
-                  <div class="compliance-bar-label">
-                    <span>Visual Identity & CIELAB</span>
-                    <strong id="bar-visual-pct">91%</strong>
-                  </div>
-                  <div class="progress-track"><div class="progress-fill" style="width: 91%; background: #6366F1;"></div></div>
-                </div>
-                <div class="compliance-bar-item">
-                  <div class="compliance-bar-label">
-                    <span>Claim Substantiation</span>
-                    <strong id="bar-claim-pct">88%</strong>
-                  </div>
-                  <div class="progress-track"><div class="progress-fill" style="width: 88%; background: #F59E0B;"></div></div>
-                </div>
-                <div class="compliance-bar-item">
-                  <div class="compliance-bar-label">
-                    <span>WCAG 2.1 Accessibility</span>
-                    <strong id="bar-access-pct">94%</strong>
-                  </div>
-                  <div class="progress-track"><div class="progress-fill" style="width: 94%; background: #3B82F6;"></div></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Section 2.5: Critical Issues -->
-            <div class="card dashboard-card">
-              <div class="card-header">
-                <h3 class="card-title">Active Critical Issues</h3>
-              </div>
-              <div class="critical-issues-list" id="dashboard-critical-issues-list">
-                <!-- Dynamically loaded from backend -->
-              </div>
-            </div>
-
-            <!-- Section 2.6: Recent Activity (Audit Log) -->
-            <div class="card dashboard-card">
-              <div class="card-header">
-                <div>
-                  <h3 class="card-title">Recent Activity Log</h3>
-                  <p class="card-subtitle">Immutable audit trail of governance actions.</p>
-                </div>
-                <a href="/settings" class="btn-text-sm" onclick="navigateToPage('settings', event)">All Logs &rarr;</a>
-              </div>
-              <div class="audit-timeline-feed" id="dashboard-audit-timeline">
-                <!-- Loaded from /api/v1/audit/logs -->
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 3. BRAND IDENTITY VIEW (/brand-identity) -->
-      <!-- ===================================================================== -->
-      <section id="view-brand-identity" class="app-view-pane hidden">
-        <div class="view-header-row">
-          <div>
-            <div class="breadcrumb-trail">Governance Platform &bull; Core Identity Standard</div>
-            <h1 class="view-page-title">Brand Identity Guidelines</h1>
-            <p class="view-page-subtitle">Deterministic brand specifications, multimodal DNA recommendations, and version-controlled standard guidelines.</p>
-          </div>
-          <div class="view-header-actions">
-            <button type="button" class="btn btn-sm btn-secondary" onclick="openCompanyFactsModal()">
-              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              <span>Setup Company Facts</span>
-            </button>
-            <button type="button" class="btn btn-sm btn-secondary" onclick="openDnaGeneratorModal()">
-              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>Generate Brand DNA</span>
-            </button>
-            <button type="button" class="btn btn-sm btn-primary" onclick="openApproveDnaModal()">
-              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>Approve Brand DNA</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Section 3.1: Brand Overview Header Card -->
-        <div class="card brand-overview-card" id="brand-overview-container">
-          <div class="brand-overview-header">
-            <div class="brand-overview-left">
-              <div class="brand-avatar-box" id="brand-avatar-display">A</div>
-              <div>
-                <div class="brand-title-row">
-                  <h2 class="brand-display-name" id="identity-brand-name">Apex Cloud Systems</h2>
-                  <span class="status-pill status-active" id="identity-brand-status">ACTIVE &bull; APPROVED</span>
-                  <span class="id-badge" id="identity-brand-slug">slug: apex-cloud</span>
-                </div>
-                <p class="brand-meta-desc" id="identity-brand-desc">Enterprise Cloud Infrastructure & Cybersecurity. High-availability zero-trust data mesh.</p>
-              </div>
-            </div>
-            <div class="brand-overview-actions">
-              <button type="button" class="btn btn-sm btn-ghost" onclick="openEditDnaModal()" title="Edit Brand DNA Fields">
-                <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                <span>Edit Brand DNA</span>
-              </button>
-              <button type="button" class="btn btn-sm btn-ghost" onclick="openDnaVersionHistory()" title="View Version Revisions">
-                <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
-                <span>Version History</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 9 Structured Identity Guidelines Sections -->
-        <div class="brand-guidelines-grid">
-          <!-- 3.2: Brand Personality -->
-          <div class="card guideline-card">
-            <div class="card-header">
-              <span class="guideline-card-tag">Section 1</span>
-              <h3 class="card-title">Brand Personality</h3>
-            </div>
-            <div class="guideline-content" id="identity-personality-block">
-              <p class="guideline-lead">Core persona traits defining voice and customer resonance:</p>
-              <div class="tags-cluster" id="identity-personality-tags">
-                <span class="tag-pill">Authoritative</span>
-                <span class="tag-pill">Crisp</span>
-                <span class="tag-pill">Empowering</span>
-                <span class="tag-pill">Direct</span>
-                <span class="tag-pill">Technically Rigorous</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3.3: Brand Positioning -->
-          <div class="card guideline-card">
-            <div class="card-header">
-              <span class="guideline-card-tag">Section 2</span>
-              <h3 class="card-title">Brand Positioning</h3>
-            </div>
-            <div class="guideline-content" id="identity-positioning-block">
-              <blockquote class="guideline-quote" id="identity-positioning-quote">
-                "The zero-trust infrastructure engine for mission-critical enterprise workloads."
-              </blockquote>
-              <div class="audience-pill-box">
-                <span class="subtle-label">Target Audience:</span>
-                <span class="audience-text" id="identity-audience-text">DevOps Leads, Cloud Architects, and Enterprise CISOs</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3.4: Brand Voice & Tone -->
-          <div class="card guideline-card">
-            <div class="card-header">
-              <span class="guideline-card-tag">Section 3</span>
-              <h3 class="card-title">Brand Voice &amp; Tone</h3>
-            </div>
-            <div class="guideline-content" id="identity-voice-block">
-              <div class="voice-principle-item">
-                <strong>Primary Voice:</strong> Direct, clear, technical, and mission-focused.
-              </div>
-              <div class="voice-principle-item">
-                <strong>Formality:</strong> Professional and crisp. Avoid marketing jargon and clickbait superlatives.
-              </div>
-              <div class="voice-principle-item">
-                <strong>Clarity Anchor:</strong> Explain technical architectural benefits with concrete data rather than vague hype.
-              </div>
-            </div>
-          </div>
-
-          <!-- 3.5: Visual Identity -->
-          <div class="card guideline-card">
-            <div class="card-header">
-              <span class="guideline-card-tag">Section 4</span>
-              <h3 class="card-title">Visual Identity</h3>
-            </div>
-            <div class="guideline-content" id="identity-visual-block">
-              <p>Minimalist, high-contrast engineering elegance. Uncluttered dark-mode canvas with luminous cyan and cobalt accents.</p>
-              <div class="style-ethos-badge" id="identity-style-ethos">Style Ethos: Precision Enterprise Minimalist</div>
-            </div>
-          </div>
-
-          <!-- 3.6: Colour Palette -->
-          <div class="card guideline-card guideline-span-2">
-            <div class="card-header">
-              <span class="guideline-card-tag">Section 5</span>
-              <h3 class="card-title">Approved Colour Palette &amp; CIELAB Tolerances</h3>
-            </div>
-            <div class="guideline-content">
-              <p class="guideline-lead">Approved HEX swatches strictly enforced via OpenCV and CIELAB &Delta;E mathematical algorithms:</p>
-              <div class="swatches-palette-deck" id="identity-swatches-deck">
-                <div class="swatch-tile">
-                  <div class="swatch-color" style="background: #0B132B;"></div>
-                  <div class="swatch-meta"><strong>#0B132B</strong><span>Primary Canvas</span></div>
-                </div>
-                <div class="swatch-tile">
-                  <div class="swatch-color" style="background: #1C2541;"></div>
-                  <div class="swatch-meta"><strong>#1C2541</strong><span>Secondary Surface</span></div>
-                </div>
-                <div class="swatch-tile">
-                  <div class="swatch-color" style="background: #5BC0BE;"></div>
-                  <div class="swatch-meta"><strong>#5BC0BE</strong><span>Accent Cyan</span></div>
-                </div>
-                <div class="swatch-tile">
-                  <div class="swatch-color" style="background: #FFFFFF;"></div>
-                  <div class="swatch-meta"><strong>#FFFFFF</strong><span>Pure White Text</span></div>
-                </div>
-              </div>
-              <div class="cielab-tolerance-alert">
-                <span class="status-pulse-dot" style="background:#10B981;"></span>
-                <span>Maximum Allowed Color Departure: <strong>&Delta;E &le; 15.0</strong>. Deviations beyond this limit trigger automated off-brand Auto-Fix.</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3.7: Typography -->
-          <div class="card guideline-card">
-            <div class="card-header">
-              <span class="guideline-card-tag">Section 6</span>
-              <h3 class="card-title">Typography Recommendations</h3>
-            </div>
-            <div class="guideline-content" id="identity-typography-block">
-              <div class="type-sample-item">
-                <span class="type-role">HEADLINE</span>
-                <span class="type-spec" style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;">Plus Jakarta Sans (Bold, 700)</span>
-              </div>
-              <div class="type-sample-item">
-                <span class="type-role">BODY</span>
-                <span class="type-spec" style="font-family: 'Inter', sans-serif;">Inter (Regular / Medium, 400-500)</span>
-              </div>
-              <div class="type-sample-item">
-                <span class="type-role">CODE / METRICS</span>
-                <span class="type-spec" style="font-family: 'JetBrains Mono', monospace;">JetBrains Mono (600)</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3.8: Imagery Guidelines -->
-          <div class="card guideline-card">
-            <div class="card-header">
-              <span class="guideline-card-tag">Section 7</span>
-              <h3 class="card-title">Imagery Guidelines</h3>
-            </div>
-            <div class="guideline-content" id="identity-imagery-block">
-              <p>Authentic, high-resolution photography and engineering visualizations. Clean architectural perspectives with cool ambient lighting.</p>
-              <div class="tags-cluster">
-                <span class="tag-pill">Cool Ambient</span>
-                <span class="tag-pill">Zero Stock Clutter</span>
-                <span class="tag-pill">Sharp Depth of Field</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3.9: Messaging Guidelines -->
-          <div class="card guideline-card">
-            <div class="card-header">
-              <span class="guideline-card-tag">Section 8</span>
-              <h3 class="card-title">Messaging Guidelines</h3>
-            </div>
-            <div class="guideline-content" id="identity-messaging-block">
-              <ul class="styled-guideline-list">
-                <li>Lead with verified security facts and performance benchmarks.</li>
-                <li>Never promise 100% bug-free software or unhackable systems.</li>
-                <li>Cite third-party audits when mentioning uptime SLAs.</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- 3.10: Design Rules (Do's & Don'ts) -->
-          <div class="card guideline-card guideline-span-2">
-            <div class="card-header">
-              <span class="guideline-card-tag">Section 9 &amp; 10</span>
-              <h3 class="card-title">Design Rules: Visual Do's &amp; Don'ts</h3>
-            </div>
-            <div class="guideline-content">
-              <div class="dos-donts-split">
-                <div class="dos-column">
-                  <div class="column-header-dos">&#10003; APPROVED PRACTICES (DO)</div>
-                  <ul class="dos-list" id="identity-dos-list">
-                    <li>Maintain minimum 24px clear margin space surrounding official logos.</li>
-                    <li>Ensure all copy maintains WCAG 2.1 AA minimum contrast of 4.5:1.</li>
-                    <li>Use subtle glass surfaces with 1px border highlights for depth.</li>
-                  </ul>
-                </div>
-                <div class="donts-column">
-                  <div class="column-header-donts">&#10005; STRICTLY DISALLOWED (DON'T)</div>
-                  <ul class="donts-list" id="identity-donts-list">
-                    <li>Do not stretch, rotate, or alter the color of the official brandmark.</li>
-                    <li>Do not use neon orange or unapproved saturated hues (&Delta;E &gt; 15.0).</li>
-                    <li>Do not use unsubstantiated superlative claims ("#1 in the universe").</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 4. BRAND KNOWLEDGE VIEW (/brand-knowledge) -->
-      <!-- ===================================================================== -->
-      <section id="view-brand-knowledge" class="app-view-pane hidden">
-        <div class="view-header-row">
-          <div>
-            <div class="breadcrumb-trail">Governance Platform &bull; Factual Ground Truth</div>
-            <h1 class="view-page-title">Brand Knowledge Base</h1>
-            <p class="view-page-subtitle">Multi-tenant repository of approved company facts, certified claims, verified evidence, terminology, and policy exceptions.</p>
-          </div>
-          <div class="view-header-actions">
-            <button type="button" class="btn btn-sm btn-primary" onclick="openAddKnowledgeModal()">
-              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span>+ Add Knowledge Item</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Section 4 Filter Pills (10 Categories) -->
-        <div class="knowledge-categories-bar">
-          <button type="button" class="category-pill active" onclick="filterKnowledgeCategory('ALL', this)">ALL CATEGORIES</button>
-          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('COMPANY_FACT', this)">Company Information</button>
-          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('GUIDELINE', this)">Brand Guidelines</button>
-          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('APPROVED_FACT', this)">Approved Facts</button>
-          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('PRODUCT_SERVICE', this)">Products &amp; Services</button>
-          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('PROMOTIONAL_CLAIM', this)">Approved Claims &amp; Evidence</button>
-          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('TERMINOLOGY', this)">Terminology</button>
-          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('OFFICIAL_ASSET', this)">Official Brand Assets</button>
-          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('REFERENCE_DESIGN', this)">Reference Designs</button>
-          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('RESTRICTED_MESSAGING', this)">Restricted Messaging</button>
-          <button type="button" class="category-pill" onclick="filterKnowledgeCategory('POLICY_EXCEPTION', this)">Policy Exceptions</button>
-        </div>
-
-        <!-- Search & Stats Bar -->
-        <div class="knowledge-search-row">
-          <div class="knowledge-search-box">
-            <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="knowledge-search-input" placeholder="Search approved claims, ISO certifications, terminology, evidence..." oninput="handleKnowledgeSearch(this.value)">
-          </div>
-          <span class="knowledge-count-badge" id="knowledge-items-count">Showing 8 approved items</span>
-        </div>
-
-        <!-- Knowledge Items Cards Grid -->
-        <div class="knowledge-cards-grid" id="knowledge-cards-grid">
-          <!-- Loaded dynamically from backend knowledge_service -->
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 5. CONTENT REVIEW VIEW (/content-review) -->
-      <!-- ===================================================================== -->
-      <section id="view-content-review" class="app-view-pane hidden">
-        <div class="view-header-row">
-          <div>
-            <div class="breadcrumb-trail">Governance Platform &bull; Creative Verification</div>
-            <h1 class="view-page-title">Content Review &amp; Submissions</h1>
-            <p class="view-page-subtitle">Submit and audit marketing copy, posters, social creatives, and PDF decks against Brand DNA and verified claims.</p>
-          </div>
-          <div class="view-header-actions">
-            <button type="button" class="btn btn-sm btn-secondary" onclick="resetReviewForm()">
-              <span>Clear Form</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Section 5.1: Upload Content Module -->
-        <div class="card content-upload-card" id="content-upload-module">
-          <div class="card-header">
-            <div>
-              <h3 class="card-title">Upload Creative for Multimodal Audit</h3>
-              <p class="card-subtitle">Select marketing copy, social banners, posters, or PDF guidelines.</p>
-            </div>
-            <!-- Modality Switcher -->
-            <div class="modality-switch-pill">
-              <button type="button" class="modality-btn active" id="btn-modality-file" onclick="setReviewModality('file')">Poster / Image / PDF</button>
-              <button type="button" class="modality-btn" id="btn-modality-text" onclick="setReviewModality('text')">Marketing Text Copy</button>
-            </div>
-          </div>
-
-          <form id="content-review-form" class="app-form" onsubmit="handleContentReviewSubmit(event)">
-            <div class="form-row-grid">
-              <div class="form-group">
-                <label for="review-target-brand">Target Brand Standard:</label>
-                <select id="review-target-brand" class="form-select">
-                  <option value="apex-cloud">Apex Cloud Systems</option>
-                  <option value="nike">Nike Global</option>
-                  <option value="test_master_brand">MasterBrand Systems</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="review-content-type">Content Type:</label>
-                <select id="review-content-type" class="form-select">
-                  <option value="poster_image">Poster / Graphic Image</option>
-                  <option value="marketing_ad">Marketing Advertisement</option>
-                  <option value="pdf">PDF Guidelines / Creative Deck</option>
-                  <option value="social_media_creative">Social Media Creative</option>
-                  <option value="text">Promotional Text / Caption</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="review-department">Submitting Department:</label>
-                <select id="review-department" class="form-select">
-                  <option value="Marketing">Marketing</option>
-                  <option value="Social Media">Social Media</option>
-                  <option value="Growth">Growth</option>
-                  <option value="Product">Product</option>
-                  <option value="PR & Communications">PR & Communications</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Modality Container: File Upload -->
-            <div id="review-file-container" class="modality-container">
-              <div id="review-drop-zone" class="drop-zone" onclick="document.getElementById('review-file-input').click()">
-                <input type="file" id="review-file-input" class="file-input" accept="image/*,.pdf,.png,.jpg,.jpeg,.webp" onchange="handleReviewFileSelected(this.files[0])">
-                <div class="drop-zone-content">
-                  <div class="upload-icon-circle">
-                    <svg class="svg-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              <form id="home-form-login" class="drawer-form" onsubmit="submitHomeLogin(event)">
+                <div class="cream-input-group">
+                  <label class="sr-only" for="home-login-email">Email address</label>
+                  <span class="cream-input-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="2.5" y="4.5" width="15" height="11" rx="1.8"/>
+                      <path d="M3 5.5 10 11l7-5.5"/>
                     </svg>
-                  </div>
-                  <p class="drop-text">Drag &amp; drop creative poster or graphic here or <span class="highlight">browse</span></p>
-                  <span class="drop-subtext">Supports PNG, JPG, WEBP, and PDF up to 30MB &bull; Instant pre-flight active</span>
-                </div>
-              </div>
-
-              <div id="review-file-preview-bar" class="file-preview-card hidden">
-                <div class="file-preview-main">
-                  <div class="file-icon-box">🖼️</div>
-                  <div>
-                    <strong id="preview-filename">creative.png</strong>
-                    <span id="preview-filesize" class="file-size-text">1.2 MB</span>
-                  </div>
-                </div>
-                <button type="button" class="btn-remove-file" onclick="clearReviewFile()">Remove</button>
-              </div>
-            </div>
-
-            <!-- Modality Container: Text Copy -->
-            <div id="review-text-container" class="modality-container hidden">
-              <div class="form-group">
-                <label for="review-copy-input">Marketing Copy, Headline, or Script:</label>
-                <textarea id="review-copy-input" rows="4" placeholder="Enter headline, slogan, promotional copy, or ad body text to audit against Brand DNA..." class="form-textarea"></textarea>
-              </div>
-            </div>
-
-            <div class="form-submit-row">
-              <div class="submit-hint">Enforces 10-category inspection: Tone, Terminology, Claims, Accessibility, &amp; Visual Identity.</div>
-              <button type="submit" class="btn btn-primary" id="btn-submit-review">
-                <svg class="svg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Run Brand Inspection</span>
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Section 5.2: Submissions Table & Filter Tabs -->
-        <div class="card submissions-table-card">
-          <div class="submissions-table-header">
-            <h3 class="card-title">All Submissions Queue</h3>
-            <div class="submissions-filter-tabs">
-              <button type="button" class="sub-tab active" onclick="filterSubmissionsTab('ALL', this)">All Submissions</button>
-              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('DRAFT', this)">Drafts</button>
-              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('UNDER_REVIEW', this)">Under Review</button>
-              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('NEEDS_REVISION', this)">Needs Revision</button>
-              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('APPROVED', this)">Approved</button>
-              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('APPROVED_WITH_WARNINGS', this)">Approved w/ Warnings</button>
-              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('REJECTED', this)">Rejected</button>
-              <button type="button" class="sub-tab" onclick="filterSubmissionsTab('ESCALATED', this)">Escalated</button>
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="app-table">
-              <thead>
-                <tr>
-                  <th>Review ID</th>
-                  <th>Title / Asset</th>
-                  <th>Content Type</th>
-                  <th>Submitter</th>
-                  <th>Department</th>
-                  <th>Date</th>
-                  <th>Compliance Score</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="submissions-tbody">
-                <!-- Loaded dynamically -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 5.3: DEDICATED CONTENT REVIEW DETAIL PAGE (/content-review/[id]) -->
-      <!-- ===================================================================== -->
-      <section id="view-content-review-detail" class="app-view-pane hidden">
-        <div class="view-header-row">
-          <div>
-            <div class="breadcrumb-trail">
-              <a href="/content-review" onclick="navigateToPage('content-review', event)">&larr; Back to Submissions</a>
-              <span> &bull; Content Analysis Report</span>
-            </div>
-            <h1 class="view-page-title" id="detail-review-title">Creative Inspection Report &bull; rev-8a2f10b</h1>
-            <p class="view-page-subtitle" id="detail-review-subtitle">Comprehensive multimodal audit across 10 brand compliance categories.</p>
-          </div>
-          <div class="view-header-actions">
-            <button type="button" class="btn btn-sm btn-secondary" onclick="navigateToPage('brand-copilot', event)">
-              <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              <span>Open in Brand Co-Pilot</span>
-            </button>
-            <button type="button" class="btn btn-sm btn-primary" onclick="openWorkflowDecisionModal()">
-              <span>Review &amp; Approve</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Detail Grid -->
-        <div class="review-detail-grid">
-          <!-- Left Column: Content Preview & Auto-Fix -->
-          <div class="detail-col-preview">
-            <div class="card preview-card">
-              <div class="card-header">
-                <h3 class="card-title">Content Preview</h3>
-                <span class="id-badge" id="detail-asset-type">Poster Image</span>
-              </div>
-              <div class="detail-preview-box" id="detail-preview-container">
-                <img src="/static/samples/nike_compliant_poster.png" alt="Creative Asset Preview" id="detail-preview-img" class="detail-img-render">
-              </div>
-            </div>
-
-            <!-- SECTION 8: AUTO-FIX MODULE (Integrated into Content Review Detail) -->
-            <div class="card autofix-card" id="detail-autofix-box">
-              <div class="card-header">
-                <div>
-                  <span class="stage-step-pill" style="background: rgba(99, 102, 241, 0.2); color: #818CF8;">AI-Assisted Visual Correction</span>
-                  <h3 class="card-title">Visual Auto-Fix (CIELAB Centroid Recolor)</h3>
-                </div>
-                <span class="status-pill status-warning" id="autofix-status-pill">Correction Eligible</span>
-              </div>
-              <div class="autofix-body">
-                <p class="autofix-desc" id="autofix-problem-text">Off-brand saturated orange (&Delta;E = 28.4) deviates from approved dark cobalt palette. Auto-Fix shifts pixel centroids while preserving text and logos.</p>
-
-                <!-- Side-by-Side Comparison -->
-                <div class="autofix-side-by-side">
-                  <div class="side-item">
-                    <span class="side-label">Original Creative (Preserved)</span>
-                    <img src="/static/samples/nike_compliant_poster.png" alt="Original Creative" id="autofix-original-img" class="side-img">
-                  </div>
-                  <div class="side-item">
-                    <span class="side-label">Proposed Variation (Compliant &Delta;E &lt; 5.0)</span>
-                    <img src="/static/samples/nike_compliant_poster.png" alt="Corrected Creative" id="autofix-corrected-img" class="side-img">
-                  </div>
+                  </span>
+                  <input id="home-login-email" type="email" placeholder="Email address" autocomplete="email" required>
                 </div>
 
-                <div class="autofix-preserved-tags" id="autofix-preserved-elements">
-                  <span>Preserved: &bull; Typography Contours &bull; Brandmark Geometry &bull; Background Layout</span>
-                </div>
-
-                <div class="autofix-actions-row">
-                  <button type="button" class="btn btn-sm btn-ghost" onclick="triggerRegenerateAutoFix()">
-                    <span>Regenerate Variation</span>
-                  </button>
-                  <button type="button" class="btn btn-sm btn-secondary" onclick="rejectAutoFixVariation()">
-                    <span>Reject Correction</span>
-                  </button>
-                  <button type="button" class="btn btn-sm btn-primary" onclick="acceptAutoFixVariation()">
-                    <span>Accept Correction (Stage for Sign-Off)</span>
+                <div class="cream-input-group">
+                  <label class="sr-only" for="home-login-password">Password</label>
+                  <span class="cream-input-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="4" y="9" width="12" height="8" rx="1.8"/>
+                      <path d="M6.8 9V6.5a3.2 3.2 0 1 1 6.4 0V9"/>
+                    </svg>
+                  </span>
+                  <input id="home-login-password" type="password" placeholder="Password" autocomplete="current-password" required>
+                  <button
+                    type="button"
+                    class="cream-eye-btn"
+                    onclick="toggleHomePasswordVisibility('home-login-password', this)"
+                    aria-label="Show password"
+                  >
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M2 10s3.2-5 8-5 8 5 8 5-3.2 5-8 5-8-5-8-5Z"/>
+                      <circle cx="10" cy="10" r="2.2"/>
+                    </svg>
                   </button>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Right Column: Evaluation & 10 Dimensions Breakdown -->
-          <div class="detail-col-metrics">
-            <!-- Overall Evaluation Gauge -->
-            <div class="card score-gauge-card">
-              <div class="gauge-layout">
-                <div class="score-circle-wrap">
-                  <div class="score-circle-num" id="detail-score-value">92.0</div>
-                  <div class="score-circle-denom">/ 100</div>
-                </div>
-                <div>
-                  <div class="verdict-title-row">
-                    <h3 class="verdict-text" id="detail-verdict-text">COMPLIANT WITH WARNINGS</h3>
-                    <span class="status-pill status-active" id="detail-status-pill">Under Review</span>
-                  </div>
-                  <p class="verdict-summary" id="detail-verdict-summary">Creative aligns with core brand voice. 1 promotional claim requires human verification citation.</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Breakdown Dimensions -->
-            <div class="card detail-dimensions-card">
-              <div class="card-header">
-                <h3 class="card-title">Audited Categories</h3>
-              </div>
-              <div class="dimensions-breakdown-list" id="detail-dimensions-list">
-                <!-- Brand Consistency, Tone, Terminology, Visual Identity, Claims, Accessibility -->
-              </div>
-            </div>
-
-            <!-- Detected Issues List -->
-            <div class="card detail-issues-card">
-              <div class="card-header">
-                <h3 class="card-title">Detected Issues &amp; Recommended Corrections</h3>
-              </div>
-              <div class="detected-issues-deck" id="detail-detected-issues-deck">
-                <!-- Standardized issue cards with severity, guideline citation, explanation, recommended correction -->
-              </div>
-            </div>
-
-            <!-- Review History Timeline -->
-            <div class="card detail-history-card">
-              <div class="card-header">
-                <h3 class="card-title">Review &amp; Revision History</h3>
-              </div>
-              <div class="review-history-timeline" id="detail-history-timeline">
-                <!-- Chronological submissions, feedback, revisions -->
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 6. PRE-FLIGHT SCANNER VIEW (/preflight-scanner) -->
-      <!-- ===================================================================== -->
-      <section id="view-preflight-scanner" class="app-view-pane hidden">
-        <div class="view-header-row">
-          <div>
-            <div class="breadcrumb-trail">Governance Platform &bull; Instant Client Diagnostics</div>
-            <h1 class="view-page-title">Instant Client Pre-Flight Scanner</h1>
-            <p class="view-page-subtitle">Immediate heuristic analysis upon drag-and-drop before final submission. Measures contrast, palette, layout, and style.</p>
-          </div>
-        </div>
-
-        <!-- Preliminary Notice Alert (Rule: Must distinguish from final AI approval) -->
-        <div class="preliminary-alert-banner">
-          <div class="alert-icon-box">⚡</div>
-          <div>
-            <strong>PRELIMINARY HEURISTIC SCANNER MEASUREMENTS</strong>
-            <p>Preliminary measurements run immediately in the browser before submitting. This is not final brand approval. Full multimodal verification and claim verification runs upon clicking "Submit for Review".</p>
-          </div>
-        </div>
-
-        <div class="preflight-grid">
-          <!-- Left: Drag and drop area & interactive canvas -->
-          <div class="preflight-col-upload">
-            <div class="card preflight-card">
-              <div id="preflight-drop-zone" class="drop-zone" onclick="document.getElementById('preflight-file-input').click()">
-                <input type="file" id="preflight-file-input" class="file-input" accept="image/*,.png,.jpg,.jpeg,.webp" onchange="runPreflightInstantScan(this.files[0])">
-                <div class="drop-zone-content">
-                  <div class="upload-icon-circle">⚡</div>
-                  <p class="drop-text">Drag &amp; drop creative here for <strong>instant pre-flight diagnostics</strong></p>
-                  <span class="drop-subtext">Zero backend upload required for initial heuristic analysis</span>
-                </div>
-              </div>
-
-              <!-- Live Canvas Preview -->
-              <div id="preflight-preview-frame" class="preflight-canvas-frame hidden">
-                <div class="scanner-laser-line hidden" id="scanner-laser-sweep"></div>
-                <img id="preflight-canvas-img" src="" alt="Pre-Flight Inspection Preview" class="preflight-rendered-img">
-              </div>
-            </div>
-          </div>
-
-          <!-- Right: Telemetry HUD -->
-          <div class="preflight-col-telemetry">
-            <div class="card preflight-telemetry-card">
-              <div class="card-header">
-                <h3 class="card-title">Pre-Flight Empirical Telemetry</h3>
-                <span class="id-badge" id="preflight-status-badge">Awaiting Image</span>
-              </div>
-
-              <div class="preflight-metrics-list">
-                <!-- 1. Dominant Colours & Approximate HEX -->
-                <div class="telemetry-item">
-                  <div class="telemetry-label">Dominant Colours &amp; Approximate HEX</div>
-                  <div class="telemetry-swatches-row" id="preflight-swatches-row">
-                    <span class="subtle-placeholder">Drag an image to extract palette...</span>
-                  </div>
-                </div>
-
-                <!-- 2. Colour Temperature (Kelvin) -->
-                <div class="telemetry-item">
-                  <div class="telemetry-label">Colour Temperature</div>
-                  <div class="telemetry-val" id="preflight-temp-val">&mdash;</div>
-                  <span class="telemetry-sub" id="preflight-temp-sub">Calculated via correlated color temperature</span>
-                </div>
-
-                <!-- 3. Contrast Analysis -->
-                <div class="telemetry-item">
-                  <div class="telemetry-label">Contrast Measurements</div>
-                  <div class="telemetry-val" id="preflight-contrast-val">&mdash;</div>
-                  <span class="telemetry-sub" id="preflight-contrast-sub">W3C WCAG 2.1 AA requirement (min 4.5:1)</span>
-                </div>
-
-                <!-- 4. Dimensions & Aspect Ratio -->
-                <div class="telemetry-item">
-                  <div class="telemetry-label">Image Dimensions &amp; Aspect Ratio</div>
-                  <div class="telemetry-val" id="preflight-dimensions-val">&mdash;</div>
-                  <span class="telemetry-sub" id="preflight-aspect-sub">&mdash;</span>
-                </div>
-
-                <!-- 5. Negative Space Estimation -->
-                <div class="telemetry-item">
-                  <div class="telemetry-label">Negative Space Estimation</div>
-                  <div class="telemetry-val" id="preflight-whitespace-val">&mdash;</div>
-                  <span class="telemetry-sub">Clean layout clutter analysis</span>
-                </div>
-
-                <!-- 6. Layout Analysis -->
-                <div class="telemetry-item">
-                  <div class="telemetry-label">Basic Layout Properties</div>
-                  <div class="telemetry-val" id="preflight-layout-val">&mdash;</div>
-                  <span class="telemetry-sub" id="preflight-layout-sub">&mdash;</span>
-                </div>
-
-                <!-- 7. Preliminary Visual Style Prediction -->
-                <div class="telemetry-item">
-                  <div class="telemetry-label">Preliminary Visual-Style Prediction</div>
-                  <div class="telemetry-badge-style" id="preflight-style-val">&mdash;</div>
-                  <span class="telemetry-sub" id="preflight-style-sub">Minimalist, Bold, Corporate, Luxury, Playful, Futuristic, Editorial</span>
-                </div>
-              </div>
-
-              <div class="preflight-footer-cta">
-                <button type="button" class="btn btn-primary" id="btn-preflight-proceed" onclick="proceedToFullReviewFromPreflight()" disabled>
-                  <span>Submit for Full Multimodal AI Review &rarr;</span>
+                <button type="submit" class="cream-submit-btn" id="home-login-submit">
+                  <span>Sign In</span>
+                  <span aria-hidden="true">&rarr;</span>
                 </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 7. BRAND CO-PILOT VIEW (/brand-copilot) -->
-      <!-- ===================================================================== -->
-      <section id="view-brand-copilot" class="app-view-pane hidden">
-        <div class="view-header-row">
-          <div>
-            <div class="breadcrumb-trail">Governance Platform &bull; Remediation Assistant</div>
-            <h1 class="view-page-title">Brand Co-Pilot (Remediation Chatbot)</h1>
-            <p class="view-page-subtitle">Interactive compliance guidance grounded in approved Brand DNA and official company knowledge base evidence.</p>
-          </div>
-        </div>
-
-        <div class="copilot-workspace-grid">
-          <!-- Left: Current Context & Quick Prompts -->
-          <div class="copilot-context-col">
-            <div class="card copilot-context-card">
-              <div class="card-header">
-                <h3 class="card-title">Content Context</h3>
-                <span class="status-pill status-active" id="copilot-brand-badge">Apex Cloud</span>
-              </div>
-              <div class="context-body">
-                <label class="subtle-label">Active Marketing Copy:</label>
-                <div class="context-copy-preview" id="copilot-context-copy">
-                  "Our cheap cloud servers are unhackable and guaranteed 100% bug-free for all enterprise customers."
-                </div>
-
-                <label class="subtle-label" style="margin-top: 1rem;">Detected Departures:</label>
-                <div class="copilot-issues-chips" id="copilot-issues-chips">
-                  <span class="chip chip-danger" onclick="askCopilot('Why is the word cheap prohibited?')">Disallowed: cheap</span>
-                  <span class="chip chip-danger" onclick="askCopilot('Why was unhackable flagged?')">Unsubstantiated: unhackable</span>
-                  <span class="chip chip-warning" onclick="askCopilot('How can I rewrite this guarantee in approved tone?')">High-Risk: 100% bug-free</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Quick Action Prompts -->
-            <div class="card copilot-actions-card">
-              <div class="card-header">
-                <h3 class="card-title">Quick Remediation Prompts</h3>
-              </div>
-              <div class="copilot-prompts-list">
-                <button type="button" class="btn-prompt-item" onclick="askCopilot('Suggest 3 alternative headlines adhering to our brand tone')">
-                  <span>💡 Suggest 3 Alternative Headlines</span>
-                </button>
-                <button type="button" class="btn-prompt-item" onclick="askCopilot('Rewrite this promotional copy in our approved brand tone')">
-                  <span>✍️ Rewrite Content in Brand Tone</span>
-                </button>
-                <button type="button" class="btn-prompt-item" onclick="askCopilot('Correct terminology to align with approved lexicon')">
-                  <span>📖 Correct Terminology</span>
-                </button>
-                <button type="button" class="btn-prompt-item" onclick="askCopilot('Give me step-by-step guidance to pass certification')">
-                  <span>📋 Step-by-Step Correction Guidance</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Center: Interactive Chat Interface -->
-          <div class="copilot-chat-col">
-            <div class="card copilot-chat-card">
-              <div class="copilot-chat-header">
-                <div class="copilot-persona-info">
-                  <div class="copilot-avatar">🤖</div>
-                  <div>
-                    <strong>Sanket Brand Co-Pilot</strong>
-                    <span class="copilot-persona-status">Grounded in verified Brand DNA &bull; Non-generative fact anchor</span>
-                  </div>
-                </div>
-                <button type="button" class="btn-text-sm" onclick="clearCopilotConversation()">Clear Chat</button>
-              </div>
-
-              <!-- Message Stream -->
-              <div class="copilot-messages-stream" id="copilot-messages-list">
-                <div class="chat-msg msg-assistant">
-                  <div class="msg-bubble">
-                    Hello! I'm your Brand Co-Pilot. I evaluate your copy against <strong>Apex Cloud Systems</strong> approved Brand DNA and official Knowledge Base. How can I help you refine this creative?
-                  </div>
-                </div>
-              </div>
-
-              <!-- Co-Pilot Typing Indicator -->
-              <div id="copilot-typing-container" class="hidden" style="padding: 0.5rem 1rem;">
-                <div class="copilot-typing-indicator">
-                  <span class="dot"></span>
-                  <span class="dot"></span>
-                  <span class="dot"></span>
-                </div>
-                <span style="font-size: 11px; color: #94a3b8; margin-left: 8px;">AI Brand Co-Pilot is evaluating brand guidelines...</span>
-              </div>
-
-              <!-- Structured Corrections Display Deck -->
-              <div class="copilot-structured-deck hidden" id="copilot-structured-deck">
-                <div class="deck-title">Proposed Content Corrections:</div>
-                <div class="deck-items-list" id="copilot-structured-items">
-                  <!-- Structured cards showing Original, Suggested Correction, and Reason -->
-                </div>
-              </div>
-
-              <!-- Chat Input Bar -->
-              <form class="copilot-input-row" id="copilot-form" onsubmit="handleCopilotSubmit(event)">
-                <input type="text" id="copilot-input" class="copilot-text-input" placeholder="Ask why an issue was flagged, request compliant headlines, or rewrite copy..." autocomplete="off">
-                <button type="submit" class="btn btn-primary btn-send-copilot">Send</button>
               </form>
+
+              <div class="drawer-or-divider"><span>or</span></div>
+
+              <p class="drawer-switch-copy">
+                Don&rsquo;t have an account?
+                <button type="button" class="cream-accent-link" onclick="switchHomeAuthView('register')">Register</button>
+              </p>
+            </div>
+
+            <!-- Register Company Form View -->
+            <div id="home-auth-register-view" class="drawer-auth-view hidden">
+              <h2 class="drawer-title">Create Workspace</h2>
+              <p class="drawer-subtitle">Register your organisation to set and lock Brand Vibes.</p>
+
+              <form id="home-form-register" class="drawer-form" onsubmit="submitHomeRegister(event)">
+                <div class="cream-input-group">
+                  <label class="sr-only" for="home-reg-company">Company name</label>
+                  <span class="cream-input-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M3.5 17V4.5l6.5-2 6.5 2V17"/>
+                      <path d="M7 7.5h2M11 7.5h2M7 11h2M11 11h2M8.5 17v-3h3v3"/>
+                    </svg>
+                  </span>
+                  <input id="home-reg-company" type="text" placeholder="Company name" required>
+                </div>
+
+                <div class="cream-input-group">
+                  <label class="sr-only" for="home-reg-email">Admin email</label>
+                  <span class="cream-input-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="2.5" y="4.5" width="15" height="11" rx="1.8"/>
+                      <path d="M3 5.5 10 11l7-5.5"/>
+                    </svg>
+                  </span>
+                  <input id="home-reg-email" type="email" placeholder="Work email address" required>
+                </div>
+
+                <div class="cream-input-group">
+                  <label class="sr-only" for="home-reg-password">Password</label>
+                  <span class="cream-input-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="4" y="9" width="12" height="8" rx="1.8"/>
+                      <path d="M6.8 9V6.5a3.2 3.2 0 1 1 6.4 0V9"/>
+                    </svg>
+                  </span>
+                  <input id="home-reg-password" type="password" minlength="8" placeholder="Password (8+ characters)" required>
+                  <button
+                    type="button"
+                    class="cream-eye-btn"
+                    onclick="toggleHomePasswordVisibility('home-reg-password', this)"
+                    aria-label="Show password"
+                  >
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M2 10s3.2-5 8-5 8 5 8 5-3.2 5-8 5-8-5-8-5Z"/>
+                      <circle cx="10" cy="10" r="2.2"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <button type="submit" class="cream-submit-btn">
+                  <span>Register &amp; Continue</span>
+                  <span aria-hidden="true">&rarr;</span>
+                </button>
+              </form>
+
+              <div class="drawer-or-divider"><span>or</span></div>
+
+              <p class="drawer-switch-copy">
+                Already have an account?
+                <button type="button" class="cream-accent-link" onclick="switchHomeAuthView('login')">Sign In</button>
+              </p>
+            </div>
+
+            <div id="home-auth-feedback" class="drawer-feedback hidden" role="status"></div>
+
+            <!-- Active Session Card (when signed in) -->
+            <div id="home-signedin-card" class="drawer-signedin-card hidden"></div>
+
+            <!-- Dedicated DEMO Link Section (bottom of Sign-In panel) -->
+            <div class="drawer-demo-box">
+              <span class="drawer-demo-eyebrow">INSTANT EXPLORATION</span>
+              <button type="button" class="drawer-demo-link" id="btn-home-demo-link" onclick="launchDemoWorkspace()">
+                <span>Launch Live Demo</span>
+                <span aria-hidden="true">&rarr;</span>
+              </button>
             </div>
           </div>
+        </aside>
+      </div>
 
-          <!-- Right: Staged Review Drawer (Rule: Accepted changes must be reviewed before submit) -->
-          <div class="copilot-staged-col">
-            <div class="card copilot-staged-card">
-              <div class="card-header">
-                <h3 class="card-title">Staged Corrections</h3>
-                <span class="id-badge" id="staged-count-badge">0 Staged</span>
-              </div>
-              <div class="staged-body">
-                <p class="staged-notice">Accepted suggestions are staged here for creator review. Modified content is <strong>never automatically published</strong>.</p>
-                <div class="staged-items-deck" id="staged-corrections-deck">
-                  <span class="subtle-placeholder">Accept suggestions from chat to stage here...</span>
+      <!-- Post-Sign-In Hub (loads on Homepage right after Sign In / Demo) -->
+      <div id="home-authenticated-hub" class="home-auth-hub hidden" aria-labelledby="hub-title">
+        <svg class="hub-arch-left" viewBox="0 0 220 260" aria-hidden="true">
+          <path d="M 0 210 A 180 180 0 0 0 180 30" fill="none" stroke="rgba(180, 165, 144, 0.25)" stroke-width="1"/>
+          <line x1="0" y1="150" x2="110" y2="150" stroke="rgba(180, 165, 144, 0.18)" stroke-width="1"/>
+        </svg>
+        <svg class="hub-arch-right" viewBox="0 0 260 260" aria-hidden="true">
+          <path d="M 80 260 A 180 180 0 0 1 260 80" fill="none" stroke="rgba(180, 165, 144, 0.25)" stroke-width="1"/>
+          <line x1="160" y1="60" x2="160" y2="260" stroke="rgba(180, 165, 144, 0.18)" stroke-width="1"/>
+          <line x1="60" y1="160" x2="260" y2="160" stroke="rgba(180, 165, 144, 0.18)" stroke-width="1"/>
+        </svg>
+
+        <header class="hub-header">
+          <div class="hub-brand">
+            <div class="home-monogram home-monogram-dark" aria-hidden="true">
+              <svg viewBox="0 0 36 42" fill="none">
+                <path d="M4 4h15c7 0 11 3.8 11 9.2 0 4-2.3 6.8-6 8 4.4 1.2 7.2 4.3 7.2 8.8 0 6-4.8 9.8-12 9.8H4V4Z" stroke="#b38d58" stroke-width="2.4"/>
+                <path d="M10 10.5h8.2c3.5 0 5.6 1.7 5.6 4.4 0 2.8-2.1 4.4-5.6 4.4H10v-8.8Zm0 13.8h8.8c3.9 0 6.2 1.8 6.2 4.8 0 3-2.3 4.8-6.2 4.8H10v-9.6Z" fill="#b38d58" fill-opacity="0.22"/>
+                <path d="M4 21.5h15.5" stroke="#b38d58" stroke-width="2"/>
+              </svg>
+            </div>
+            <span class="hub-brand-name">Sanket AI</span>
+          </div>
+
+          <div class="hub-header-right">
+            <button type="button" class="hub-bell-btn" onclick="showToast('All brand governance systems operational.', 'info')" aria-label="Notifications">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M10 3a4.5 4.5 0 0 0-4.5 4.5c0 2.6-.9 4-1.7 4.9h12.4c-.8-.9-1.7-2.3-1.7-4.9A4.5 4.5 0 0 0 10 3Z"/>
+                <path d="M8.3 15.2a1.8 1.8 0 0 0 3.4 0"/>
+              </svg>
+            </button>
+            <span class="hub-vsep" aria-hidden="true"></span>
+            <div class="hub-avatar-wrap">
+              <button
+                type="button"
+                id="hub-avatar-btn"
+                class="hub-avatar-btn"
+                onclick="toggleHubAccountMenu()"
+                aria-expanded="false"
+                aria-controls="hub-account-menu"
+                title="Workspace account"
+              >
+                <span id="hub-avatar-initials">AC</span>
+              </button>
+              <div id="hub-account-menu" class="hub-account-menu hidden" role="menu">
+                <div class="hub-account-meta">
+                  <strong id="hub-account-email">demo@sanket.ai</strong>
+                  <span id="hub-account-org">apex-cloud</span>
                 </div>
-                <button type="button" class="btn btn-primary" id="btn-submit-staged-review" onclick="submitStagedReviewToApprovals()" disabled>
-                  <span>Submit Revised Content for Approval</span>
+                <button type="button" class="hub-menu-item" onclick="logoutSession()">Sign Out</button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div class="hub-main">
+          <div class="hub-intro">
+            <span class="hub-eyebrow">GET STARTED</span>
+            <h1 id="hub-title" class="hub-title">What would you like to do today?</h1>
+          </div>
+
+          <div class="hub-cards-grid">
+            <!-- Left Light Card: Set Up Your Company -->
+            <article class="hub-card hub-card-light">
+              <div class="hub-card-photo hub-card-photo-light" aria-hidden="true"></div>
+              <div class="hub-card-body">
+                <div class="hub-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M5 27V7l10-3v23M15 11l12 3v13M3 27h26"/>
+                    <path d="M8.5 10.5h3M8.5 15h3M8.5 19.5h3M19 16.5h3.5M19 20.5h3.5"/>
+                  </svg>
+                </div>
+                <h2 class="hub-card-title">Set Up Your Company</h2>
+                <p class="hub-card-desc">
+                  Register your company and define your brand&rsquo;s core identity, guidelines, and vibe standards.
+                </p>
+                <button type="button" class="hub-card-cta hub-cta-dark" id="btn-hub-company" onclick="navigateTo('company')">
+                  <span>Register Company</span>
+                  <span aria-hidden="true">&rarr;</span>
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
+            </article>
 
-      <!-- ===================================================================== -->
-      <!-- 9. REVIEW & APPROVALS VIEW (/approvals) -->
-      <!-- ===================================================================== -->
-      <section id="view-approvals" class="app-view-pane hidden">
-        <div class="view-header-row">
-          <div>
-            <div class="breadcrumb-trail">Governance Platform &bull; Human Sign-Off Engine</div>
-            <h1 class="view-page-title">Review &amp; Approvals Workflow</h1>
-            <p class="view-page-subtitle">Role-based approval queues for Creators, Managers, Authorised Reviewers, and Administrators with audit logs.</p>
-          </div>
-        </div>
-
-        <!-- Section 9 Queue Tabs -->
-        <div class="approvals-tabs-bar">
-          <button type="button" class="approvals-tab active" onclick="switchApprovalsTab('MY_PENDING', this)">My Pending Reviews</button>
-          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('TEAM_SUBMISSIONS', this)">Team Submissions</button>
-          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('ASSIGNED_TO_ME', this)">Assigned to Me</button>
-          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('REVISION_REQUESTS', this)">Revision Requests</button>
-          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('APPROVED', this)">Approved Content</button>
-          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('REJECTED', this)">Rejected Content</button>
-          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('ESCALATED', this)">Escalated Content (High-Risk)</button>
-          <button type="button" class="approvals-tab" onclick="switchApprovalsTab('HISTORY', this)">Approval History</button>
-        </div>
-
-        <!-- Approvals Queue Table Card -->
-        <div class="card approvals-queue-card">
-          <div class="table-responsive">
-            <table class="app-table">
-              <thead>
-                <tr>
-                  <th>Submission ID</th>
-                  <th>Title &amp; Creative Asset</th>
-                  <th>Submitter</th>
-                  <th>Department</th>
-                  <th>Version</th>
-                  <th>Status</th>
-                  <th>Escalation Risk</th>
-                  <th>Submitted Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="approvals-tbody">
-                <!-- Loaded dynamically from backend workflow_service -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 10. BRAND INSIGHTS VIEW (/brand-insights) -->
-      <!-- ===================================================================== -->
-      <section id="view-brand-insights" class="app-view-pane hidden">
-        <div class="view-header-row">
-          <div>
-            <div class="breadcrumb-trail">Governance Platform &bull; Trend Analytics</div>
-            <h1 class="view-page-title">Brand Insights &amp; Recurring Issues</h1>
-            <p class="view-page-subtitle">Analytics generated from real review data identifying recurring guideline violations and ambiguous brand rules.</p>
-          </div>
-          <div class="view-header-actions">
-            <button type="button" class="btn btn-sm btn-secondary" onclick="loadInsightsData()">
-              <span>Refresh Analytics</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 8 Structured Insights Sections -->
-        <div class="insights-dashboard-grid">
-          <!-- 10.1: Overall Brand Compliance -->
-          <div class="card insight-card">
-            <div class="card-header">
-              <h3 class="card-title">Overall Brand Compliance</h3>
-            </div>
-            <div class="insight-score-large" id="insights-compliance-num">94.2%</div>
-            <p class="insight-subtext">Aggregated pass rate across all evaluated marketing submissions in current quarter.</p>
-          </div>
-
-          <!-- 10.2: Recurring Violations -->
-          <div class="card insight-card">
-            <div class="card-header">
-              <h3 class="card-title">Top Recurring Violations</h3>
-            </div>
-            <div class="recurring-violations-list" id="insights-recurring-violations">
-              <div class="recur-item">
-                <span>Unsupported Promotional Superlatives</span>
-                <strong>42% of issues</strong>
-              </div>
-              <div class="recur-item">
-                <span>Color Palette Drift (&Delta;E &gt; 15.0)</span>
-                <strong>28% of issues</strong>
-              </div>
-              <div class="recur-item">
-                <span>Disallowed Terminology ("cheap")</span>
-                <strong>19% of issues</strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- 10.3: Tone & Messaging Issues -->
-          <div class="card insight-card">
-            <div class="card-header">
-              <h3 class="card-title">Tone &amp; Messaging Issues</h3>
-            </div>
-            <p>Most common tone mismatch: <strong>Overly aggressive hype language</strong> departing from crisp technical voice.</p>
-          </div>
-
-          <!-- 10.4: Visual Consistency Issues -->
-          <div class="card insight-card">
-            <div class="card-header">
-              <h3 class="card-title">Visual Consistency Issues</h3>
-            </div>
-            <p>Logo margin violations detected in <strong>14%</strong> of social banner submissions (< 24px clear margin).</p>
-          </div>
-
-          <!-- 10.5: Unsupported Claims -->
-          <div class="card insight-card guideline-span-2">
-            <div class="card-header">
-              <h3 class="card-title">Repeated Unsupported Promotional Claims</h3>
-            </div>
-            <div class="table-responsive">
-              <table class="app-table">
-                <thead>
-                  <tr>
-                    <th>Claim Assertion</th>
-                    <th>Claim Type</th>
-                    <th>Frequency</th>
-                    <th>Missing Required Evidence</th>
-                    <th>Recommended Guideline Update</th>
-                  </tr>
-                </thead>
-                <tbody id="insights-claims-tbody">
-                  <tr>
-                    <td>"100% bug-free cloud architecture"</td>
-                    <td><span class="status-pill status-danger">Guarantee</span></td>
-                    <td>6 times</td>
-                    <td>Legal underwriting agreement</td>
-                    <td>Explicitly prohibit absolute bug-free guarantees</td>
-                  </tr>
-                  <tr>
-                    <td>"#1 in cloud uptime"</td>
-                    <td><span class="status-pill status-danger">Superlative</span></td>
-                    <td>4 times</td>
-                    <td>Gartner / IDC market share audit</td>
-                    <td>Require official benchmark citation or remove claim</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- 10.6: Department-wise Analysis -->
-          <div class="card insight-card">
-            <div class="card-header">
-              <h3 class="card-title">Department-wise Compliance</h3>
-            </div>
-            <div class="dept-list" id="insights-dept-list">
-              <div class="dept-row"><span>Product Marketing</span><strong style="color:#10B981;">96% Pass</strong></div>
-              <div class="dept-row"><span>Growth &amp; Acquisition</span><strong style="color:#F59E0B;">78% Pass</strong></div>
-              <div class="dept-row"><span>PR &amp; Communications</span><strong style="color:#10B981;">94% Pass</strong></div>
-              <div class="dept-row"><span>Social Media Agency</span><strong style="color:#EF4444;">71% Pass</strong></div>
-            </div>
-          </div>
-
-          <!-- 10.7: Frequent Terminology Mistakes -->
-          <div class="card insight-card">
-            <div class="card-header">
-              <h3 class="card-title">Frequent Terminology Mistakes</h3>
-            </div>
-            <div class="terms-mismatch-list" id="insights-terms-list">
-              <div class="term-pair"><span class="bad-term">&#10005; cheap</span> &rarr; <span class="good-term">&#10003; cost-efficient</span></div>
-              <div class="term-pair"><span class="bad-term">&#10005; unhackable</span> &rarr; <span class="good-term">&#10003; zero-trust architecture</span></div>
-              <div class="term-pair"><span class="bad-term">&#10005; instant magic</span> &rarr; <span class="good-term">&#10003; automated low-latency</span></div>
-            </div>
-          </div>
-
-          <!-- 10.8: Guideline Clarity Recommendations -->
-          <div class="card insight-card guideline-span-2">
-            <div class="card-header">
-              <h3 class="card-title">Guideline Clarity Recommendations</h3>
-            </div>
-            <div class="recommendations-deck" id="insights-guidelines-recommendations">
-              <div class="rec-card">
-                <strong>Clarify Superlative Substantiation Rule:</strong>
-                <p>Creators frequently submit "#1" assertions assuming internal uptime metrics qualify. Recommend updating Brand Knowledge Base to specify third-party accredited audit requirement.</p>
-              </div>
-              <div class="rec-card">
-                <strong>Provide Accent Color Hierarchy Examples:</strong>
-                <p>Social media teams frequently invert secondary and accent colors. Recommend adding 2 reference designs to Official Brand Assets.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================================================================== -->
-      <!-- 11. SETTINGS VIEW (/settings) -->
-      <!-- ===================================================================== -->
-      <section id="view-settings" class="app-view-pane hidden">
-        <div class="view-header-row">
-          <div>
-            <div class="breadcrumb-trail">Governance Platform &bull; Administration &amp; Access</div>
-            <h1 class="view-page-title">Enterprise Settings &amp; Security</h1>
-            <p class="view-page-subtitle">Organisation profile, RBAC permissions matrix, AI gateways, and tenant data separation controls.</p>
-          </div>
-        </div>
-
-        <div class="settings-tabs-layout">
-          <!-- Left Settings Sub-Navigation -->
-          <div class="settings-nav-col">
-            <button type="button" class="settings-tab-btn active" onclick="switchSettingsSection('org-profile', this)">Organisation Profile</button>
-            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('user-management', this)">User Management</button>
-            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('roles-permissions', this)">Roles &amp; Permissions (RBAC)</button>
-            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('team-management', this)">Team Management</button>
-            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('ai-config', this)">AI Configuration</button>
-            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('connected-services', this)">Connected Services</button>
-            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('security-privacy', this)">Security &amp; Privacy</button>
-            <button type="button" class="settings-tab-btn" onclick="switchSettingsSection('data-management', this)">Data Management</button>
-          </div>
-
-          <!-- Right Settings Content Panes -->
-          <div class="settings-content-col">
-            <!-- 11.1 Organisation Profile -->
-            <div id="settings-pane-org-profile" class="settings-pane active">
-              <div class="card settings-card">
-                <div class="card-header"><h3 class="card-title">Organisation Profile</h3></div>
-                <div class="form-group">
-                  <label>Organisation Legal Name:</label>
-                  <input type="text" class="form-input" value="Apex Global Technologies, Inc." readonly>
+            <!-- Right Dark Card: Check a Brand's Vibes -->
+            <article class="hub-card hub-card-dark">
+              <div class="hub-card-photo hub-card-photo-dark" aria-hidden="true"></div>
+              <div class="hub-card-body">
+                <div class="hub-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M13 5l1.9 5.6L20.5 12.5l-5.6 1.9L13 20l-1.9-5.6L5.5 12.5l5.6-1.9L13 5Z"/>
+                    <path d="M23 18l1.1 3.2L27.3 22.3l-3.2 1.1L23 26.6l-1.1-3.2-3.2-1.1 3.2-1.1L23 18Z"/>
+                    <path d="M23.5 6.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z"/>
+                  </svg>
                 </div>
-                <div class="form-group">
-                  <label>Tenant ID (Data Separation Anchor):</label>
-                  <input type="text" class="form-input" value="org-apex-cloud-9a2f" readonly>
-                </div>
-                <div class="form-group">
-                  <label>Primary Governance Domain:</label>
-                  <input type="text" class="form-input" value="apexcloud.io" readonly>
-                </div>
+                <h2 class="hub-card-title">Check a Brand&rsquo;s Vibes</h2>
+                <p class="hub-card-desc">
+                  Analyse any brand&rsquo;s identity, consistency and overall vibe across web and social in seconds.
+                </p>
+                <button type="button" class="hub-card-cta hub-cta-cream" id="btn-hub-check" onclick="navigateTo('check')">
+                  <span>Run Vibes Check</span>
+                  <span aria-hidden="true">&rarr;</span>
+                </button>
               </div>
-            </div>
-
-            <!-- 11.3 Roles & Permissions (RBAC Matrix) -->
-            <div id="settings-pane-roles-permissions" class="settings-pane hidden">
-              <div class="card settings-card">
-                <div class="card-header"><h3 class="card-title">Role-Based Access Control Matrix (Section 12)</h3></div>
-                <div class="table-responsive">
-                  <table class="app-table">
-                    <thead>
-                      <tr>
-                        <th>Capability</th>
-                        <th>Creator</th>
-                        <th>Manager</th>
-                        <th>Authorised Reviewer</th>
-                        <th>Administrator</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr><td>View Dashboard &amp; Identity</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
-                      <tr><td>Submit Content for Review</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
-                      <tr><td>Pre-Flight Scanner &amp; Co-Pilot</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
-                      <tr><td>Manage Team Submissions</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
-                      <tr><td>Approve Standard Content</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
-                      <tr><td>Approve Escalated High-Risk Claims</td><td>&mdash;</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td></tr>
-                      <tr><td>Brand DNA &amp; Knowledge Base Admin</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&#10003;</td></tr>
-                      <tr><td>Security &amp; Tenant Settings</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&#10003;</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- 11.5 AI Configuration -->
-            <div id="settings-pane-ai-config" class="settings-pane hidden">
-              <div class="card settings-card">
-                <div class="card-header"><h3 class="card-title">AI Gateways &amp; Resiliency Configuration</h3></div>
-                <div class="gateway-status-row">
-                  <div>
-                    <strong>Google Gemini API (gemini-3.1-flash-lite)</strong>
-                    <span class="subtle-label">Primary multimodal vision, brand DNA synthesis, &amp; audio tone reasoning</span>
-                  </div>
-                  <span class="status-pill status-active">Operational</span>
-                </div>
-                <div class="gateway-status-row" style="margin-top: 1rem;">
-                  <div>
-                    <strong>Groq Cloud API (llama-3.3-70b-versatile &amp; llama-3.2-11b-vision-preview)</strong>
-                    <span class="subtle-label">Ultra-low latency text reasoning, Brand Co-Pilot conversation, &amp; cloud vision</span>
-                  </div>
-                  <span class="status-pill status-active">Connected</span>
-                </div>
-
-                <!-- Interactive Groq Live Health Diagnostic -->
-                <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.08);">
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 12px; color: #cbd5e1; font-weight: 600;">Groq Cloud Health Check</span>
-                    <button type="button" class="btn btn-secondary" id="btn-test-groq" onclick="testGroqConnection()" style="font-size: 11px; padding: 6px 12px;">
-                      ⚡ Test Live Groq Connectivity
-                    </button>
-                  </div>
-                  <div id="groq-test-results" class="hidden" style="margin-top: 0.75rem;"></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 11.7 Security & Privacy -->
-            <div id="settings-pane-security-privacy" class="settings-pane hidden">
-              <div class="card settings-card">
-                <div class="card-header"><h3 class="card-title">Security &amp; Tenant Isolation</h3></div>
-                <ul class="styled-guideline-list">
-                  <li><strong>Magic Bytes Enforcement:</strong> Strict MIME sniffing enabled to block disguised executables.</li>
-                  <li><strong>Multi-tenant Isolation:</strong> Separate tenant storage directories with traversal protection.</li>
-                  <li><strong>Supabase Row Level Security:</strong> RLS enabled on brand_knowledge_items and audit tables.</li>
-                  <li><strong>Error Trace Shielding:</strong> Internal stack traces and server paths are suppressed from client responses.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- MODALS & OVERLAYS -->
-  <!-- ========================================================================= -->
-
-  <!-- Modal: Role Switcher (Persona Switcher) -->
-  <div id="modal-role-select" class="app-modal hidden">
-    <div class="modal-backdrop" onclick="toggleRoleModal()"></div>
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title">Switch Enterprise Role Persona</h3>
-        <button type="button" class="modal-close-btn" onclick="toggleRoleModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p class="modal-desc">Test the platform through different organisational clearance levels:</p>
-        <div class="role-selector-options">
-          <div class="role-option" onclick="switchUserRole('Creator')">
-            <div class="role-title"><strong>Creator</strong><span class="status-pill">Standard User</span></div>
-            <p>Upload content, run pre-flight scans, chat with Brand Co-Pilot, view own submissions.</p>
-          </div>
-          <div class="role-option" onclick="switchUserRole('Manager')">
-            <div class="role-title"><strong>Manager</strong><span class="status-pill">Team Approver</span></div>
-            <p>Manage team submissions, request revisions, review standard content, view Brand Insights.</p>
-          </div>
-          <div class="role-option" onclick="switchUserRole('Authorised Reviewer')">
-            <div class="role-title"><strong>Authorised Reviewer</strong><span class="status-pill status-warning">Compliance Authority</span></div>
-            <p>Full approval queue, escalate and approve high-risk promotional claims, legal audit authority.</p>
-          </div>
-          <div class="role-option active" onclick="switchUserRole('Administrator')">
-            <div class="role-title"><strong>Administrator</strong><span class="status-pill status-active">Full Tenant Control</span></div>
-            <p>Brand DNA onboarding, Knowledge Base management, user management, audit logs, tenant settings.</p>
+            </article>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- Modal: Add Knowledge Item -->
-  <div id="modal-add-knowledge" class="app-modal hidden">
-    <div class="modal-backdrop" onclick="closeAddKnowledgeModal()"></div>
-    <div class="modal-card modal-lg">
-      <div class="modal-header">
-        <h3 class="modal-title">Add Approved Knowledge Base Item</h3>
-        <button type="button" class="modal-close-btn" onclick="closeAddKnowledgeModal()">&times;</button>
-      </div>
-      <form id="form-add-knowledge" onsubmit="submitNewKnowledgeItem(event)">
-        <div class="modal-body">
-          <div class="form-row-grid">
-            <div class="form-group">
-              <label>Category:</label>
-              <select id="new-kb-category" class="form-select" required>
-                <option value="COMPANY_FACT">Company Information</option>
-                <option value="GUIDELINE">Brand Guidelines</option>
-                <option value="APPROVED_FACT">Approved Facts</option>
-                <option value="PRODUCT_SERVICE">Products &amp; Services</option>
-                <option value="PROMOTIONAL_CLAIM">Approved Claims &amp; Evidence</option>
-                <option value="TERMINOLOGY">Terminology</option>
-                <option value="OFFICIAL_ASSET">Official Brand Assets</option>
-                <option value="REFERENCE_DESIGN">Reference Designs</option>
-                <option value="RESTRICTED_MESSAGING">Restricted Messaging</option>
-                <option value="POLICY_EXCEPTION">Policy Exceptions</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Item Title:</label>
-              <input type="text" id="new-kb-title" class="form-input" placeholder="e.g. ISO 27001 Certification Fact" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Approved Content / Fact Statement:</label>
-            <textarea id="new-kb-content" rows="3" class="form-textarea" placeholder="Enter verified company fact or approved claim..." required></textarea>
-          </div>
-
-          <div class="form-row-grid">
-            <div class="form-group">
-              <label>Supporting Evidence Source (Citation):</label>
-              <input type="text" id="new-kb-evidence" class="form-input" placeholder="e.g. BSI Audit Certificate 2026-BSI-9921">
-            </div>
-            <div class="form-group">
-              <label>Evidence Reference URL / Doc:</label>
-              <input type="text" id="new-kb-ref" class="form-input" placeholder="https://apexcloud.io/compliance/iso27001">
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeAddKnowledgeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save to Knowledge Base</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal: Generate Brand DNA -->
-  <div id="modal-generate-dna" class="app-modal hidden">
-    <div class="modal-backdrop" onclick="closeDnaGeneratorModal()"></div>
-    <div class="modal-card modal-lg">
-      <div class="modal-header">
-        <h3 class="modal-title">Generate Brand DNA (10 Input Dimensions)</h3>
-        <button type="button" class="modal-close-btn" onclick="closeDnaGeneratorModal()">&times;</button>
-      </div>
-      <form id="form-generate-dna" onsubmit="submitGenerateDNA(event)">
-        <div class="modal-body">
-          <div class="form-row-grid">
-            <div class="form-group">
-              <label>1. Company Name:</label>
-              <input type="text" id="dna-company-name" class="form-input" value="Apex Cloud Systems" required>
-            </div>
-            <div class="form-group">
-              <label>2. Industry / Sector:</label>
-              <input type="text" id="dna-industry" class="form-input" value="Enterprise Cloud Infrastructure & Cybersecurity" required>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>3. Business Description:</label>
-            <textarea id="dna-business-desc" rows="2" class="form-textarea" required>We build high-availability zero-trust cloud data pipelines and automated container security meshes.</textarea>
-          </div>
-          <div class="form-row-grid">
-            <div class="form-group">
-              <label>4. Main Products &amp; Services:</label>
-              <input type="text" id="dna-products" class="form-input" value="Apex Shield Kubernetes Mesh, Apex Pipeline Engine" required>
-            </div>
-            <div class="form-group">
-              <label>5. Target Audience:</label>
-              <input type="text" id="dna-audience" class="form-input" value="DevOps Leads, Cloud Architects, Enterprise CISOs" required>
-            </div>
-          </div>
-          <div class="form-row-grid">
-            <div class="form-group">
-              <label>6. Core Company Values:</label>
-              <input type="text" id="dna-values" class="form-input" value="Deterministic security, Zero downtime, Radical transparency" required>
-            </div>
-            <div class="form-group">
-              <label>7. Brand Positioning:</label>
-              <input type="text" id="dna-positioning" class="form-input" value="The zero-trust infrastructure engine for mission-critical enterprise workloads." required>
-            </div>
-          </div>
-          <div class="form-row-grid">
-            <div class="form-group">
-              <label>8. Desired Customer Perception:</label>
-              <input type="text" id="dna-perception" class="form-input" value="Rock-solid, uncompromising, highly technical, reliable" required>
-            </div>
-            <div class="form-group">
-              <label>9. Communication Personality:</label>
-              <input type="text" id="dna-personality" class="form-input" value="Authoritative, crisp, empowering, direct" required>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>10. Reference Benchmark Brands:</label>
-            <input type="text" id="dna-reference-brands" class="form-input" value="Stripe, Cloudflare, HashiCorp">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeDnaGeneratorModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btn-run-generate-dna">Synthesize 13 Brand DNA Sections</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal: Approve Brand DNA -->
-  <div id="modal-approve-dna" class="app-modal hidden">
-    <div class="modal-backdrop" onclick="closeApproveDnaModal()"></div>
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title">Approve &amp; Activate Brand DNA</h3>
-        <button type="button" class="modal-close-btn" onclick="closeApproveDnaModal()">&times;</button>
-      </div>
-      <form id="form-approve-dna" onsubmit="submitApproveDNA(event)">
-        <div class="modal-body">
-          <p>Official approval transitions Brand DNA from DRAFT to <strong>ACTIVE</strong> and synchronizes with Supabase governance records.</p>
-          <div class="form-group">
-            <label>Approver Name &amp; Role:</label>
-            <input type="text" id="approve-dna-by" class="form-input" value="Elena Rostova (Chief Brand Officer)" required>
-          </div>
-          <div class="form-group">
-            <label>Approval Notes:</label>
-            <textarea id="approve-dna-notes" rows="2" class="form-textarea">Approved official corporate brand guidelines standard for global marketing and partner compliance.</textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeApproveDnaModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Confirm &amp; Activate Standard</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Notifications Modal -->
-  <div id="modal-notifications" class="app-modal hidden">
-    <div class="modal-backdrop" onclick="toggleNotificationsModal()"></div>
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title">Governance Notifications</h3>
-        <button type="button" class="modal-close-btn" onclick="toggleNotificationsModal()">&times;</button>
-      </div>
-      <div class="modal-body" id="notifications-modal-body">
-        <div class="notification-item">
-          <strong>🚨 Claim Escalated for Legal Sign-Off</strong>
-          <p>Elena submitted "#1 fastest cloud globally" requiring Authorised Reviewer sign-off.</p>
-          <span class="subtle-time">10 minutes ago</span>
-        </div>
-        <div class="notification-item">
-          <strong>✅ Content Review Approved</strong>
-          <p>Marcus Vance approved "Spring Ad Campaign v1" after SLA citation verified.</p>
-          <span class="subtle-time">1 hour ago</span>
-        </div>
-        <div class="notification-item">
-          <strong>📖 Knowledge Base Item Updated (v2)</strong>
-          <p>Compliance Auditor updated "ISO 27001 Certification Fact" with SOC 2 confirmation.</p>
-          <span class="subtle-time">3 hours ago</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- ======================================================================
-       AUTHENTICATION MODAL (Login / Registration Transitions)
-       ====================================================================== -->
-  <div id="modal-auth" class="app-modal hidden">
-    <div class="modal-backdrop" onclick="closeAuthModal()"></div>
-    <div class="modal-card modal-sm" style="max-width: 420px;">
-      <div class="modal-header">
-        <h3 class="modal-title" id="auth-modal-title">Enterprise Authentication</h3>
-        <button type="button" class="modal-close-btn" onclick="closeAuthModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <!-- Auth Tabs (Sign In vs Register) -->
-        <div class="modality-switch-pill" style="margin-bottom: 1.25rem;">
-          <button type="button" class="modality-btn active" id="auth-tab-signin" onclick="switchAuthTab('signin')">Sign In</button>
-          <button type="button" class="modality-btn" id="auth-tab-register" onclick="switchAuthTab('register')">Register</button>
-        </div>
-
-        <!-- Judge & Evaluator Demo Access Banner -->
-        <div class="judge-demo-banner" style="background: rgba(37, 99, 235, 0.12); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 12px; margin-bottom: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-size: 11px; font-weight: 700; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.5px;">⚖️ Judge &amp; Evaluator Demo Access</span>
-            <span style="font-size: 10px; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Verified Account</span>
-          </div>
-          <p style="font-size: 11px; color: #cbd5e1; margin: 0 0 8px 0; line-height: 1.4;">
-            Pre-seeded with full Administrator permissions, sample Brand DNA, certified Knowledge Base, and review history:
-          </p>
-          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-family: monospace; color: #94a3b8; background: rgba(15, 23, 42, 0.7); padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid rgba(255, 255, 255, 0.08);">
-            <span>demo@sanket.ai / DemoJudge2026!</span>
-            <button type="button" class="btn-text-sm" onclick="fillDemoCredentials()" style="color: #60a5fa; font-weight: 700; text-decoration: underline; background: none; border: none; cursor: pointer;">Fill</button>
-          </div>
-          <button type="button" class="btn-primary" onclick="loginAsDemoJudge()" style="width: 100%; font-size: 12px; padding: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; background: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer;">
-            <span>🚀 1-Click Instant Judge Login</span>
-          </button>
-        </div>
-
-        <form id="auth-form" onsubmit="handleAuthSubmit(event)">
-          <div class="form-group auth-input-group">
-            <label for="auth-email">Corporate Email</label>
-            <input type="email" id="auth-email" class="form-control" placeholder="alex.vance@apexcloud.com" required>
-          </div>
-
-          <div class="form-group auth-input-group">
-            <label for="auth-password">Password</label>
-            <div style="position: relative;">
-              <input type="password" id="auth-password" class="form-control" placeholder="••••••••••••" oninput="checkPasswordStrength(this.value)" required style="padding-right: 2.5rem;">
-              <button type="button" onclick="togglePasswordVisibility('auth-password', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px;" aria-label="Toggle password visibility">
-                👁️
-              </button>
-            </div>
-            <!-- Animated Password Strength Bar -->
-            <div id="auth-strength-container" class="hidden" style="margin-top: 6px;">
-              <div class="password-strength-bar weak" id="auth-strength-bar"></div>
-              <span id="auth-strength-label" style="font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 4px; display: block;">Weak password</span>
-            </div>
-          </div>
-
-          <div id="auth-error-message" class="hidden" style="color: #ef4444; font-size: 12px; margin-bottom: 1rem; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 6px;"></div>
-          <div id="auth-success-message" class="hidden" style="color: #10b981; font-size: 12px; margin-bottom: 1rem; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 6px;"></div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-            <label style="font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="checkbox" id="auth-remember-me" checked> Remember this device
-            </label>
-            <button type="submit" class="btn-primary" id="btn-auth-submit" style="min-width: 120px;">
-              <span id="auth-btn-text">Authenticate</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================================
-       ONBOARDING WIZARD MODAL (Multi-Step Governance Setup)
-       ====================================================================== -->
-  <div id="modal-onboarding" class="app-modal hidden">
-    <div class="modal-backdrop" onclick="closeOnboardingModal()"></div>
-    <div class="modal-card modal-lg" style="max-width: 640px;">
-      <div class="modal-header">
+    <!-- =================================================================== -->
+    <!-- PAGE 2: COMPANY PUTS THEIR VIBES                                    -->
+    <!-- =================================================================== -->
+    <section id="page-company" class="page-view hidden" aria-labelledby="company-title">
+      <div class="page-head">
         <div>
-          <h3 class="modal-title">Interactive Governance Onboarding</h3>
-          <p style="font-size: 11px; color: #94a3b8; margin: 0;">Step-by-step Brand DNA synthesis & verification setup</p>
+          <span class="eyebrow-chip">PAGE 02 &middot; COMPANY VIBE STUDIO</span>
+          <h1 id="company-title" class="page-title">Put Your Company&rsquo;s Vibes</h1>
+          <p class="page-desc">Configure your brand&rsquo;s visual and verbal identity, generate complete AI vibes with Gemini, and lock them for developers.</p>
         </div>
-        <button type="button" class="modal-close-btn" onclick="closeOnboardingModal()">&times;</button>
-      </div>
-
-      <div class="modal-body">
-        <!-- Progress Steps Bar -->
-        <div style="margin-bottom: 1.5rem;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 11px; font-weight: 600; color: #94a3b8;">
-            <span id="onboard-step-lbl-1" style="color: #3b82f6;">1. Welcome</span>
-            <span id="onboard-step-lbl-2">2. Company Profile</span>
-            <span id="onboard-step-lbl-3">3. DNA Synthesis</span>
-            <span id="onboard-step-lbl-4">4. Activation</span>
-          </div>
-          <div class="onboarding-progress-track">
-            <div class="onboarding-progress-fill" id="onboard-progress-fill" style="width: 25%;"></div>
-          </div>
-        </div>
-
-        <!-- Step 1: Welcome -->
-        <div class="onboarding-step-pane active" id="onboard-step-1">
-          <div style="text-align: center; padding: 1.5rem 0;">
-            <div style="font-size: 42px; margin-bottom: 0.75rem; animation: gentleFloat 2.5s infinite ease-in-out;">🛡️</div>
-            <h4 style="font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 0.5rem;">Welcome to Sanket AI Platform</h4>
-            <p style="font-size: 13px; color: #94a3b8; max-width: 460px; margin: 0 auto; line-height: 1.6;">
-              Establish multi-company AI brand governance, enforce WCAG contrast standards, verify factual claims, and streamline compliance across teams.
-            </p>
-          </div>
-          <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
-            <button type="button" class="btn-primary" onclick="nextOnboardingStep(2)">Get Started →</button>
-          </div>
-        </div>
-
-        <!-- Step 2: Company Profile -->
-        <div class="onboarding-step-pane" id="onboard-step-2">
-          <h4 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 0.5rem;">Configure Organisation Profile</h4>
-          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 1.25rem;">Set up tenant branding identity for multi-company isolation.</p>
-          <div class="form-group">
-            <label for="onboard-org-name">Organisation Name</label>
-            <input type="text" id="onboard-org-name" class="form-control" value="Apex Cloud Solutions">
-          </div>
-          <div class="form-group">
-            <label for="onboard-industry">Primary Industry</label>
-            <select id="onboard-industry" class="form-control">
-              <option value="cloud_infra">Enterprise Cloud Infrastructure & Security</option>
-              <option value="fintech">Fintech & Banking</option>
-              <option value="ecommerce">Global Retail & Athletics</option>
-              <option value="healthcare">Healthcare & Life Sciences</option>
-            </select>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
-            <button type="button" class="btn-secondary" onclick="nextOnboardingStep(1)">← Back</button>
-            <button type="button" class="btn-primary" onclick="startDnaSynthesisStep()">Synthesize Brand DNA →</button>
-          </div>
-        </div>
-
-        <!-- Step 3: DNA Synthesis Loading Sequence -->
-        <div class="onboarding-step-pane" id="onboard-step-3">
-          <div style="text-align: center; padding: 1.5rem 0;">
-            <div style="font-size: 38px; margin-bottom: 0.75rem;">🧬</div>
-            <h4 style="font-size: 16px; font-weight: 700; color: #fff;" id="dna-synthesis-status-text">Synthesizing Core Brand DNA...</h4>
-            <p style="font-size: 12px; color: #94a3b8; margin-top: 0.25rem;" id="dna-synthesis-subtext">Evaluating colorimetric centroids, typography, and voice guidelines</p>
-
-            <div class="dna-synthesis-loader">
-              <div class="dna-synthesis-bar" id="dna-synthesis-progress-bar" style="width: 15%;"></div>
-            </div>
-
-            <div style="display: flex; justify-content: center; gap: 1rem; font-size: 11px; color: #64748b; font-family: monospace;" id="dna-synthesis-steps-indicators">
-              <span id="dna-step-1" style="color: #3b82f6;">● Palette Centroids</span>
-              <span id="dna-step-2">○ Voice & Tone</span>
-              <span id="dna-step-3">○ WCAG Contrast</span>
-              <span id="dna-step-4">○ Rules Engine</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 4: Activation & Confirmation -->
-        <div class="onboarding-step-pane" id="onboard-step-4">
-          <div style="text-align: center; padding: 1.5rem 0;">
-            <div style="font-size: 42px; margin-bottom: 0.75rem; animation: checkmarkPop 500ms cubic-bezier(0.34, 1.3, 0.64, 1) forwards;">✅</div>
-            <h4 style="font-size: 18px; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">Brand DNA Certified & Active!</h4>
-            <p style="font-size: 13px; color: #94a3b8; max-width: 440px; margin: 0 auto; line-height: 1.6;">
-              Apex Cloud Solutions Brand DNA is now active. All content reviews, pre-flight scanner evaluations, and Co-Pilot suggestions will be evaluated against this specification.
-            </p>
-          </div>
-          <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
-            <button type="button" class="btn-primary" onclick="finishOnboarding()">Enter Governance Dashboard →</button>
-          </div>
+        <div class="page-head-controls">
+          <select id="company-brand-select" class="select-control" onchange="onSelectCompanyBrand(this.value)" aria-label="Choose existing brand profile">
+            <option value="__new__">+ New Company Vibe Profile</option>
+          </select>
+          <button type="button" class="btn btn-ghost" onclick="resetCompanyForm()">+ New</button>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Global Toast Notifications Container -->
-  <div id="toast-container" aria-live="polite"></div>
+      <div class="studio-grid">
+        <!-- Left: Vibe Configuration Form -->
+        <form id="company-vibe-form" class="panel form-panel" onsubmit="return false;">
+          <div class="form-section">
+            <div class="form-section-title">1. Company &amp; Story</div>
+            <div class="field-grid-2">
+              <div class="field">
+                <label for="c-brand-name">Company / Brand Name *</label>
+                <input id="c-brand-name" type="text" placeholder="e.g. Apex Cloud Systems" required oninput="renderLiveBlueprint()">
+              </div>
+              <div class="field">
+                <label for="c-industry">Industry</label>
+                <input id="c-industry" type="text" placeholder="e.g. Fintech, SaaS, Sportswear" value="Technology" oninput="renderLiveBlueprint()">
+              </div>
+            </div>
+            <div class="field">
+              <label for="c-audience">Target Audience</label>
+              <input id="c-audience" type="text" placeholder="e.g. Enterprise CTOs, Developers, Gen-Z Creators" oninput="renderLiveBlueprint()">
+            </div>
+            <div class="field-grid-2">
+              <div class="field">
+                <label for="c-products">Products &amp; Services</label>
+                <input id="c-products" type="text" placeholder="e.g. Cloud telemetry API, Edge SDK" oninput="renderLiveBlueprint()">
+              </div>
+              <div class="field">
+                <label for="c-mission">Tagline / Core Positioning</label>
+                <input id="c-mission" type="text" placeholder="e.g. Architectural precision for modern infrastructure" oninput="renderLiveBlueprint()">
+              </div>
+            </div>
+          </div>
 
-  <!-- Help & Documentation Modal -->
-  <div id="modal-help" class="app-modal hidden">
-    <div class="modal-backdrop" onclick="toggleHelpModal()"></div>
+          <div class="form-section">
+            <div class="form-section-title">2. Brand Vibes &amp; Voice</div>
+            <div class="field-grid-2">
+              <div class="field">
+                <label for="c-personality">Personality Vibe *</label>
+                <input id="c-personality" type="text" placeholder="Architectural, Minimalist, Authoritative" oninput="renderLiveBlueprint()">
+                <div class="preset-chips" data-target="c-personality">
+                  <button type="button" class="chip" onclick="appendChip('c-personality', 'Architectural')">Architectural</button>
+                  <button type="button" class="chip" onclick="appendChip('c-personality', 'Playful')">Playful</button>
+                  <button type="button" class="chip" onclick="appendChip('c-personality', 'Bold')">Bold</button>
+                  <button type="button" class="chip" onclick="appendChip('c-personality', 'Trustworthy')">Trustworthy</button>
+                </div>
+              </div>
+              <div class="field">
+                <label for="c-mood">Atmosphere / Mood *</label>
+                <input id="c-mood" type="text" placeholder="Calm, Futuristic, High-Trust" oninput="renderLiveBlueprint()">
+                <div class="preset-chips">
+                  <button type="button" class="chip" onclick="appendChip('c-mood', 'Futuristic')">Futuristic</button>
+                  <button type="button" class="chip" onclick="appendChip('c-mood', 'Calm')">Calm</button>
+                  <button type="button" class="chip" onclick="appendChip('c-mood', 'Energetic')">Energetic</button>
+                  <button type="button" class="chip" onclick="appendChip('c-mood', 'Editorial')">Editorial</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-grid-2">
+              <div class="field">
+                <label for="c-tone">Communication Tone *</label>
+                <input id="c-tone" type="text" placeholder="Direct, Technically Rigorous, Warm" oninput="renderLiveBlueprint()">
+              </div>
+              <div class="field">
+                <label for="c-visual-style">Visual Aesthetic *</label>
+                <input id="c-visual-style" type="text" placeholder="Swiss Grid, Dark Glass, High Contrast" oninput="renderLiveBlueprint()">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">3. Color Palette &amp; Brand Logo</div>
+            <div class="palette-builder">
+              <div class="palette-controls">
+                <input type="color" id="c-color-picker" value="#3B82F6" aria-label="Pick brand color">
+                <input type="text" id="c-color-hex" placeholder="#3B82F6" maxlength="7">
+                <button type="button" class="btn btn-secondary" onclick="addPaletteHex()">+ Add Color</button>
+              </div>
+              <div id="c-palette-chips" class="swatch-list"></div>
+            </div>
+
+            <div class="upload-tools-row">
+              <label class="file-btn">
+                <input type="file" id="c-extract-img-input" accept="image/*" hidden onchange="extractPaletteFromImage(this)">
+                <span>Extract Palette from Image</span>
+              </label>
+              <label class="file-btn">
+                <input type="file" id="c-logo-input" accept="image/*" hidden onchange="uploadCompanyLogo(this)">
+                <span>Upload Company Logo</span>
+              </label>
+              <span id="c-logo-status" class="muted mono-sm"></span>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">4. Guardrails &amp; Words to Avoid</div>
+            <div class="field">
+              <label for="c-disallowed">Disallowed Words / Off-Brand Claims</label>
+              <input id="c-disallowed" type="text" placeholder="cheap, guaranteed 100%, magic hack, risk-free" oninput="renderLiveBlueprint()">
+            </div>
+            <div class="field">
+              <label for="c-description">Extra Company Facts / Product Truths (for Gemini &amp; Groq Fact Checking)</label>
+              <textarea id="c-description" rows="2" placeholder="Approved specs, verified certifications, or messaging truths developers must stay faithful to." oninput="renderLiveBlueprint()"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-primary btn-lg" id="btn-generate-dna" onclick="generateBrandVibesWithAI()">
+              Generate Full Vibes (Gemini AI)
+            </button>
+            <button type="button" class="btn btn-emerald btn-lg" id="btn-save-brand" onclick="saveAndConfirmBrand()">
+              Save &amp; Lock Vibes
+            </button>
+          </div>
+          <div id="company-action-status" class="inline-feedback hidden"></div>
+        </form>
+
+        <!-- Right: Live Blueprint + AI DNA Output -->
+        <aside class="panel blueprint-panel">
+          <div class="blueprint-head">
+            <div>
+              <span class="mono-sm muted">LIVE VIBE BLUEPRINT</span>
+              <h2 id="bp-name">Your Brand Vibes</h2>
+            </div>
+            <span class="status-tag" id="bp-status">DRAFTING</span>
+          </div>
+
+          <div id="bp-logo-wrap" class="bp-logo-box hidden">
+            <img id="bp-logo-img" alt="Company logo preview">
+          </div>
+
+          <div class="bp-block">
+            <div class="bp-label">COLOR SYSTEM</div>
+            <div id="bp-colors" class="bp-palette-strip"></div>
+          </div>
+
+          <div class="bp-block">
+            <div class="bp-label">PERSONALITY &amp; VOICE</div>
+            <div id="bp-traits" class="bp-tags"></div>
+            <p id="bp-mission" class="bp-copy muted"></p>
+          </div>
+
+          <div id="bp-dna-section" class="bp-dna-box hidden">
+            <div class="bp-label">GEMINI AI SYNTHESIZED BRAND DNA</div>
+            <div id="bp-dna-details" class="dna-details"></div>
+            <div class="bp-dna-actions">
+              <button type="button" class="btn btn-emerald" id="btn-approve-dna" onclick="approveGeneratedDNA()">
+                Approve &amp; Publish AI Vibes
+              </button>
+            </div>
+          </div>
+
+          <div class="bp-block">
+            <div class="bp-label">STRICTLY AVOID</div>
+            <div id="bp-avoid" class="bp-tags"></div>
+          </div>
+
+          <div class="blueprint-footer">
+            <button type="button" class="btn btn-secondary full-width" onclick="jumpToCheckWithCurrentBrand()">
+              Test This Brand in Developer Check &rarr;
+            </button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- PAGE 3: CHECK A BRAND'S VIBES (Vibes Check | Results | Reviews)     -->
+    <!-- =================================================================== -->
+    <section id="page-check" class="page-view hidden" aria-labelledby="check-title">
+      <div class="vibes-page-shell">
+        <svg class="hub-arch-left" viewBox="0 0 220 260" aria-hidden="true">
+          <path d="M 0 210 A 180 180 0 0 0 180 30" fill="none" stroke="rgba(180, 165, 144, 0.25)" stroke-width="1"/>
+          <line x1="0" y1="150" x2="110" y2="150" stroke="rgba(180, 165, 144, 0.18)" stroke-width="1"/>
+        </svg>
+        <svg class="hub-arch-right" viewBox="0 0 260 260" aria-hidden="true">
+          <path d="M 80 260 A 180 180 0 0 1 260 80" fill="none" stroke="rgba(180, 165, 144, 0.25)" stroke-width="1"/>
+          <line x1="160" y1="60" x2="160" y2="260" stroke="rgba(180, 165, 144, 0.18)" stroke-width="1"/>
+          <line x1="60" y1="160" x2="260" y2="160" stroke="rgba(180, 165, 144, 0.18)" stroke-width="1"/>
+        </svg>
+
+        <!-- Clean Cream Top Header with 3 Sub-Tabs -->
+        <header class="vibes-header">
+          <a href="/" class="hub-brand vibes-brand-link" data-nav="home" title="Back to Home">
+            <div class="home-monogram home-monogram-dark" aria-hidden="true">
+              <svg viewBox="0 0 36 42" fill="none">
+                <path d="M4 4h15c7 0 11 3.8 11 9.2 0 4-2.3 6.8-6 8 4.4 1.2 7.2 4.3 7.2 8.8 0 6-4.8 9.8-12 9.8H4V4Z" stroke="#b38d58" stroke-width="2.4"/>
+                <path d="M10 10.5h8.2c3.5 0 5.6 1.7 5.6 4.4 0 2.8-2.1 4.4-5.6 4.4H10v-8.8Zm0 13.8h8.8c3.9 0 6.2 1.8 6.2 4.8 0 3-2.3 4.8-6.2 4.8H10v-9.6Z" fill="#b38d58" fill-opacity="0.22"/>
+                <path d="M4 21.5h15.5" stroke="#b38d58" stroke-width="2"/>
+              </svg>
+            </div>
+            <span class="hub-brand-name">Sanket AI</span>
+          </a>
+
+          <nav class="vibes-subtabs" aria-label="Vibes Check sections">
+            <button type="button" class="vibes-subtab active" id="tab-check-input" onclick="switchCheckSubView('input')">Vibes Check</button>
+            <button type="button" class="vibes-subtab" id="tab-check-results" onclick="switchCheckSubView('results')">Results</button>
+            <button type="button" class="vibes-subtab" id="tab-check-reviews" onclick="switchCheckSubView('reviews')">Reviews</button>
+          </nav>
+
+          <div class="hub-header-right">
+            <div class="hub-avatar-wrap check-avatar-wrap">
+              <button
+                type="button"
+                id="check-avatar-btn"
+                class="hub-avatar-btn"
+                onclick="toggleCheckAccountMenu()"
+                aria-expanded="false"
+                aria-controls="check-account-menu"
+                title="Workspace menu"
+              >
+                <span id="check-avatar-initials">AC</span>
+              </button>
+              <div id="check-account-menu" class="hub-account-menu hidden" role="menu">
+                <div class="hub-account-meta">
+                  <strong id="check-account-email">Guest Workspace</strong>
+                  <span id="check-account-org">default-org</span>
+                </div>
+                <button type="button" class="hub-menu-item" onclick="navigateTo('home'); toggleCheckAccountMenu(false);">Home Hub</button>
+                <button type="button" class="hub-menu-item" onclick="navigateTo('company'); toggleCheckAccountMenu(false);">Set Up Company</button>
+                <button type="button" class="hub-menu-item" onclick="logoutSession()">Sign Out</button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- SUB-VIEW 1: VIBES CHECK INPUT FORM -->
+        <div id="check-subview-input" class="vibes-subview">
+          <div class="vibes-form-shell">
+            <div class="vibes-form-head">
+              <h1 id="check-title" class="vibes-page-title">Start a Vibes Check</h1>
+              <p class="vibes-page-subtitle">
+                Enter your brand details and let our AI evaluate your brand consistency, tone, and visual identity across key touchpoints.
+              </p>
+            </div>
+
+            <div class="vibes-form-stack">
+              <div class="vibes-field-block">
+                <div class="vibes-label-row">
+                  <label class="vibes-field-label" for="check-company-name">Company Name</label>
+                  <select id="dev-brand-select" class="vibes-inline-select" onchange="onSelectDevBrand(this.value)" aria-label="Target company vibe profile"></select>
+                </div>
+                <div class="cream-input-group vibes-cream-input">
+                  <span class="cream-input-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M3.5 17V4.5l6.5-2 6.5 2V17"/>
+                      <path d="M7 7.5h2M11 7.5h2M7 11h2M11 11h2M8.5 17v-3h3v3"/>
+                    </svg>
+                  </span>
+                  <input id="check-company-name" type="text" placeholder="e.g. Acme Technologies">
+                </div>
+                <div id="dev-target-preview" class="vibes-target-chip-row hidden"></div>
+              </div>
+
+              <div class="vibes-field-block">
+                <span class="vibes-field-label">Brand Inputs</span>
+                <div class="vibes-input-tabs" role="tablist" aria-label="Brand input source">
+                  <button type="button" class="vibes-source-card active" data-source="website" onclick="selectBrandInputSource('website')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <rect x="3" y="4.5" width="18" height="15" rx="2"/>
+                      <path d="M3 15.5l4.5-4.5 3.5 3.5 4-4 6 5"/>
+                    </svg>
+                    <span>Website URL</span>
+                  </button>
+                  <button type="button" class="vibes-source-card" data-source="social" onclick="selectBrandInputSource('social')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <circle cx="18" cy="5.5" r="2.5"/>
+                      <circle cx="6" cy="12" r="2.5"/>
+                      <circle cx="18" cy="18.5" r="2.5"/>
+                      <path d="M8.3 10.9l7.4-4.2M8.3 13.1l7.4 4.2"/>
+                    </svg>
+                    <span>Social Media</span>
+                  </button>
+                  <button type="button" class="vibes-source-card" data-source="assets" onclick="selectBrandInputSource('assets')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-10Z"/>
+                    </svg>
+                    <span>Brand Assets</span>
+                  </button>
+                  <button type="button" class="vibes-source-card" data-source="others" onclick="selectBrandInputSource('others')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <circle cx="6" cy="12" r="1.4" fill="currentColor"/>
+                      <circle cx="12" cy="12" r="1.4" fill="currentColor"/>
+                      <circle cx="18" cy="12" r="1.4" fill="currentColor"/>
+                    </svg>
+                    <span>Others</span>
+                  </button>
+                </div>
+
+                <!-- Source Panel 1: Website URL -->
+                <div id="source-panel-website" class="vibes-source-panel">
+                  <div class="cream-input-group vibes-cream-input">
+                    <span class="cream-input-icon" aria-hidden="true">
+                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="10" cy="10" r="7.5"/>
+                        <path d="M2.8 10h14.4M10 2.5a11 11 0 0 1 0 15M10 2.5a11 11 0 0 0 0 15"/>
+                      </svg>
+                    </span>
+                    <input id="check-website-url" type="url" placeholder="https://yourcompany.com">
+                  </div>
+                </div>
+
+                <!-- Source Panel 2: Social Media -->
+                <div id="source-panel-social" class="vibes-source-panel hidden">
+                  <div class="cream-input-group vibes-cream-input">
+                    <span class="cream-input-icon" aria-hidden="true">
+                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="10" cy="10" r="7.5"/>
+                        <path d="M13 8.5v2a1.5 1.5 0 0 0 3 0v-.5a6 6 0 1 0-2.4 4.8M12.5 10a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/>
+                      </svg>
+                    </span>
+                    <input id="check-social-input" type="text" placeholder="@handle or paste LinkedIn / Instagram / X post copy">
+                  </div>
+                </div>
+
+                <!-- Source Panel 3: Brand Assets -->
+                <div id="source-panel-assets" class="vibes-source-panel hidden">
+                  <div id="dev-dropzone" class="vibes-dropzone" tabindex="0" role="button" aria-label="Upload creative asset">
+                    <input type="file" id="dev-file-input" accept="image/*,.pdf" hidden>
+                    <div id="dev-dropzone-empty" class="vibes-dropzone-empty">
+                      <strong>Drag &amp; drop PNG, JPG, WebP, or PDF</strong>
+                      <span>or click to browse a creative file from your device</span>
+                    </div>
+                    <div id="dev-file-preview" class="vibes-dropzone-preview hidden">
+                      <img id="dev-preview-img" alt="Uploaded design preview" class="hidden">
+                      <div class="vibes-preview-meta">
+                        <span id="dev-preview-name" class="mono-sm"></span>
+                        <button type="button" class="cream-accent-link" onclick="clearDevFile(event)">Remove file</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Source Panel 4: Others / Copy -->
+                <div id="source-panel-others" class="vibes-source-panel hidden">
+                  <textarea id="dev-copy-input" class="vibes-cream-textarea" rows="3" placeholder="Paste headline, landing copy, campaign claims, or messaging guidelines to evaluate with AI..."></textarea>
+                </div>
+              </div>
+
+              <!-- Live Demo Only Quick Samples (hidden for standard users) -->
+              <div id="check-demo-only-bar" class="vibes-demo-only-bar hidden">
+                <span class="vibes-demo-tag">LIVE DEMO TOOLS</span>
+                <button type="button" class="cream-text-link" onclick="fillDemoVibesCheck()">Fill Live Demo Inputs</button>
+                <span class="vibes-dot-sep">&middot;</span>
+                <button type="button" class="cream-text-link" onclick="loadSampleAsset('/static/samples/nike_compliant_poster.png', 'nike_compliant_poster.png')">Load Compliant Poster</button>
+                <span class="vibes-dot-sep">&middot;</span>
+                <button type="button" class="cream-text-link" onclick="loadSampleAsset('/static/samples/off_brand_poster.png', 'off_brand_poster.png')">Load Off-Brand Poster</button>
+              </div>
+
+              <button type="button" class="vibes-run-btn" id="btn-run-check" onclick="runDeveloperMatchCheck()">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <path d="M9 2.5l1.3 3.9L14.2 7.7l-3.9 1.3L9 13l-1.3-4-3.9-1.3 3.9-1.3L9 2.5Z"/>
+                  <path d="M15.2 12l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/>
+                </svg>
+                <span>Run Vibes Check with AI</span>
+                <span aria-hidden="true">&rarr;</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-VIEW 2: RESULTS DASHBOARD -->
+        <div id="check-subview-results" class="vibes-subview hidden">
+          <!-- Clean Empty State (default for regular users until a scan runs) -->
+          <div id="check-results-empty" class="vibes-empty-state">
+            <div class="vibes-empty-ring" aria-hidden="true"></div>
+            <h2>No Vibes Check Run Yet</h2>
+            <p>
+              Enter your brand details on the <strong>Vibes Check</strong> tab and run an AI evaluation to view your live consistency score, breakdown, and actionable insights.
+            </p>
+            <div class="vibes-empty-actions">
+              <button type="button" class="vibes-run-btn vibes-btn-inline" onclick="switchCheckSubView('input')">
+                <span>Go to Vibes Check</span>
+                <span aria-hidden="true">&rarr;</span>
+              </button>
+              <button type="button" id="btn-load-demo-results" class="vibes-outline-btn hidden" onclick="loadLiveDemoResultsPreview()">
+                Load Live Demo Sample Results
+              </button>
+            </div>
+          </div>
+
+          <!-- Results Content (populated from real AI/OpenCV response, or explicit Live Demo preview) -->
+          <div id="check-results-body" class="vibes-results-container hidden">
+            <div class="vibes-results-head">
+              <div>
+                <span class="vibes-results-eyebrow">Vibes Check Results</span>
+                <div class="vibes-results-title-row">
+                  <h1 class="vibes-results-title">Your Brand Vibes</h1>
+                  <span class="vibes-ai-badge" id="res-analysis-badge">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                      <path d="M8 2l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3Z"/>
+                    </svg>
+                    <span>AI-Powered Analysis</span>
+                  </span>
+                </div>
+                <p class="vibes-results-sub" id="res-verdict-summary">A complete brand governance scan across your submitted touchpoints.</p>
+              </div>
+              <button type="button" class="vibes-outline-btn" onclick="switchCheckSubView('input')">New Check</button>
+            </div>
+
+            <!-- Row 1: Score Ring + Brand Preview -->
+            <div class="vibes-grid-top">
+              <div class="vibes-card vibes-score-card">
+                <div class="vibes-ring-wrap">
+                  <svg class="vibes-ring-svg" viewBox="0 0 120 120" aria-hidden="true">
+                    <circle class="vibes-ring-track" cx="60" cy="60" r="50"/>
+                    <circle class="vibes-ring-fill" id="res-ring-progress" cx="60" cy="60" r="50" stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+                  </svg>
+                  <div class="vibes-ring-center">
+                    <strong id="res-overall-score">--%</strong>
+                    <span>Vibe Score</span>
+                  </div>
+                </div>
+                <div class="vibes-score-meta">
+                  <span class="vibes-meta-k">Overall Vibe</span>
+                  <h2 id="res-verdict-title" class="vibes-overall-label">Evaluated</h2>
+                  <div id="res-status-chips" class="vibes-chips-row"></div>
+                </div>
+              </div>
+
+              <div class="vibes-card vibes-preview-card">
+                <div class="vibes-card-head">
+                  <h3>Brand Preview</h3>
+                  <span class="mono-sm" id="res-engines" style="color:#7a746a;"></span>
+                </div>
+                <div id="res-brand-preview-grid" class="vibes-preview-tiles"></div>
+              </div>
+            </div>
+
+            <!-- Row 2: Vibe Breakdown + AI Insights -->
+            <div class="vibes-grid-mid">
+              <div class="vibes-card">
+                <h3 class="vibes-card-title">Vibe Breakdown</h3>
+                <div id="res-breakdown-bars" class="vibes-breakdown-list"></div>
+              </div>
+
+              <div class="vibes-card">
+                <h3 class="vibes-card-title">AI Insights</h3>
+                <ul id="res-ai-insights" class="vibes-insights-list"></ul>
+              </div>
+            </div>
+
+            <!-- Row 3: Channel / Touchpoint Analysis + Next Steps -->
+            <div class="vibes-grid-bot">
+              <div class="vibes-card">
+                <h3 class="vibes-card-title">Touchpoint Analysis</h3>
+                <div id="res-channel-grid" class="vibes-platform-grid"></div>
+              </div>
+
+              <div class="vibes-card">
+                <h3 class="vibes-card-title">Next Steps</h3>
+                <div class="vibes-next-actions">
+                  <button type="button" class="vibes-run-btn vibes-next-btn" id="btn-get-improvement-plan" onclick="openImprovementPlan()">
+                    <span>Get Improvement Plan with AI</span>
+                    <span aria-hidden="true">&rarr;</span>
+                  </button>
+                  <button type="button" class="vibes-outline-btn" onclick="downloadVibesReport()">
+                    <span>Download Report</span>
+                  </button>
+                </div>
+                <div id="autofix-output" class="autofix-box vibes-cream-subbox hidden"></div>
+                <div id="copilot-box" class="copilot-box vibes-cream-subbox hidden">
+                  <div class="copilot-head">
+                    <strong>Brand Co-Pilot</strong>
+                    <span class="mono-sm" style="color:#7a746a;">AI Improvement Plan</span>
+                  </div>
+                  <div id="copilot-messages" class="copilot-messages"></div>
+                  <div class="copilot-input-row">
+                    <input id="copilot-prompt" type="text" placeholder="Ask how to improve consistency or request compliant copy rewrites...">
+                    <button type="button" class="vibes-run-btn vibes-btn-sm" onclick="askBrandCopilot()">Send</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-VIEW 3: REVIEWS & HISTORY -->
+        <div id="check-subview-reviews" class="vibes-subview hidden">
+          <div class="vibes-reviews-shell">
+            <div class="vibes-results-head">
+              <div>
+                <span class="vibes-results-eyebrow">Governance Log</span>
+                <h1 class="vibes-results-title">Brand Reviews</h1>
+                <p class="vibes-results-sub">Inspect submitted checks and collaborate with your AI Brand Co-Pilot.</p>
+              </div>
+              <button type="button" class="vibes-outline-btn" onclick="loadCheckReviews(true)">Refresh Reviews</button>
+            </div>
+            <div id="check-reviews-list" class="vibes-reviews-grid"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Sign In / Register Company Modal (overlay, never a 4th page) -->
+  <div id="auth-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
     <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title">Governance Platform Reference &amp; Shortcuts</h3>
-        <button type="button" class="modal-close-btn" onclick="toggleHelpModal()">&times;</button>
+      <div class="modal-head">
+        <h3 id="auth-modal-title">Workspace Account</h3>
+        <button type="button" class="btn-icon" onclick="closeAuthModal()" aria-label="Close">&times;</button>
       </div>
-      <div class="modal-body">
-        <h4>Keyboard Shortcuts</h4>
-        <div class="shortcuts-list">
-          <div class="shortcut-item"><kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd> <span>Open Global Search</span></div>
-          <div class="shortcut-item"><kbd>Esc</kbd> <span>Close Active Modal</span></div>
-        </div>
-        <h4 style="margin-top: 1.25rem;">Governance Standards Enforced</h4>
-        <ul class="styled-guideline-list">
-          <li><strong>CIELAB &Delta;E Tolerance:</strong> &Delta;E &le; 15.0 per W3C / CIE colorimetry standard.</li>
-          <li><strong>WCAG 2.1 AA Contrast:</strong> Minimum 4.5:1 for standard copy, 3.0:1 for large headlines.</li>
-          <li><strong>FTC Claim Verification:</strong> Never assume true without certified Knowledge Base evidence.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  
-  <!-- ===================================================================== -->
-  <!-- INTEGRATED OPERATIONAL MODALS (Workflow, Auto-Fix, History) -->
-  <!-- ===================================================================== -->
-
-  <!-- 1. Generative Auto-Fix Modal -->
-  <div id="modal-auto-remediation" class="app-modal-backdrop hidden" onclick="if(event.target===this)closeRemediationModal()">
-    <div class="modal-dialog modal-remediation-dialog">
-      <div class="modal-header">
-        <div class="modal-title-wrap">
-          <span class="modal-badge-remed">✨ AI-Assisted Visual Correction (Auto-Fix)</span>
-          <h3 id="remed-modal-title">Creative Color Shift &amp; Saliency-Preserved Remapping</h3>
-        </div>
-        <button type="button" class="btn-close-modal" onclick="closeRemediationModal()" aria-label="Close">&times;</button>
-      </div>
-      <div class="modal-body">
-        <!-- Visual Problems Identified Banner -->
-        <div id="remed-problems-box" class="remed-problems-box hidden">
-          <div class="box-title">
-            <span>🔍 Visual Problems Identified:</span>
-          </div>
-          <div id="remed-problems-list" class="remed-problems-list"></div>
-        </div>
-
-        <!-- Preserved Elements & Generative Limitation Notice -->
-        <div class="remed-preservation-banner">
-          <div class="preservation-items">
-            <span class="pres-pill">🛡️ Text &amp; Typography Preserved</span>
-            <span class="pres-pill">🛡️ Logo &amp; Brand Marks Preserved</span>
-            <span class="pres-pill">🛡️ Product Contours Protected</span>
-          </div>
-          <div id="remed-limitation-notice" class="remed-limitation-notice hidden">
-            <small id="remed-limitation-text"></small>
-          </div>
-        </div>
-
-        <!-- Side-by-side comparison grid -->
-        <div class="remediation-comparison-grid">
-          <div class="comparison-column">
-            <span class="comp-col-label label-before">Original Submission (Off-Brand)</span>
-            <div class="comp-image-wrap">
-              <img id="remed-orig-img" class="comp-img" alt="Original submission">
-            </div>
-            <div class="comp-telemetry telemetry-before">
-              <span>Color Accuracy:</span>
-              <strong id="remed-orig-delta">&Delta;E 24.5 &bull; Non-Compliant</strong>
-            </div>
-          </div>
-          <div class="comparison-column">
-            <span class="comp-col-label label-after">&check; Remediated Graphic (Brand-Certified)</span>
-            <div class="comp-image-wrap">
-              <img id="remed-fixed-img" class="comp-img" alt="Remediated compliant asset">
-            </div>
-            <div class="comp-telemetry telemetry-after">
-              <span>Color Accuracy:</span>
-              <strong id="remed-fixed-delta">&Delta;E 3.2 &bull; 98.4% Compliant</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="remediation-palette-shifts">
-          <strong>Color Centroids Remapped:</strong>
-          <div id="remed-swatches-grid" class="remed-swatches-grid"></div>
-        </div>
-
-        <!-- Applied AI Changes & Human Approval Disclosure -->
-        <div class="remed-disclosure-footer">
-          <span class="disclosure-badge">AI-GENERATED VARIATION</span>
-          <p id="remed-disclosure-text" class="disclosure-text">
-            Original image remains untouched. Corrected version is saved separately and requires creator approval before submission.
-          </p>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-success" id="btn-accept-remediation" onclick="handleRemediationDecision('accept')">
-          ✓ Accept Correction (Stage for Review)
-        </button>
-        <button type="button" class="btn btn-outline" id="btn-reject-remediation" onclick="handleRemediationDecision('reject')">
-          ✕ Reject / Revert
-        </button>
-        <a id="btn-download-remediated" href="#" download="brand_certified_creative.png" class="btn btn-primary">
-          <svg class="svg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Download</span>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- 2. Workflow Decision & Review Detail Modal -->
-  <div id="modal-workflow-detail" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeWorkflowDetailModal()">
-    <div class="app-modal modal-lg-dialog">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <div class="wf-detail-title-row">
-            <h3 id="wf-detail-title">Creative Submission</h3>
-            <span id="wf-detail-status-badge" class="tag-badge tag-Under_Review">Under Review</span>
-          </div>
-          <p id="wf-detail-meta">Version 1 &bull; Brand: Apex Cloud &bull; Org: org-apex-cloud</p>
-        </div>
-        <button type="button" class="modal-close-btn" onclick="closeWorkflowDetailModal()">&times;</button>
+      <div class="modal-tabs">
+        <button type="button" class="modal-tab active" data-tab="login" onclick="switchAuthTab('login')">Sign In</button>
+        <button type="button" class="modal-tab" data-tab="register" onclick="switchAuthTab('register')">Register Company</button>
       </div>
 
-      <div class="modal-body">
-        <!-- High-Risk Escalation Banner if Applicable -->
-        <div id="wf-detail-escalation-alert" class="wf-escalation-alert hidden">
-          <span class="alert-icon">⚖️</span>
-          <div>
-            <strong>MANDATORY AUTHORISED REVIEW REQUIRED</strong>
-            <p id="wf-detail-escalation-reason">This asset is escalated due to high-risk promotional/factual claims. Only Authorised Reviewers or Administrators may approve.</p>
-          </div>
+      <form id="form-login" class="modal-form" onsubmit="submitLogin(event)">
+        <div class="field">
+          <label for="login-email">Email</label>
+          <input id="login-email" type="email" placeholder="you@company.com" required>
         </div>
-
-        <!-- Versions Tabs -->
-        <div class="wf-version-tabs-bar" id="wf-version-tabs-bar"></div>
-
-        <!-- Version Content Display -->
-        <div class="wf-version-display-box">
-          <div class="wf-content-view">
-            <label><small>Creative Copy Content:</small></label>
-            <blockquote id="wf-detail-copy-text" class="wf-copy-blockquote">--</blockquote>
-            <div id="wf-detail-image-wrap" class="wf-image-wrap hidden">
-              <img id="wf-detail-image" alt="Creative asset">
-            </div>
-          </div>
-          <div class="wf-analysis-summary-view">
-            <label><small>Audit Telemetry &amp; Findings:</small></label>
-            <div class="wf-score-pill">
-              <span>Compliance Score:</span>
-              <strong id="wf-detail-score">--%</strong>
-            </div>
-            <div id="wf-detail-findings-list" class="wf-findings-list"></div>
-          </div>
+        <div class="field">
+          <label for="login-password">Password</label>
+          <input id="login-password" type="password" placeholder="Enter password" required>
         </div>
-
-        <!-- Collaborative Comments & Discussion -->
-        <div class="wf-comments-section">
-          <div class="section-title">
-            <span>💬 Review Discussion &amp; Issue Comments:</span>
-          </div>
-          <div id="wf-detail-comments-list" class="wf-comments-list">
-            <div class="empty-comments">No comments recorded yet.</div>
-          </div>
-          <form id="wf-comment-form" class="wf-comment-input-row" onsubmit="handlePostComment(event)">
-            <input type="text" id="wf-comment-input" placeholder="Comment on an issue or request clarification..." required autocomplete="off">
-            <button type="submit" class="btn btn-secondary btn-sm">Post Comment</button>
-          </form>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary full-width">Sign In</button>
         </div>
+      </form>
 
-        <!-- Action Area (Role-based) -->
-        <div class="wf-review-action-area" id="wf-action-area">
-          <!-- Request Revisions Drawer (Manager / Reviewer / Admin) -->
-          <div id="wf-request-revision-box" class="wf-revision-drawer">
-            <label for="wf-revision-feedback"><strong>Request Revisions from Creator:</strong></label>
-            <textarea id="wf-revision-feedback" rows="2" placeholder="Specify required changes, terminology fixes, or tone adjustments..."></textarea>
-            <div class="btn-row-right">
-              <button type="button" class="btn btn-warning btn-sm" onclick="handleRequestRevision()">
-                Request Revisions (Mark Needs Revision)
-              </button>
-            </div>
-          </div>
-
-          <!-- Submit Revised Version Drawer (Creator / Admin) -->
-          <div id="wf-submit-revision-box" class="wf-revision-drawer hidden">
-            <label for="wf-revised-copy"><strong>Submit Revised Version (v2):</strong></label>
-            <textarea id="wf-revised-copy" rows="2" placeholder="Paste revised copy addressing reviewer feedback..."></textarea>
-            <input type="text" id="wf-revised-summary" placeholder="Summary of changes (e.g. Replaced unapproved term with verified phrasing)..." style="margin-top: 0.4rem;">
-            <div class="btn-row-right" style="margin-top: 0.5rem;">
-              <button type="button" class="btn btn-primary btn-sm" onclick="handleSubmitRevision()">
-                Submit Revised Version
-              </button>
-            </div>
-          </div>
+      <form id="form-register" class="modal-form hidden" onsubmit="submitRegisterCompany(event)">
+        <div class="field">
+          <label for="reg-company">Company Name</label>
+          <input id="reg-company" type="text" placeholder="NovaMed Labs" required>
         </div>
-
-        <!-- Immutable Audit Trail History -->
-        <div class="wf-audit-trail-section">
-          <div class="section-title">
-            <span>📜 Immutable Audit Log &amp; Governance History:</span>
+        <div class="field-grid-2">
+          <div class="field">
+            <label for="reg-email">Admin Email</label>
+            <input id="reg-email" type="email" placeholder="founder@company.com" required>
           </div>
-          <div id="wf-detail-audit-list" class="wf-audit-list"></div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <div class="footer-left">
-          <span class="active-acting-role" id="wf-acting-role-label">Acting as: Authorised Reviewer</span>
-        </div>
-        <div class="footer-right">
-          <button type="button" class="btn btn-danger btn-sm" id="btn-wf-reject" onclick="handleDecision('reject')">
-            ✕ Reject Content
-          </button>
-          <button type="button" class="btn btn-outline btn-sm" id="btn-wf-approve-warn" onclick="handleDecision('approve_with_warnings')">
-            ⚠️ Approve with Warnings
-          </button>
-          <button type="button" class="btn btn-success" id="btn-wf-approve" onclick="handleDecision('approve')">
-            ✓ Approve Content
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3. New Workflow Item Submission Modal -->
-  <div id="modal-workflow-new" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeNewWorkflowModal()">
-    <div class="app-modal">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <h3>Submit Content for Organisational Review</h3>
-          <p>Submit promotional copy or visual creative into the brand compliance workflow.</p>
-        </div>
-        <button type="button" class="modal-close-btn" onclick="closeNewWorkflowModal()">&times;</button>
-      </div>
-      <form id="form-new-workflow" onsubmit="handleNewWorkflowSubmit(event)">
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="wf-new-title">Creative Campaign / Asset Title: <span class="required">*</span></label>
-            <input type="text" id="wf-new-title" placeholder="e.g. Q4 Global Brand Hero Launch" required>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="wf-new-brand">Target Brand Standard: <span class="required">*</span></label>
-              <select id="wf-new-brand" required>
-                <option value="apex_cloud">Apex Cloud Systems</option>
-                <option value="nike">Nike Athletic Standards</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="wf-new-score">Preliminary Compliance Score (%):</label>
-              <input type="number" id="wf-new-score" value="88" min="0" max="100">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="wf-new-copy">Creative Copy Text: <span class="required">*</span></label>
-            <textarea id="wf-new-copy" rows="3" placeholder="Enter headline, body copy, or advertising slogan..." required></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="wf-new-image">Image Creative URL (Optional):</label>
-            <input type="text" id="wf-new-image" placeholder="/static/samples/nike_compliant_poster.png">
-          </div>
-
-          <div class="wf-checkbox-card">
-            <label class="checkbox-label">
-              <input type="checkbox" id="wf-new-high-risk">
-              <strong>Contains High-Risk Factual or Promotional Claims</strong>
-            </label>
-            <small class="field-hint">Flag if copy asserts "#1 in industry", guaranteed uptime, clinical certification, or performance metrics. Automatically escalates to Authorised Reviewers.</small>
+          <div class="field">
+            <label for="reg-password">Password (8+ chars)</label>
+            <input id="reg-password" type="password" minlength="8" required>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeNewWorkflowModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Submit for Workflow Review</button>
+          <button type="submit" class="btn btn-emerald full-width">Create Isolated Company Org</button>
         </div>
       </form>
+
+      <div id="auth-session-box" class="auth-session-box hidden"></div>
     </div>
   </div>
 
-  <!-- 4. Knowledge Item Version History Modal -->
-  <div id="modal-knowledge-history" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeKnowledgeHistoryModal()">
-    <div class="app-modal" style="max-width: 640px;">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <h3 id="kb-history-title">Guideline Version History</h3>
-          <p id="kb-history-subtitle">Immutable audit trail of previous revisions and changes.</p>
-        </div>
-        <button type="button" class="modal-close-btn" onclick="closeKnowledgeHistoryModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div id="kb-history-list" class="kb-history-list">
-          <div class="insights-loading">Loading version history...</div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeKnowledgeHistoryModal()">Close</button>
-      </div>
-    </div>
-  </div>
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <!-- 5. Brand Saving Feedback Modal -->
-  <div id="modal-saving-brand" class="app-modal-backdrop hidden">
-    <div class="app-modal saving-modal-card" style="max-width: 480px; text-align: center; padding: 2.25rem 2rem;">
-      <div class="saving-spinner-ring" style="margin: 0 auto 1.5rem auto; width: 64px; height: 64px; position: relative; display: flex; align-items: center; justify-content: center;">
-        <div class="saving-spinner-glow" style="position: absolute; inset: -4px; border-radius: 50%; background: conic-gradient(from 0deg, rgba(99, 102, 241, 0.1), #6366F1, #A855F7, #10B981, rgba(99, 102, 241, 0.1)); animation: spin 1.4s linear infinite; filter: blur(2px);"></div>
-        <div style="position: absolute; inset: 4px; background: var(--bg-surface, #0E1526); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-          <svg class="svg-icon" id="saving-modal-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6366F1;">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-        </div>
-      </div>
-      
-      <h3 id="saving-modal-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: #FFFFFF;">Saving &amp; Locking Brand Profile</h3>
-      <p id="saving-modal-step-text" style="color: var(--text-muted, #94A3B8); font-size: 0.88rem; margin-bottom: 1.5rem;">Validating approved color palette and brand guidelines...</p>
-      
-      <div class="upload-progress-container" style="margin-bottom: 1.25rem;">
-        <div class="upload-progress-bar" style="height: 7px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden;">
-          <div id="saving-modal-progress-fill" class="upload-progress-fill uploading" style="width: 15%; transition: width 0.3s ease;"></div>
-        </div>
-        <div class="upload-progress-meta" style="margin-top: 0.6rem; display: flex; justify-content: space-between; font-size: 0.78rem;">
-          <span id="saving-modal-status-text" class="progress-status-text" style="color: var(--text-secondary, #CBD5E1);">Initializing brand synthesis...</span>
-          <span id="saving-modal-percent" class="progress-percent-text" style="font-weight: 700; color: #6366F1;">15%</span>
-        </div>
-      </div>
-      
-      <div id="saving-modal-substatus" style="font-size: 0.78rem; color: var(--text-muted, #94A3B8); font-family: var(--font-mono, monospace);">
-        Connecting to BrandShield Governance Engine...
-      </div>
-    </div>
-  </div>
-
-  <!-- 6. Permanent Delete Confirmation Modal -->
-  <div id="modal-confirm-delete" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeConfirmDeleteModal()">
-    <div class="app-modal modal-danger-dialog">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <h3 id="delete-modal-title">Confirm Permanent Deletion</h3>
-          <p id="delete-modal-subtitle">This operation cannot be reversed.</p>
-        </div>
-        <button type="button" class="modal-close-btn" onclick="closeConfirmDeleteModal()" aria-label="Close dialog">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="delete-warning-box">
-          <div class="warning-icon-badge">
-            <svg class="svg-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          </div>
-          <div class="warning-text-content">
-            <strong id="delete-modal-target-name">Item Name</strong>
-            <p id="delete-modal-message">Are you sure you want to permanently delete this item? All associated compliance data and uploaded files will be permanently erased.</p>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeConfirmDeleteModal()">Cancel</button>
-        <button type="button" id="delete-modal-confirm-btn" class="btn btn-danger">
-          <svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          <span id="delete-modal-confirm-btn-text">Permanently Delete</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script src="/static/app.js?v=28.0"></script>
+  <script src="/static/app.js?v=2"></script>
 </body>
 </html>

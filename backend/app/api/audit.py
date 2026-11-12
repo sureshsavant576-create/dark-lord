@@ -43,11 +43,16 @@ def get_audit_logs(
     clean_org = sanitize_org_id(org_id)
 
     # Multi-tenant data isolation: Block reading other tenants' audit logs
-    if user.role != AuthUserRole.ADMIN:
-        verify_tenant_access(user, clean_org)
+    verify_tenant_access(user, clean_org)
 
     role_to_check = user_role or user.role.value
-    role_allowed = check_role_permission(role_to_check, "view_audit_logs") or user.role in (AuthUserRole.ADMIN, AuthUserRole.COMPLIANCE_LEAD)
+    role_allowed = (
+        user.role != AuthUserRole.DEVELOPER
+        and (
+            check_role_permission(role_to_check, "view_audit_logs")
+            or user.role in (AuthUserRole.ADMIN, AuthUserRole.COMPLIANCE_LEAD)
+        )
+    )
     if not role_allowed:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -78,11 +83,16 @@ def get_audit_summary(
     """
     clean_org = sanitize_org_id(org_id)
 
-    if user.role != AuthUserRole.ADMIN:
-        verify_tenant_access(user, clean_org)
+    verify_tenant_access(user, clean_org)
 
     role_to_check = user_role or user.role.value
-    role_allowed = check_role_permission(role_to_check, "view_audit_logs") or user.role in (AuthUserRole.ADMIN, AuthUserRole.COMPLIANCE_LEAD)
+    role_allowed = (
+        user.role != AuthUserRole.DEVELOPER
+        and (
+            check_role_permission(role_to_check, "view_audit_logs")
+            or user.role in (AuthUserRole.ADMIN, AuthUserRole.COMPLIANCE_LEAD)
+        )
+    )
     if not role_allowed:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

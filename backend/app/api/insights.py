@@ -1,7 +1,7 @@
 from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from backend.app.models.insights import (
@@ -23,6 +23,7 @@ router = APIRouter(prefix="/insights", tags=["Brand Insights & Recurring Issues"
 @router.get("/{brand_id}", response_model=BrandInsightsReport)
 def get_brand_insights_report(
     brand_id: str,
+    background_tasks: BackgroundTasks,
     org_id: Optional[str] = Query(default=None, description="Tenant organization ID")
 ) -> BrandInsightsReport:
     """
@@ -33,6 +34,8 @@ def get_brand_insights_report(
     """
     try:
         report = brand_insights_service.generate_report(brand_id=brand_id, org_id=org_id)
+        from backend.app.services.supabase_service import supabase_service
+        background_tasks.add_task(supabase_service.save_brand_insights, report)
         return report
     except Exception as exc:
         logger.error("Failed to generate brand insights report for %s: %s", brand_id, exc)

@@ -138,6 +138,7 @@ ROLE_PERMISSIONS: Dict[UserRole, Set[str]] = {
         "export_audit_logs",
         "view_recurring_insights",
         "manage_users",
+        "configure_integrations",
     },
 }
 
@@ -186,6 +187,8 @@ def check_role_permission(role: str | UserRole, action: str) -> bool:
                 "viewer": UserRole.CREATOR,
             }
             clean_role = role.strip().lower()
+            if clean_role == "developer" and action == "configure_integrations":
+                return True
             if clean_role in role_map:
                 user_role = role_map[clean_role]
             else:

@@ -49,6 +49,9 @@ class UserContext(BaseModel):
     org_id: str = "default-org"
     role: UserRole = UserRole.COMPLIANCE_LEAD
     email: Optional[str] = None
+    full_name: Optional[str] = None
+    role_label: Optional[str] = None
+    department: Optional[str] = None
 
 class UserRecord(BaseModel):
     user_id: str
@@ -56,6 +59,9 @@ class UserRecord(BaseModel):
     hashed_password: str
     role: UserRole = UserRole.DEVELOPER
     org_id: str = "default-org"
+    full_name: Optional[str] = None
+    role_label: Optional[str] = None
+    department: Optional[str] = "Marketing"
     created_at: float = Field(default_factory=time.time)
 
 class UserAccountService:
@@ -136,7 +142,16 @@ class UserAccountService:
         except Exception:
             return False
 
-    def register_user(self, email: str, password: str, role: UserRole = UserRole.DEVELOPER, org_id: str = "default-org") -> UserRecord:
+    def register_user(
+        self,
+        email: str,
+        password: str,
+        role: UserRole = UserRole.DEVELOPER,
+        org_id: str = "default-org",
+        full_name: Optional[str] = None,
+        role_label: Optional[str] = None,
+        department: Optional[str] = "Marketing",
+    ) -> UserRecord:
         clean_email = email.strip().lower()
         if len(password) < 8:
             raise HTTPException(status_code=400, detail="Password must be at least 8 characters long.")
@@ -150,10 +165,73 @@ class UserAccountService:
 
             user_id = f"user_{hashlib.sha256(clean_email.encode()).hexdigest()[:10]}"
             hashed = self.hash_password(password)
-            record = UserRecord(user_id=user_id, email=clean_email, hashed_password=hashed, role=role, org_id=org_id)
+            record = UserRecord(
+                user_id=user_id,
+                email=clean_email,
+                hashed_password=hashed,
+                role=role,
+                org_id=org_id,
+                full_name=full_name or clean_email.split("@")[0].replace(".", " ").title(),
+                role_label=role_label,
+                department=department or "Marketing",
+            )
             users[user_id] = record.model_dump()
             self._save_users(users)
             return record
+
+    def list_org_users(self, org_id: str) -> list[dict]:
+        clean_target = org_id.replace("-", "_").lower().strip()
+        with self._lock:
+            users = self._load_users()
+            res = []
+            for u in users.values():
+                u_org = (u.get("org_id") or "").replace("-", "_").lower().strip()
+                if u_org == clean_target:
+                    res.append({
+                        "user_id": u.get("user_id"),
+                        "email": u.get("email"),
+                        "full_name": u.get("full_name") or (u.get("email", "").split("@")[0].title()),
+                        "role": u.get("role"),
+                        "role_label": u.get("role_label") or u.get("role"),
+                        "department": u.get("department") or "Marketing",
+                        "org_id": u.get("org_id"),
+                        "created_at": u.get("created_at"),
+                    })
+            return res
+
+    def update_user_role(
+        self,
+        target_user_id: str,
+        org_id: str,
+        new_role: UserRole,
+        new_role_label: Optional[str] = None,
+        new_department: Optional[str] = None,
+    ) -> dict:
+        clean_target = org_id.replace("-", "_").lower().strip()
+        with self._lock:
+            users = self._load_users()
+            u = users.get(target_user_id)
+            if not u:
+                raise HTTPException(status_code=404, detail="User not found.")
+            u_org = (u.get("org_id") or "").replace("-", "_").lower().strip()
+            if u_org != clean_target:
+                raise HTTPException(status_code=403, detail="Cross-tenant user modification forbidden.")
+            u["role"] = new_role.value
+            if new_role_label:
+                u["role_label"] = new_role_label
+            if new_department:
+                u["department"] = new_department
+            users[target_user_id] = u
+            self._save_users(users)
+            return {
+                "user_id": u.get("user_id"),
+                "email": u.get("email"),
+                "full_name": u.get("full_name"),
+                "role": u.get("role"),
+                "role_label": u.get("role_label"),
+                "department": u.get("department"),
+                "org_id": u.get("org_id"),
+            }
 
     def authenticate_user(self, email: str, password: str) -> Tuple[UserRecord, str]:
         clean_email = email.strip().lower()
@@ -194,7 +272,17 @@ class UserAccountService:
                 return None
             if int(exp_str) < int(time.time()):
                 return None
-            return UserContext(user_id=user_id, role=UserRole(role_str), org_id=org_id)
+            users = self._load_users()
+            rec = users.get(user_id) or {}
+            return UserContext(
+                user_id=user_id,
+                role=UserRole(role_str),
+                org_id=org_id,
+                email=rec.get("email"),
+                full_name=rec.get("full_name"),
+                role_label=rec.get("role_label"),
+                department=rec.get("department"),
+            )
         except Exception:
             return None
 
@@ -256,14 +344,20 @@ def require_authenticated_user(
         raise HTTPException(status_code=401, detail="Invalid or expired session token.")
     return user_ctx
 
+DEMO_USER_ID = f"user_{hashlib.sha256('demo@sanket.ai'.encode()).hexdigest()[:10]}"
+
+def is_platform_demo_admin(user: UserContext) -> bool:
+    return user.user_id == DEMO_USER_ID or (user.email or "").lower() == "demo@sanket.ai"
+
 def verify_tenant_access(user: UserContext, target_org_id: str) -> None:
     """
-    Strict boundary check: ensures user belongs to target organization or is an Admin.
+    Strict boundary check: ensures user belongs to target organization.
+    Prevents Company A's Admin or Team Members from accessing Company B's data.
     """
-    if user.role == UserRole.ADMIN:
+    if is_platform_demo_admin(user):
         return
-    clean_target = target_org_id.replace("-", "_").lower().strip()
-    clean_user_org = user.org_id.replace("-", "_").lower().strip()
+    clean_target = (target_org_id or "").replace("-", "_").lower().strip()
+    clean_user_org = (user.org_id or "").replace("-", "_").lower().strip()
     if clean_target != clean_user_org and clean_user_org != "default_org":
         raise HTTPException(
             status_code=403,
@@ -271,8 +365,19 @@ def verify_tenant_access(user: UserContext, target_org_id: str) -> None:
         )
 
 def verify_can_manage_brand(user: UserContext, brand_owner_id: Optional[str] = None) -> None:
-    if user.role == UserRole.ADMIN:
+    if is_platform_demo_admin(user):
         return
+    if user.role == UserRole.ADMIN:
+        if not brand_owner_id:
+            return
+        clean_owner = brand_owner_id.replace("-", "_").lower().strip()
+        clean_org = (user.org_id or "").replace("-", "_").lower().strip()
+        if clean_owner in (clean_org, (user.user_id or "").lower(), "default_org", "default_dev"):
+            return
+        raise HTTPException(
+            status_code=403,
+            detail=f"Cross-tenant access forbidden: Admin of '{user.org_id}' cannot modify brand owned by '{brand_owner_id}'."
+        )
     if user.role == UserRole.COMPLIANCE_LEAD:
         if not brand_owner_id or brand_owner_id in (user.user_id, user.org_id, "default-org", "default-dev"):
             return

@@ -3,7 +3,7 @@ from pathlib import Path
 import uuid
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -14,6 +14,7 @@ from backend.app.api.brands import router as brands_router
 from backend.app.api.claims import router as claims_router
 from backend.app.api.inspections import router as inspections_router
 from backend.app.api.knowledge import router as knowledge_router
+from backend.app.api.orgs import router as orgs_router
 from backend.app.api.reviews import router as reviews_router
 from backend.app.api.storage import router as storage_router
 from backend.app.api.system import router as system_router
@@ -75,6 +76,7 @@ app.add_middleware(
 
 app.include_router(system_router, prefix=settings.API_V1_PREFIX)
 app.include_router(auth_router, prefix=settings.API_V1_PREFIX)
+app.include_router(orgs_router, prefix=settings.API_V1_PREFIX)
 app.include_router(brands_router, prefix=settings.API_V1_PREFIX)
 app.include_router(inspections_router, prefix=settings.API_V1_PREFIX)
 app.include_router(knowledge_router, prefix=settings.API_V1_PREFIX)
@@ -203,45 +205,22 @@ async def get_favicon():
     return Response(status_code=404)
 
 
-@app.get("/dashboard")
-@app.get("/brand-identity")
-@app.get("/brand-knowledge")
-@app.get("/content-review")
-@app.get("/content-review/{review_id}")
-@app.get("/preflight-scanner")
-@app.get("/brand-copilot")
-@app.get("/approvals")
-@app.get("/brand-insights")
-@app.get("/settings")
-@app.get("/overview")
 @app.get("/")
-def serve_index(review_id: str = None):
+@app.get("/company")
+@app.get("/company-portal")
+@app.get("/vibes")
+@app.get("/check")
+@app.get("/check-vibe")
+@app.get("/developer")
+@app.get("/inspect")
+def serve_index():
+    """
+    Serves the strictly 3-page application:
+      1. /         -> Home Page
+      2. /company  -> Company Puts Their Vibes
+      3. /check    -> Developer Checks Whether Their Work Matches
+    """
     index_file = STATIC_DIR / "index.html"
     if index_file.exists():
-        return FileResponse(index_file)
+        return HTMLResponse(content=index_file.read_text(encoding="utf-8"))
     return {"message": "Sanket AI API is operational. Visit /docs for OpenAPI specifications."}
-
-@app.get("/check-vibe")
-@app.get("/vibe-inspector")
-@app.get("/inspect")
-def serve_check_vibe():
-    f = STATIC_DIR / "check-vibe.html"
-    if f.exists():
-        return FileResponse(f)
-    return FileResponse(STATIC_DIR / "index.html")
-
-@app.get("/company-portal")
-@app.get("/company")
-def serve_company_portal():
-    f = STATIC_DIR / "company-portal.html"
-    if f.exists():
-        return FileResponse(f)
-    return FileResponse(STATIC_DIR / "index.html")
-
-@app.get("/account")
-@app.get("/company-account")
-def serve_account():
-    f = STATIC_DIR / "account.html"
-    if f.exists():
-        return FileResponse(f)
-    return FileResponse(STATIC_DIR / "index.html")

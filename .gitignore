@@ -31,6 +31,7 @@ data/storage/uploads/*
 !data/storage/uploads/.gitkeep
 data/storage/guidelines/*
 !data/storage/guidelines/.gitkeep
+data/storage/test_audit_tmp/
 data/backups/*.zip
 data/backups/*.tmp
 !data/backups/.gitkeep
@@ -42,6 +43,7 @@ data/db/*.tmp
 data/db/.auth_secret
 data/db/audit_logs/
 data/storage/tenants/
+data/storage/test_audit_tmp/
 !data/db/.gitkeep
 
 node_modules/
