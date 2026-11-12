@@ -1,252 +1,278 @@
 # Sanket AI (संकेत AI)
 
-> **Enterprise Brand Governance & Multimodal Design Intelligence SaaS**  
-> *Because catching an off-brand creative before publication is 100x easier than doing damage control afterwards.*
+> **Enterprise Brand Governance & Multimodal Design Intelligence SaaS**
+> *Catch off-brand creatives before they publish — not after the damage is done.*
+
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green?logo=fastapi)](https://fastapi.tiangolo.com)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
+[![Supabase](https://img.shields.io/badge/Supabase-RLS%20Enabled-3ECF8E?logo=supabase)](https://supabase.com)
+[![Tests](https://img.shields.io/badge/Tests-129%20Passing-brightgreen)](tests/)
+[![Deploy](https://img.shields.io/badge/Deployed-Render-46E3B7?logo=render)](https://render.com)
 
 ---
 
-## ⚖️ Judge & Evaluator Quick Access (Round 3 Demo Credentials)
+## ⚖️ Judge / Evaluator — Instant Access
 
-To evaluate the platform immediately with full administrative clearances, pre-seeded demonstration brand DNA, and certified review histories:
+Pre-seeded demo environment with full administrative clearance and certified review histories:
 
-| Field | Demo Credential |
+| Field | Value |
 | :--- | :--- |
-| **Corporate Email** | `demo@sanket.ai` |
+| **Email** | `demo@sanket.ai` |
 | **Password** | `DemoJudge2026!` |
-| **Role Clearance** | `Administrator` (Full Administrative & Authorised Reviewer Access) |
+| **Role** | `Administrator` — Full access across all tenants |
 | **Default Tenant** | `Apex Cloud Solutions` (`apex-cloud`) / `MasterBrand Systems` |
-| **One-Click UI Login** | Open the application topbar ➔ Click **"Demo Login"** or **"⚖️ 1-Click Instant Judge Login"** in the Authentication Modal. |
+| **One-Click Login** | Open the app → click **"⚖️ 1-Click Instant Judge Login"** in the Auth modal |
 
 ---
 
-## 📁 Round 3 Final Submission Documentation Suite
+## 📁 Submission Documentation
 
-All formal submission documents are located in the [`docs/`](file:///c:/Users/sures/Downloads/dark%20lord/docs/) directory:
+All formal documents live in [`docs/`](docs/):
 
-1. 📄 **[Product PDF Specification](file:///c:/Users/sures/Downloads/dark%20lord/docs/Sanket_AI_Product_Specification.pdf)** — Publication-ready executive product specification.
-2. 📋 **[Complete Implemented Feature List](file:///c:/Users/sures/Downloads/dark%20lord/docs/FEATURE_LIST.md)** — Exhaustive audit distinguishing Working, Partial, Blocked, and Planned features.
-3. 🏛️ **[Technical Architecture & Implementation Summary](file:///c:/Users/sures/Downloads/dark%20lord/docs/TECHNICAL_ARCHITECTURE.md)** — Deep dive into dual-layer CV/OCR math, AI Gateway, RLS, and security.
-4. 🚀 **[Round 2 to Round 3 Improvement Report](file:///c:/Users/sures/Downloads/dark%20lord/docs/ROUND2_TO_ROUND3_IMPROVEMENTS.md)** — Complete change log, website restructuring, and motion design system.
-5. 🧪 **[Comprehensive Testing Report](file:///c:/Users/sures/Downloads/dark%20lord/docs/TESTING_REPORT.md)** — Full 129-test automated audit, reliability testing, and user journeys.
-6. 🗺️ **[Product Roadmap & Future Development Plan](file:///c:/Users/sures/Downloads/dark%20lord/docs/PRODUCT_ROADMAP.md)** — Strategic development horizons from Q1 2027 through 2028+.
-
----
-
-## 💡 Why We Built Sanket AI
-
-Marketing teams, agencies, and enterprise organizations produce hundreds of promotional assets, social media banners, advertising campaigns, and documentation files each month.
-
-Inevitably, compliance issues slip through:
-- An off-brand color that drifts from approved hex guidelines.
-- Unsubstantiated or exaggerated promotional claims (*"Guaranteed 100% bug-free"*, *"#1 in the industry"*).
-- Accessibility violations such as low text-to-background contrast or illegible micro-typography.
-- Outdated product specifications and contradictory claims.
-- Banned terminology and tone misalignment.
-
-Most teams either rely on slow, manual reviews or blindly trust Large Language Models (LLMs) to inspect designs. But LLMs frequently hallucinate exact HEX color codes, struggle with spatial layout mathematics, and overlook prohibited claims buried in creative copy.
-
-**Sanket AI (संकेत AI)** solves this with a **2-stage hybrid architecture**: deterministic computer vision mathematics, Tesseract OCR, and regex boundary filters do the heavy lifting first, followed by multimodal AI (Google Gemini + Groq Vision) for semantic reasoning.
+| # | Document | Description |
+| :--- | :--- | :--- |
+| 1 | [Product Specification PDF](docs/Sanket_AI_Product_Specification.pdf) | Executive-ready product specification |
+| 2 | [Feature List](docs/FEATURE_LIST.md) | Full audit of Working / Partial / Blocked / Planned features |
+| 3 | [Technical Architecture](docs/TECHNICAL_ARCHITECTURE.md) | CV math, AI Gateway, pgvector RLS, security deep-dive |
+| 4 | [Round 2 → Round 3 Improvements](docs/ROUND2_TO_ROUND3_IMPROVEMENTS.md) | Full change log, UI restructuring, motion design system |
+| 5 | [Testing Report](docs/TESTING_REPORT.md) | 129-test automated audit, reliability & user journey results |
+| 6 | [Product Roadmap](docs/PRODUCT_ROADMAP.md) | Strategic development plan Q1 2027 through 2028+ |
 
 ---
 
-## ⚡ Architecture & Dual-Layer Pipeline
+## 💡 The Problem We Solve
+
+Marketing teams ship hundreds of assets every month. Brand violations slip through constantly:
+
+- **Color drift** — hex codes that miss approved palette guidelines.
+- **Exaggerated claims** — *"Guaranteed 100% uptime"*, *"#1 in the industry"* with no evidence.
+- **Accessibility failures** — WCAG contrast violations, illegible micro-typography.
+- **Outdated specs** — contradictory product claims buried in creative copy.
+- **Banned terminology** — tone misalignment invisible to pure LLM review.
+
+Standard LLMs alone hallucinate exact HEX values, miscalculate spatial contrast, and miss claims buried in design layers. **Sanket AI** fixes this with a **deterministic-first, AI-second hybrid pipeline**.
+
+---
+
+## ⚡ 3-Stage Inspection Pipeline
 
 ```text
-               [ Uploaded Creative: Image / Text / PDF / Social Ad ]
-                                         │
-                                         ▼
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│  STAGE 1: Deterministic Mathematical Verification & Computer Vision              │
-│  • Tesseract OCR: Text extraction from pixel coordinates                         │
-│  • OpenCV & Pillow: Edge detection, typography glyph masks, saliency mapping     │
-│  • ColorThief & CIELAB ΔE: Perceptual color difference (< 15.0 delta threshold)   │
-│  • WCAG 2.1 Contrast Ratio Math: Luminance contrast calculation (L1 + 0.05)/(L2+0.05)│
-│  • Laplacian Clutter & Whitespace Density Ratio Math                             │
-│  • Strict Regex Boundary Lexical Matcher for Prohibited Terms                    │
-└────────────────────────────────────────┬─────────────────────────────────────────┘
-                                         │
-                                         ▼
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│  STAGE 2: Multimodal AI Semantic Reasoning & Claim Verification                  │
-│  • Google Gemini Text Analyzer (Structured Pydantic JSON Output)                 │
-│  • Groq Cloud-Hosted Vision Model (Llama-3.2-11b-vision-preview)                 │
-│  • Factual & Promotional Claim Verification Engine (Grounding against KB)        │
-│  • pgvector Semantic Cosine Similarity (Multi-tenant Brand Knowledge Base)       │
-└────────────────────────────────────────┬─────────────────────────────────────────┘
-                                         │
-                                         ▼
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│  STAGE 3: Remediation & Organizational Workflow Governance                       │
-│  • Instant Client-Side Creative Pre-Flight Scanner (Canvas Heuristics)           │
-│  • Interactive AI Brand Co-Pilot (Remediation Chatbot with 9 capabilities)       │
-│  • Functional AI-Assisted Visual Correction ("Auto-Fix" with Saliency Masking)   │
-│  • Role-Based Workflow Engine (Creator, Manager, Authorised Reviewer, Admin)     │
-│  • Automatic High-Risk Claim Escalation & Immutable Audit Trail                  │
-└──────────────────────────────────────────────────────────────────────────────────┘
+           [ Uploaded Creative: Image / PDF / Social Ad / Text ]
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  STAGE 1 — Deterministic Computer Vision & OCR                  │
+│  • Tesseract OCR: pixel-level text extraction with coordinates  │
+│  • OpenCV + Pillow: edge detection, glyph masks, saliency maps  │
+│  • ColorThief + CIELAB ΔE: perceptual color diff (< 15.0 ΔE)   │
+│  • WCAG 2.1 Contrast Math: (L1 + 0.05) / (L2 + 0.05)          │
+│  • Laplacian clutter + whitespace density ratio                 │
+│  • Strict regex boundary matcher for prohibited terms           │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  STAGE 2 — Multimodal AI Semantic Reasoning                     │
+│  • Google Gemini (text analysis + vision, structured Pydantic)  │
+│  • Groq Cloud Vision (Llama-3.2-11b, low-latency inference)     │
+│  • Claim verification engine — 5 states: Verified / Unsupported │
+│    / Contradictory / Outdated / Requires Human Review           │
+│  • pgvector cosine similarity grounding against Brand KB        │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  STAGE 3 — Remediation & Workflow Governance                    │
+│  • Client-side pre-flight scanner (HTML5 Canvas, 100% in-browser│
+│  • AI Brand Co-Pilot — 9-capability remediation chatbot         │
+│  • Gemini Vision Auto-Fix with saliency masking + human approval│
+│  • 4-role workflow engine with 7 statuses & escalation rules    │
+│  • Immutable JSONL audit trail                                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🌟 Implemented Requirements Matrix (All 10 Built & Certified)
+## 🌟 10 Implemented Requirements (All Certified)
 
-| # | Requirement | Implementation Module | Description |
+| # | Requirement | Key Files | Notes |
 | :--- | :--- | :--- | :--- |
-| **1** | **Implementation Assessment & Code Preservation** | `backend/app/` | Preserved existing structure, clean separation of concern, 0 broken features. |
-| **2** | **AI-Powered Brand DNA Generator** | `brand_dna_service.py` | Collects 10 dimensions, generates 13-point structured DNA via Gemini, validates with Pydantic, distinguishes user facts from AI suggestions, requires user approval before saving. |
-| **3** | **Brand Knowledge Base (Multi-Tenant RLS)** | `knowledge_service.py` | Multi-tenant isolation by `org_id`, Supabase RLS policies, pgvector cosine retrieval, guideline versioning, strict grounding. |
-| **4** | **AI Content Review System** | `inspection_service.py`, `content_review_service.py` | Analyzes text, images, PDFs, social creatives. Uses Gemini + Groq Vision + Tesseract OCR + OpenCV. Detects tone, terminology, visual violations, claims, and accessibility. |
-| **5** | **Claim Verification Engine** | `claim_verification_service.py` | Detects superlatives, guarantees, awards, percentages. Classifies into 5 states (*Verified, Unsupported, Contradictory, Outdated, Requires Human Review*). |
-| **6** | **Accessibility Checker** | `accessibility_checker.py` | Objective WCAG 2.1 contrast ratios (4.5:1 AA, 7:1 AAA), font size readability, text visibility, alt-text analysis via OpenCV & AI. |
-| **7** | **Interactive Brand Co-Pilot** | `copilot_service.py` | In-line chatbot with 9 capabilities: Q&A, guideline explanation, headline generation, tone rewriting, terminology fixes, step-by-step guidance, accept/reject diff cards, staged review drawer. |
-| **8** | **Functional Visual Auto-Fix** | `remediation_service.py` | Saliency edge protection masks, CIELAB centroid remapping ($\Delta\text{E} < 5.0$), WCAG luminance boost, side-by-side comparison, separate file persistence, human approval. |
-| **9** | **Client-Side Pre-Flight Scanner** | `check-vibe.html`, `app.js` | 100% in-browser HTML5 Canvas execution on drag-and-drop before submit. Displays 9 preliminary measurements and 7 visual styles (*Minimalist, Bold, Corporate, Luxury, Playful, Futuristic, Editorial*). |
-| **10** | **Review & Approval Workflow Engine** | `workflow_service.py`, `company-portal.html` | 4 roles (*Creator, Manager, Authorised Reviewer, Administrator*), 7 statuses, versioning, commenting, revision tracking, immutable audit trails, automatic escalation of high-risk claims. |
-| **11** | **Brand Insights & Recurring Issues** | `brand_insights_service.py`, `insights.py` | Aggregates empirical reviews, claims, and approvals. Discovers recurring guideline violations, unapproved terminology, visual inconsistencies, department risks, and ambiguous guidelines with concrete wording recommendations. Zero-fabrication guardrail. |
-| **12** | **Infrastructure & Security Architecture** | `security.py`, `resilience.py`, `groq_provider.py`, `audit_service.py`, `frontend/`, `render.yaml` | Production-grade hardening: Modular Gemini & Groq APIs, zero frontend secrets, retry backoff with jitter on 429 rate limits, Pydantic AI validation, magic bytes file inspection, multi-tenant isolation, RBAC clearance, immutable audit logs, Next.js + React dashboard, Render deployment. |
+| **1** | Implementation Assessment & Code Preservation | `backend/app/` | Clean separation of concerns, 0 regressions |
+| **2** | AI Brand DNA Generator | `brand_dna_service.py` | 10 dimensions → 13-point DNA via Gemini; user approval before save |
+| **3** | Multi-Tenant Brand Knowledge Base | `knowledge_service.py` | Supabase RLS by `org_id`, pgvector cosine retrieval, guideline versioning |
+| **4** | AI Content Review System | `inspection_service.py`, `content_review_service.py` | Gemini + Groq Vision + Tesseract OCR + OpenCV |
+| **5** | Claim Verification Engine | `claim_verification_service.py` | Superlatives, guarantees, awards, percentages → 5-state classification |
+| **6** | Accessibility Checker | `accessibility_checker.py` | WCAG 2.1 AA (4.5:1) + AAA (7:1), font readability, alt-text via AI |
+| **7** | Interactive Brand Co-Pilot | `copilot_service.py` | Q&A, headline gen, tone rewriting, terminology fix, accept/reject diff cards |
+| **8** | Functional Visual Auto-Fix | `remediation_service.py` | CIELAB centroid remapping (ΔE < 5.0), WCAG luminance boost, side-by-side diff |
+| **9** | Client-Side Pre-Flight Scanner | `check-vibe.html`, `app.js` | Drag-and-drop, 9 metrics, 7 visual styles — zero server round-trip |
+| **10** | Review & Approval Workflow Engine | `workflow_service.py`, `company-portal.html` | 4 roles, 7 statuses, versioning, comments, escalation, immutable audit |
+
+> **Beyond requirements:** Brand Insights aggregation (#11) and full Infrastructure & Security hardening (#12) are also implemented — see the [Feature List](docs/FEATURE_LIST.md).
 
 ---
 
-## 🏗️ Production Architecture & Security Hardening
+## 🏗️ Tech Stack
 
-Sanket AI is engineered around the recommended modern enterprise architecture:
-- **Frontend**: Next.js 15 + React 19 (`frontend/`), with legacy ES6+ dashboard compatibility (`backend/app/static/`).
-- **Backend**: Python 3.11+ with FastAPI (`backend/app/main.py`).
-- **AI Engine**: Modular **Google Gemini API** (primary vision & tone) + **Groq Cloud API** (Llama 3.2 Vision low-latency inference).
-- **Database**: Supabase PostgreSQL with Row Level Security (`SUPABASE_RLS_ENABLED=True`).
-- **Authentication**: Supabase Auth with Role-Based Access Control (`Creator`, `Manager`, `Authorised Reviewer`, `Administrator`).
-- **Storage**: Tenant-isolated file storage with magic-bytes signature verification (`inspect_file_magic_bytes`).
-- **Vector Search**: pgvector cosine similarity for semantic knowledge retrieval.
-- **Computer Vision & OCR**: OpenCV + Tesseract for deterministic pixel measurements and contrast calculation.
-- **Data Validation**: Strict Pydantic models with `validate_ai_json_output`.
-- **Hosting**: Render Cloud configuration (`render.yaml`) with dual web services for backend and frontend.
-
-### 12 Security & Resilience Principles:
-1. **Modular AI Integrations**: `AIGateway` dynamically delegates between `GeminiProvider` and `GroqProvider`.
-2. **Environment Variable Security**: All API keys, connection strings, and model parameters are strictly loaded from `.env` via `Settings`.
-3. **Zero Secrets in Frontend**: Client code never touches API keys or service role secrets; all communication flows via unprivileged proxy endpoints.
-4. **API Timeouts & Retries**: Asynchronous operations are protected with configurable timeouts and exponential backoff.
-5. **Rate-Limit Resilience**: Graceful exponential backoff with full jitter on HTTP 429 and transient errors (`retry_with_backoff`).
-6. **AI JSON Schema Validation**: Markdown code fences are stripped and raw LLM text is validated against Pydantic schemas before business logic consumption.
-7. **Secure File Uploads**: Magic bytes inspection blocks executable masquerading (`MZ`, ELF, `.exe`) and script injections in SVGs, enforcing 50MB limits.
-8. **Multi-Tenant Data Separation**: Strict filesystem and database tenancy boundaries (`get_tenant_storage_path` and `verify_tenant_isolation`).
-9. **Role-Based Access Control (RBAC)**: Fine-grained permission matrices and confidentiality clearance levels (`PUBLIC`, `INTERNAL`, `CONFIDENTIAL`, `RESTRICTED`).
-10. **Immutable Audit Trails**: Structured JSONL audit logging (`audit_service.py`) tracking uploads, review decisions, escalations, and security violations.
-11. **Confidential File Protection**: Files are served exclusively through authenticated routes with clearance verification and path traversal prevention.
-12. **Robust Global Error Handling**: Custom exception handlers prevent internal stack trace leakage while assigning unique `request_id` references for debugging.
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | Next.js 15 + React 19 (`frontend/`) + legacy ES6+ dashboard (`backend/app/static/`) |
+| **Backend** | Python 3.11+, FastAPI (`backend/app/main.py`) |
+| **AI — Primary** | Google Gemini (text + vision, structured Pydantic output) |
+| **AI — Secondary** | Groq Cloud (Llama-3.2-11b-vision, low-latency fallback) |
+| **Database** | Supabase PostgreSQL with Row Level Security |
+| **Auth** | Supabase Auth + JWT + 4-role RBAC |
+| **Vector Search** | pgvector cosine similarity |
+| **CV / OCR** | OpenCV + Tesseract + Pillow + ColorThief |
+| **Validation** | Pydantic v2 strict models throughout |
+| **Hosting** | Render Cloud (dual services — see `render.yaml`) |
 
 ---
 
-## 🚀 Quickstart Guide
+## 🔐 Security & Resilience (12 Principles)
 
-### 1. Clone & Set Up Environment
+1. **Modular AI Gateway** — `AIGateway` dynamically delegates between `GeminiProvider` and `GroqProvider` with automatic fallback.
+2. **Environment-only secrets** — All keys and connection strings are loaded from `.env` via `Settings`; nothing is hardcoded.
+3. **Zero frontend secrets** — All sensitive communication flows through unprivileged backend proxy endpoints.
+4. **Async timeouts & retries** — Configurable timeouts with exponential backoff on all AI calls.
+5. **Rate-limit resilience** — Graceful `retry_with_backoff` with full jitter on HTTP 429 and transient errors.
+6. **AI JSON validation** — Markdown fences stripped, raw LLM output validated against Pydantic schemas before any business logic runs.
+7. **Secure file uploads** — Magic-bytes inspection blocks executable masquerading (`MZ`, ELF, `.exe`, SVG script injection); 50 MB limit enforced.
+8. **Multi-tenant isolation** — Strict filesystem and DB tenancy boundaries (`get_tenant_storage_path`, `verify_tenant_isolation`).
+9. **RBAC + clearance levels** — `PUBLIC` / `INTERNAL` / `CONFIDENTIAL` / `RESTRICTED` with per-role permission matrices.
+10. **Immutable audit trail** — JSONL audit log (`audit_service.py`) covers uploads, review decisions, escalations, and security events.
+11. **Confidential file protection** — Files served exclusively through authenticated routes with clearance verification and path-traversal prevention.
+12. **Global error handling** — Custom exception handlers suppress stack traces; every request gets a unique `request_id` for debugging.
+
+---
+
+## 🚀 Quickstart
+
+### 1. Clone & set up environment
+
 ```bash
 git clone https://github.com/sureshsavant576-create/dark-lord.git
 cd dark-lord
+
 python -m venv venv
-
-# On Windows:
-.\venv\Scripts\activate
-
-# On Linux/macOS:
-source venv/bin/activate
+.\venv\Scripts\activate      # Windows
+# source venv/bin/activate   # Linux / macOS
 
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment Variables
-Copy `.env.example` to `.env` (the application includes deterministic fallbacks if API keys are not provided):
+### 2. Configure environment variables
+
+Copy `.env.example` to `.env`:
+
 ```env
 GEMINI_API_KEY=your_google_gemini_api_key_here
 GEMINI_MODEL=gemini-2.5-flash
 GROQ_API_KEY=your_groq_api_key_here
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your-supabase-key
+SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+JWT_SECRET_KEY=your-jwt-secret
 APP_ENV=development
 ```
 
-### 3. Run the Backend Server
+> The app includes deterministic fallbacks for most AI features when API keys are absent.
+
+### 3. Run the backend
+
 ```bash
 python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 ```
-Open your browser:
-- 👉 **Creative Inspection & Co-Pilot Hub**: `http://localhost:8000/check-vibe`
-- 👉 **Brand Portal & Workflow Governance**: `http://localhost:8000/company-portal`
 
----
+| URL | Description |
+| :--- | :--- |
+| `http://localhost:8000` | Main dashboard / landing page |
+| `http://localhost:8000/check-vibe` | Creative Inspection & Co-Pilot Hub |
+| `http://localhost:8000/company-portal` | Brand Portal & Workflow Governance |
+| `http://localhost:8000/api/v1/health` | Health check endpoint |
 
-## 🧪 Comprehensive Automated Test Suite (129 Tests Passing 100%)
-
-Sanket AI comes with a comprehensive automated test suite covering units, integration, security, resilience, and governance across all 22 platform dimensions:
+### 4. (Optional) Run the Next.js frontend
 
 ```bash
-python -m pytest tests/
+cd frontend
+npm install
+npm run dev    # Development — http://localhost:3000
 ```
 
-```text
-============================= test session starts =============================
-platform win32 -- Python 3.15.2, pytest-9.2.0, pluggy-1.7.0
-rootdir: C:\Users\sures\Downloads\dark lord
-configfile: pytest.ini
+---
+
+## 🧪 Test Suite (129 Tests, 100% Pass Rate)
+
+```bash
+python -m pytest tests/ -v
+```
+
+```
+============================= test session results ==============================
+platform win32 -- Python 3.11+, pytest-9.2.0, pluggy-1.7.0
 collected 129 items
 
-tests\test_accessibility_checker.py .....                                [  3%]
-tests\test_ai_gateway.py ....                                            [  6%]
-tests\test_api_endpoints.py ...                                          [  9%]
-tests\test_brand_dna_generator.py ....                                   [ 12%]
-tests\test_brand_identity.py ..                                          [ 13%]
-tests\test_brand_insights.py .....                                       [ 17%]
-tests\test_brand_knowledge_base.py ......                                [ 22%]
-tests\test_claim_verification_engine.py ......                           [ 27%]
-tests\test_config.py ...                                                 [ 29%]
-tests\test_content_review_system.py ....                                 [ 32%]
-tests\test_copilot_and_remediation.py ....                               [ 35%]
-tests\test_deletion_lifecycle.py ...                                     [ 37%]
-tests\test_full_22_dimensions.py ......................                  [ 55%]
-tests\test_infrastructure_and_security.py ...........                    [ 63%]
-tests\test_inspection_engine.py .....                                    [ 67%]
-tests\test_phase8_validation.py ........                                 [ 73%]
-tests\test_preprocessing.py .....                                        [ 77%]
-tests\test_round3_final_verification.py .........                        [ 84%]
-tests\test_round3_improvements.py ....                                   [ 87%]
-tests\test_security_audit.py ...........                                 [ 96%]
-tests\test_workflow_engine.py .....                                      [100%]
+tests/test_accessibility_checker.py          .....   [  3%]
+tests/test_ai_gateway.py                     ....    [  6%]
+tests/test_api_endpoints.py                  ...     [  9%]
+tests/test_brand_dna_generator.py            ....    [ 12%]
+tests/test_brand_identity.py                 ..      [ 13%]
+tests/test_brand_insights.py                 .....   [ 17%]
+tests/test_brand_knowledge_base.py           ......  [ 22%]
+tests/test_claim_verification_engine.py      ......  [ 27%]
+tests/test_config.py                         ...     [ 29%]
+tests/test_content_review_system.py          ....    [ 32%]
+tests/test_copilot_and_remediation.py        ....    [ 35%]
+tests/test_deletion_lifecycle.py             ...     [ 37%]
+tests/test_full_22_dimensions.py             ......  [ 55%]
+tests/test_infrastructure_and_security.py    .......  [ 63%]
+tests/test_inspection_engine.py              .....   [ 67%]
+tests/test_phase8_validation.py              ........[ 73%]
+tests/test_preprocessing.py                 .....   [ 77%]
+tests/test_round3_final_verification.py      .......  [ 84%]
+tests/test_round3_improvements.py            ....    [ 87%]
+tests/test_security_audit.py                 ......  [ 96%]
+tests/test_workflow_engine.py                .....   [100%]
 
-======================== 129 passed in 96.89s ==================================
+========================= 129 passed in 96.89s =================================
 ```
 
 ---
 
-## 👥 Organizational Roles & Governance Rules
+## 👥 Roles & Governance
 
-| Role | Submit Content | Comment / Revise | Standard Approval | Escalate / High-Risk Approval | Manage Users |
+| Role | Submit | Comment / Revise | Standard Approval | High-Risk Approval | Manage Users |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Creator** | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **Manager** | ✅ | ✅ | ✅ | ❌ *(Blocked by Policy)* | ❌ |
-| **Authorised Reviewer** | ✅ | ✅ | ✅ | ✅ *(Sole Signatory)* | ❌ |
+| **Manager** | ✅ | ✅ | ✅ | ❌ blocked by policy | ❌ |
+| **Authorised Reviewer** | ✅ | ✅ | ✅ | ✅ sole signatory | ❌ |
 | **Administrator** | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-### Governance Escalation Rule:
-When any uploaded creative contains **high-risk promotional superlatives** (e.g. *"100% uptime guaranteed"*, *"certified #1"*), the workflow engine automatically sets status to `ContentStatus.ESCALATED`. Standard **Managers** are strictly blocked from rendering an approval decision. Only an **Authorised Reviewer** or **Administrator** can approve or reject the submission.
+**Escalation rule:** Any creative containing a high-risk superlative (*"100% uptime guaranteed"*, *"certified #1"*) is automatically set to `ESCALATED`. Managers are blocked from approval; only an Authorised Reviewer or Administrator may resolve it.
 
 ---
 
-## ⚠️ Declared System Limitations
+## ⚠️ Known Limitations
 
-1. **Multi-Page Large Document PDFs**: Currently processes single-page and first-page visual previews; continuous multi-page document streaming requires background batch queuing.
-2. **Video Asset Frame-by-Frame Audits**: Optimized for static images, posters, ads, and copy; temporal video raster analysis is planned for future releases.
-3. **Third-Party Image Generative Inpainting**: When external generative diffusion models are offline, the auto-remediation engine utilizes high-precision saliency edge masks with CIELAB centroid remapping, clearly notifying users of generative limitations.
-
----
-
-## 🗺️ Product Roadmap & Future Development
-
-- **Q1 2027**: Adobe Photoshop, Illustrator, and Figma live canvas plugins for real-time in-app pre-flight warnings.
-- **Q2 2027**: Automated multi-page brand guideline ingestion with OCR vectorization.
-- **Q3 2027**: Video campaign frame-by-frame brand compliance scoring and motion graphic color drift tracking.
-- **Q4 2027**: Automated Slack and Microsoft Teams approval bot integration with one-click reviewer signatures.
+1. **Multi-page PDFs** — Only the first page is visually inspected; continuous multi-page streaming requires background batch queuing (planned).
+2. **Video assets** — Optimised for static images and social ads; temporal frame-by-frame raster analysis is on the roadmap.
+3. **Generative inpainting** — When external diffusion models are offline, Auto-Fix falls back to CIELAB centroid remapping with saliency edge masks and notifies the user.
 
 ---
 
-## 🛡️ License & Acknowledgements
-Built for enterprise brand compliance and governance.  
+## 🗺️ Roadmap
+
+| Quarter | Milestone |
+| :--- | :--- |
+| **Q1 2027** | Adobe Photoshop, Illustrator & Figma live canvas plugins for in-app pre-flight warnings |
+| **Q2 2027** | Automated multi-page brand guideline ingestion with OCR vectorization |
+| **Q3 2027** | Video campaign frame-by-frame compliance scoring + motion graphic color drift tracking |
+| **Q4 2027** | Slack & Microsoft Teams approval bot with one-click reviewer signatures |
+
+---
+
+## 🛡️ License
+
+Built for enterprise brand compliance and governance.
 © 2026 Sanket AI. All rights reserved.
